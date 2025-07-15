@@ -70,9 +70,9 @@ export async function POST(request: NextRequest) {
     // Gerar token JWT
     const token = generateJWT({
       userId: profile.id,
-      email: profile.email,
+      email: profile.email!,
       role: profile.role,
-      restaurantId: profile.restaurantId
+      restaurantId: profile.restaurantId!,
     });
 
     // Atualizar último login
@@ -87,15 +87,15 @@ export async function POST(request: NextRequest) {
       data: {
         user: {
           id: profile.id,
-          email: profile.email,
-          name: profile.fullName || profile.email,
+          email: profile.email!,
+          name: (profile.fullName ?? profile.email!) as string,
           role: profile.role,
           restaurantId: profile.restaurantId
         },
         restaurant: {
-          id: profile.restaurant.id,
-          slug: profile.restaurant.slug,
-          name: profile.restaurant.name
+          id: profile.restaurant!.id,
+          slug: profile.restaurant!.slug,
+          name: profile.restaurant!.name
         },
         token
       }
