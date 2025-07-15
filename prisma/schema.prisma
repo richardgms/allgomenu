@@ -1,0 +1,237 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL") // Necessário para o Prisma Migrate no Supabase
+}
+
+model Restaurant {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  phone       String?
+  whatsapp    String?
+  email       String?
+  address     String?
+  
+  // Configurações de entrega
+  deliveryFee     Decimal? @default(0) @db.Decimal(10, 2)
+  minimumOrder   Decimal? @default(0) @db.Decimal(10, 2)
+  deliveryTime   Int?     @default(30) // em minutos
+  deliveryRadius Float?   @default(5) // em km
+  
+  // Status e horários
+  isActive     Boolean @default(true)
+  isOpen       Boolean @default(false)
+  openingHours Json?   // Estrutura: { "monday": { "open": "08:00", "close": "22:00", "closed": false }, ... }
+  
+  // Personalização visual
+  themeConfig Json? // Estrutura: { "primaryColor": "#3B82F6", "secondaryColor": "#10B981", "logo": "url", "font": "Inter" }
+  
+  // Configurações do WhatsApp
+  whatsappTemplate String? @default("🍴 *Novo Pedido - {{restaurantName}}*\n\n👤 *Cliente:* {{customerName}}\n📱 *Telefone:* {{customerPhone}}\n📍 *Endereço:* {{deliveryAddress}}\n\n🛍️ *Pedido:*\n{{orderItems}}\n\n💰 *Total:* R$ {{totalAmount}}\n💳 *Pagamento:* {{paymentMethod}}\n🚚 *Entrega:* {{deliveryType}}\n\n---\n⏰ Pedido realizado em: {{timestamp}}")
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  profiles   Profile[]
+  categories Category[]
+  products   Product[]
+  orders     Order[]
+  
+  @@map("restaurants")
+}
+
+model Profile {
+  id           String    @id // Corresponde a auth.users.id do Supabase
+  email        String?   @unique
+  fullName     String?
+  role         UserRole  @default(ADMIN)
+  isActive     Boolean   @default(true)
+  lastLogin    DateTime?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  restaurantId String?
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  
+  @@map("profiles")
+}
+
+model Category {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  order       Int     @default(0)
+  isActive    Boolean @default(true)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  products     Product[]
+  
+  @@map("categories")
+}
+
+model Product {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  price       Decimal @db.Decimal(10, 2)
+  imageUrl    String? // Agora apontará para o Supabase Storage
+  isFeatured  Boolean @default(false)
+  isActive    Boolean @default(true)
+  order       Int     @default(0)
+  
+  // Opções do produto (tamanhos, complementos, etc.)
+  options Json? // Estrutura: { "sizes": [{ "name": "Pequeno", "price": 0 }], "extras": [{ "name": "Queijo extra", "price": 2.50 }] }
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+  
+  @@map("products")
+}
+
+model Order {
+  id       String      @id @default(cuid())
+  code     String      @unique // Código único do pedido (ex: PED001)
+  status   OrderStatus @default(PENDING)
+  
+  // Dados do cliente
+  customerName    String
+  customerPhone   String
+  customerEmail   String?
+  deliveryAddress String
+  reference       String?
+  observations    String?
+  
+  // Valores
+  subtotal    Decimal @db.Decimal(10, 2)
+  deliveryFee Decimal @default(0) @db.Decimal(10, 2)
+  total       Decimal @db.Decimal(10, 2)
+  
+  // Pagamento e entrega
+  paymentMethod PaymentMethod
+  deliveryType  DeliveryType  @default(DELIVERY)
+  
+  // WhatsApp
+  whatsappSent Boolean   @default(false)
+  whatsappUrl  String?
+  sentAt       DateTime?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  restaurantId String
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items        OrderItem[]
+  
+  @@map("orders")
+}
+
+model OrderItem {
+  id       String @id @default(cuid())
+  quantity Int    @default(1)
+  unitPrice Decimal @db.Decimal(10, 2)
+  totalPrice Decimal @db.Decimal(10, 2)
+  
+  // Opções selecionadas (tamanho, complementos, etc.)
+  selectedOptions Json? // Estrutura: { "size": "Médio", "extras": ["Queijo extra", "Bacon"] }
+  observations    String?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  
+  // Relacionamentos
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  
+  @@map("order_items")
+}
+
+// Modelo para configurações globais do sistema
+model SystemConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value Json
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("system_configs")
+}
+
+// Modelo para logs de auditoria
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String   // CREATE, UPDATE, DELETE
+  entity    String   // restaurant, product, category, etc.
+  entityId  String
+  oldData   Json?
+  newData   Json?
+  userId    String?
+  ipAddress String?
+  userAgent String?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  
+  @@map("audit_logs")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum OrderStatus {
+  PENDING     // Aguardando confirmação
+  CONFIRMED   // Confirmado pelo restaurante
+  PREPARING   // Em preparação
+  READY       // Pronto para entrega/retirada
+  DELIVERED   // Entregue
+  CANCELLED   // Cancelado
+}
+
+enum PaymentMethod {
+  CASH        // Dinheiro
+  PIX         // PIX
+  DEBIT_CARD  // Cartão de débito
+  CREDIT_CARD // Cartão de crédito
+}
+
+enum DeliveryType {
+  DELIVERY    // Entrega
+  PICKUP      // Retirada
+} 
