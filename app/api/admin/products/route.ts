@@ -67,12 +67,37 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, description, price, category, isAvailable, imageUrl } = body;
+    const { 
+      name, 
+      description, 
+      price, 
+      categoryId, 
+      imageUrl, 
+      isFeatured, 
+      isActive, 
+      order, 
+      options 
+    } = body;
 
     // Validar dados obrigatórios
-    if (!name || !price || !category) {
+    if (!name || !price || !categoryId) {
       return NextResponse.json(
         { error: 'Nome, preço e categoria são obrigatórios' },
+        { status: 400 }
+      );
+    }
+
+    // Verificar se a categoria pertence ao restaurante
+    const category = await db.category.findFirst({
+      where: {
+        id: categoryId,
+        restaurantId: auth.user!.restaurantId
+      }
+    });
+
+    if (!category) {
+      return NextResponse.json(
+        { error: 'Categoria não encontrada' },
         { status: 400 }
       );
     }
@@ -83,10 +108,18 @@ export async function POST(request: NextRequest) {
         name,
         description,
         price: parseFloat(price),
-        category,
-        isAvailable: isAvailable ?? true,
+        categoryId,
         imageUrl,
+        isFeatured: isFeatured || false,
+        isActive: isActive !== undefined ? isActive : true,
+        order: order || 0,
+        options,
         restaurantId: auth.user!.restaurantId
+      },
+      include: {
+        category: {
+          select: { id: true, name: true }
+        }
       }
     });
 

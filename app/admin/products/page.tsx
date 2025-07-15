@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthUser } from '@/lib/auth-supabase';
+import { isAuthenticated, fetchWithAuth, handleAuthError } from '@/lib/api-client';
 import ImageUpload from '@/components/ImageUpload';
-import { fetchWithAuth, handleAuthError } from '@/lib/api-client';
+import TruncatedText from '@/components/TruncatedText';
 
 interface Product {
   id: string;
@@ -32,12 +32,17 @@ interface Category {
 
 export default function ProductsPage() {
   const router = useRouter();
-  const [user, setUser] = useState<AuthUser | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [formLoading, setFormLoading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean; productId: string; productName: string }>({
+    show: false,
+    productId: '',
+    productName: ''
+  });
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -51,60 +56,64 @@ export default function ProductsPage() {
   });
 
   useEffect(() => {
-    fetchUserData();
-    fetchProducts();
-    fetchCategories();
-  }, []);
-
-  const fetchUserData = async () => {
-    try {
-      const response = await fetchWithAuth('/api/admin/me');
-      handleAuthError(response);
-      const data = await response.json();
-      
-      if (data.success) {
-        setUser(data.data);
-      } else {
-        router.push('/admin/login');
-      }
-    } catch (error) {
-      console.error('Erro ao buscar dados do usuário:', error);
+    if (!isAuthenticated()) {
       router.push('/admin/login');
+      return;
     }
-  };
 
-  const fetchProducts = async () => {
-    try {
-      const response = await fetchWithAuth('/api/admin/products');
-      handleAuthError(response);
-      const data = await response.json();
-      
-      if (data.success) {
-        setProducts(data.data);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar produtos:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [productsResponse, categoriesResponse] = await Promise.all([
+          fetchWithAuth('/api/admin/products'),
+          fetchWithAuth('/api/admin/categories')
+        ]);
 
-  const fetchCategories = async () => {
-    try {
-      const response = await fetchWithAuth('/api/admin/categories');
-      handleAuthError(response);
-      const data = await response.json();
-      
-      if (data.success) {
-        setCategories(data.data);
+        handleAuthError(productsResponse);
+        handleAuthError(categoriesResponse);
+
+        const productsData = await productsResponse.json();
+        const categoriesData = await categoriesResponse.json();
+
+        if (productsData.success) {
+          setProducts(productsData.data);
+        } else {
+          console.error('Erro ao buscar produtos:', productsData.error);
+        }
+
+        if (categoriesData.success) {
+          setCategories(categoriesData.data);
+        } else {
+          console.error('Erro ao buscar categorias:', categoriesData.error);
+        }
+
+      } catch (error) {
+        console.error('Erro ao carregar dados da página:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Erro ao buscar categorias:', error);
-    }
+    };
+    
+    fetchData();
+  }, [router]);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    // Implementação simples de toast - pode ser melhorada com uma biblioteca
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 ${
+      type === 'success' ? 'bg-green-500' : 'bg-red-500'
+    }`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 3000);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormLoading(true);
     
     try {
       const url = editingProduct 
@@ -127,13 +136,22 @@ export default function ProductsPage() {
         setShowForm(false);
         setEditingProduct(null);
         resetForm();
-        fetchProducts();
+        
+        // Atualizar a lista de produtos
+        const updatedProducts = editingProduct
+          ? products.map(p => p.id === editingProduct.id ? data.data : p)
+          : [...products, data.data];
+        setProducts(updatedProducts);
+        
+        showToast(editingProduct ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!');
       } else {
-        alert(data.error || 'Erro ao salvar produto');
+        showToast(data.error || 'Erro ao salvar produto', 'error');
       }
     } catch (error) {
       console.error('Erro ao salvar produto:', error);
-      alert('Erro ao salvar produto');
+      showToast('Erro ao salvar produto', 'error');
+    } finally {
+      setFormLoading(false);
     }
   };
 
@@ -153,11 +171,17 @@ export default function ProductsPage() {
     setShowForm(true);
   };
 
-  const handleDelete = async (productId: string) => {
-    if (!confirm('Tem certeza que deseja deletar este produto?')) {
-      return;
-    }
+  const handleDeleteConfirm = (productId: string, productName: string) => {
+    setDeleteConfirm({
+      show: true,
+      productId,
+      productName
+    });
+  };
 
+  const handleDelete = async () => {
+    const { productId } = deleteConfirm;
+    
     try {
       const response = await fetchWithAuth(`/api/admin/products/${productId}`, {
         method: 'DELETE',
@@ -166,13 +190,16 @@ export default function ProductsPage() {
       const data = await response.json();
 
       if (data.success) {
-        fetchProducts();
+        setProducts(products.filter(p => p.id !== productId));
+        showToast('Produto deletado com sucesso!');
       } else {
-        alert(data.error || 'Erro ao deletar produto');
+        showToast(data.error || 'Erro ao deletar produto', 'error');
       }
     } catch (error) {
       console.error('Erro ao deletar produto:', error);
-      alert('Erro ao deletar produto');
+      showToast('Erro ao deletar produto', 'error');
+    } finally {
+      setDeleteConfirm({ show: false, productId: '', productName: '' });
     }
   };
 
@@ -202,7 +229,7 @@ export default function ProductsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-gray-600">Carregando produtos...</p>
         </div>
       </div>
     );
@@ -220,7 +247,7 @@ export default function ProductsPage() {
             <div className="flex gap-4">
               <button
                 onClick={() => router.push('/admin/dashboard')}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
               >
                 Voltar
               </button>
@@ -230,13 +257,42 @@ export default function ProductsPage() {
                   resetForm();
                   setShowForm(true);
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 Novo Produto
               </button>
             </div>
           </div>
         </div>
+
+        {/* Modal de Confirmação de Exclusão */}
+        {deleteConfirm.show && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Confirmar Exclusão
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Tem certeza que deseja deletar o produto "<strong>{deleteConfirm.productName}</strong>"? 
+                Esta ação não pode ser desfeita.
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => setDeleteConfirm({ show: false, productId: '', productName: '' })}
+                  className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                >
+                  Deletar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Formulário */}
         {showForm && (
@@ -257,6 +313,7 @@ export default function ProductsPage() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
+                    disabled={formLoading}
                   />
                 </div>
 
@@ -269,6 +326,7 @@ export default function ProductsPage() {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={3}
+                    disabled={formLoading}
                   />
                 </div>
 
@@ -280,10 +338,12 @@ export default function ProductsPage() {
                     <input
                       type="number"
                       step="0.01"
+                      min="0"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={formLoading}
                     />
                   </div>
 
@@ -296,9 +356,10 @@ export default function ProductsPage() {
                       onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={formLoading}
                     >
                       <option value="">Selecione uma categoria</option>
-                      {categories.map(category => (
+                      {categories.filter(cat => cat.isActive).map(category => (
                         <option key={category.id} value={category.id}>
                           {category.name}
                         </option>
@@ -319,9 +380,11 @@ export default function ProductsPage() {
                     </label>
                     <input
                       type="number"
+                      min="0"
                       value={formData.order}
                       onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={formLoading}
                     />
                   </div>
                 </div>
@@ -333,6 +396,7 @@ export default function ProductsPage() {
                       checked={formData.isFeatured}
                       onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
                       className="mr-2"
+                      disabled={formLoading}
                     />
                     Produto em destaque
                   </label>
@@ -343,6 +407,7 @@ export default function ProductsPage() {
                       checked={formData.isActive}
                       onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                       className="mr-2"
+                      disabled={formLoading}
                     />
                     Produto ativo
                   </label>
@@ -356,15 +421,24 @@ export default function ProductsPage() {
                       setEditingProduct(null);
                       resetForm();
                     }}
-                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    disabled={formLoading}
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    disabled={formLoading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {editingProduct ? 'Atualizar' : 'Criar'}
+                    {formLoading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        {editingProduct ? 'Atualizando...' : 'Criando...'}
+                      </div>
+                    ) : (
+                      editingProduct ? 'Atualizar' : 'Criar'
+                    )}
                   </button>
                 </div>
               </form>
@@ -397,7 +471,7 @@ export default function ProductsPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {products.map((product) => (
-                  <tr key={product.id}>
+                  <tr key={product.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {product.imageUrl && (
@@ -416,9 +490,7 @@ export default function ProductsPage() {
                               </span>
                             )}
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {product.description}
-                          </div>
+                          <TruncatedText text={product.description} maxLength={40} className="text-sm text-gray-500" />
                         </div>
                       </div>
                     </td>
@@ -441,13 +513,13 @@ export default function ProductsPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEdit(product)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="text-blue-600 hover:text-blue-900 transition-colors"
                         >
                           Editar
                         </button>
                         <button
-                          onClick={() => handleDelete(product.id)}
-                          className="text-red-600 hover:text-red-900"
+                          onClick={() => handleDeleteConfirm(product.id, product.name)}
+                          className="text-red-600 hover:text-red-900 transition-colors"
                         >
                           Deletar
                         </button>
@@ -469,7 +541,7 @@ export default function ProductsPage() {
                 resetForm();
                 setShowForm(true);
               }}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               Criar Primeiro Produto
             </button>

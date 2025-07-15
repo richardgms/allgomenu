@@ -131,7 +131,7 @@ export default function RestaurantPage() {
 
   const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0)
   const deliveryFee = restaurant?.deliveryFee || 0
-  const finalTotal = cartTotal + deliveryFee
+  const finalTotal = parseFloat(cartTotal.toString()) + parseFloat(deliveryFee.toString())
 
   if (loading) {
     return (

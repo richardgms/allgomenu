@@ -54,6 +54,7 @@ model Restaurant {
 model Profile {
   id           String    @id // Corresponde a auth.users.id do Supabase
   email        String?   @unique
+  password     String?   // Hash da senha para autenticação JWT
   fullName     String?
   role         UserRole  @default(ADMIN)
   isActive     Boolean   @default(true)
@@ -86,6 +87,7 @@ model Category {
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   products     Product[]
   
+  @@unique([name, restaurantId])
   @@map("categories")
 }
 
@@ -113,6 +115,7 @@ model Product {
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
   
+  @@unique([name, restaurantId])
   @@map("products")
 }
 

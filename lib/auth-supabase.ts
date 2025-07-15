@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from './supabase-server'
 import { db } from './db'
+import { verifyJWT } from './jwt'
 
 export interface AuthUser {
   id: string
@@ -35,68 +35,69 @@ export async function getAuthUser(request: NextRequest): Promise<{
 
     const token = authHeader.substring(7)
 
-    // Verificar token com Supabase
-    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
+    // Primeiro, tentar verificar se é um token JWT emitido pelo sistema
+    const decoded = verifyJWT(token)
 
-    if (error || !user) {
-      return {
-        success: false,
-        response: NextResponse.json(
-          { error: 'Token inválido' },
-          { status: 401 }
-        )
-      }
-    }
-
-    // Buscar dados do usuário no nosso banco (tabela Profile)
-    const profile = await db.profile.findUnique({
-      where: { id: user.id },
-      include: {
-        restaurant: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            isActive: true
+    if (decoded) {
+      // Buscar perfil pelo ID decodificado
+      const profile = await db.profile.findUnique({
+        where: { id: decoded.userId },
+        include: {
+          restaurant: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              isActive: true
+            }
           }
         }
-      }
-    })
+      })
 
-    if (!profile) {
+      if (!profile) {
+        return {
+          success: false,
+          response: NextResponse.json(
+            { error: 'Perfil de usuário não encontrado' },
+            { status: 404 }
+          )
+        }
+      }
+
+      if (!profile.restaurant?.isActive) {
+        return {
+          success: false,
+          response: NextResponse.json(
+            { error: 'Restaurante desativado' },
+            { status: 403 }
+          )
+        }
+      }
+
       return {
-        success: false,
-        response: NextResponse.json(
-          { error: 'Perfil de usuário não encontrado' },
-          { status: 404 }
-        )
+        success: true,
+        user: {
+          id: profile.id,
+          email: profile.email!,
+          name: profile.fullName || profile.email!,
+          role: profile.role,
+          restaurantId: profile.restaurantId,
+          restaurant: profile.restaurant ? {
+            id: profile.restaurant.id,
+            name: profile.restaurant.name,
+            slug: profile.restaurant.slug
+          } : null
+        }
       }
     }
 
-    if (!profile.restaurant?.isActive) {
-      return {
-        success: false,
-        response: NextResponse.json(
-          { error: 'Restaurante desativado' },
-          { status: 403 }
-        )
-      }
-    }
-
+    // Se não for JWT válido, retornar erro de token inválido
     return {
-      success: true,
-      user: {
-        id: profile.id,
-        email: user.email!,
-        name: profile.fullName || user.email!,
-        role: profile.role,
-        restaurantId: profile.restaurantId,
-        restaurant: profile.restaurant ? {
-          id: profile.restaurant.id,
-          name: profile.restaurant.name,
-          slug: profile.restaurant.slug
-        } : null
-      }
+      success: false,
+      response: NextResponse.json(
+        { error: 'Token inválido' },
+        { status: 401 }
+      )
     }
 
   } catch (error) {
@@ -129,28 +130,5 @@ export async function validateRestaurantAccess(
   } catch (error) {
     console.error('Erro ao validar acesso ao restaurante:', error)
     return false
-  }
-}
-
-// Função para login (criar sessão Supabase)
-export async function loginWithSupabase(email: string, password: string) {
-  const { data, error } = await supabaseAdmin.auth.signInWithPassword({
-    email,
-    password
-  })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return data
-}
-
-// Função para logout
-export async function logoutWithSupabase(accessToken: string) {
-  const { error } = await supabaseAdmin.auth.admin.signOut(accessToken)
-  
-  if (error) {
-    throw new Error(error.message)
   }
 } 

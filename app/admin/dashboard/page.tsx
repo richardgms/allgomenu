@@ -2,60 +2,64 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase-client'
-import { fetchWithAuth, handleAuthError, logout } from '@/lib/api-client'
+import Link from 'next/link'
+import { fetchWithAuth, handleAuthError, logout, isAuthenticated } from '@/lib/api-client'
 
-interface UserData {
-  id: string
-  email: string
-  name: string
-  role: string
-  restaurantId: string
-  restaurant: {
-    id: string
-    name: string
-    slug: string
-  }
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+}
+
+interface Restaurant {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 export default function AdminDashboard() {
-  const [user, setUser] = useState<UserData | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const router = useRouter()
 
   useEffect(() => {
-    checkAuth()
-  }, [])
-
-  const checkAuth = async () => {
-    try {
-      // Buscar dados do usuário na API usando fetchWithAuth
-      const response = await fetchWithAuth('/api/admin/me')
-      handleAuthError(response)
-
-      if (!response.ok) {
-        throw new Error('Erro ao carregar dados do usuário')
-      }
-
-      const data = await response.json()
-      if (data.success) {
-        setUser(data.data)
-      } else {
-        router.push('/admin/login')
-      }
-      
-    } catch (err) {
-      console.error('Erro na autenticação:', err)
-      setError('Erro ao verificar autenticação')
-      router.push('/admin/login')
-    } finally {
-      setLoading(false)
+    if (!isAuthenticated()) {
+      router.push('/admin/login');
+      return;
     }
-  }
+    
+    const checkAuth = async () => {
+      try {
+        const response = await fetchWithAuth('/api/admin/me')
+        handleAuthError(response)
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
+        if (!response.ok) {
+          throw new Error('Erro ao carregar dados do usuário')
+        }
+
+        const data = await response.json()
+        if (data.success) {
+          setUser(data.user)
+          setRestaurant(data.user.restaurant)
+        } else {
+          logout()
+        }
+      } catch (err) {
+        console.error('Erro na autenticação:', err)
+        setError('Erro ao verificar autenticação. Redirecionando para o login.')
+        setTimeout(logout, 2000)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [router])
+
+  const handleLogout = () => {
     logout()
   }
 
@@ -119,7 +123,7 @@ export default function AdminDashboard() {
                         Restaurante
                       </dt>
                       <dd className="text-lg font-medium text-gray-900">
-                        {user?.restaurant?.name}
+                        {restaurant?.name}
                       </dd>
                     </dl>
                   </div>
@@ -182,35 +186,35 @@ export default function AdminDashboard() {
                   Ações Rápidas
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <a
-                    href={`/${user?.restaurant?.slug}`}
+                  <Link
+                    href={`/${restaurant?.slug}`}
                     target="_blank"
                     className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
                   >
                     <h4 className="font-medium text-gray-900">Ver Restaurante</h4>
                     <p className="text-sm text-gray-500">Visualizar página pública</p>
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/admin/products"
                     className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 block"
                   >
                     <h4 className="font-medium text-gray-900">Produtos</h4>
                     <p className="text-sm text-gray-500">Gerenciar cardápio</p>
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/admin/categories"
                     className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 block"
                   >
                     <h4 className="font-medium text-gray-900">Categorias</h4>
                     <p className="text-sm text-gray-500">Organizar cardápio</p>
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/admin/settings"
                     className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 block"
                   >
                     <h4 className="font-medium text-gray-900">Configurações</h4>
                     <p className="text-sm text-gray-500">Configurar restaurante</p>
-                  </a>
+                  </Link>
                   <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
                     <h4 className="font-medium text-gray-900">Pedidos</h4>
                     <p className="text-sm text-gray-500">Visualizar pedidos</p>

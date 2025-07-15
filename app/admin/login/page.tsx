@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase-client'
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('')
@@ -17,20 +16,29 @@ export default function AdminLoginPage() {
     setError('')
 
     try {
-      // Fazer login com Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
+      // Fazer login com nossa API JWT
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       })
 
-      if (error) {
-        setError(error.message)
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Erro ao fazer login')
         return
       }
 
-      if (data.user && data.session) {
+      if (data.success && data.data.token) {
         // Salvar token no localStorage para uso nas requisições
-        localStorage.setItem('supabase_token', data.session.access_token)
+        localStorage.setItem('auth_token', data.data.token)
+        
+        // Salvar dados do usuário
+        localStorage.setItem('user_data', JSON.stringify(data.data.user))
+        localStorage.setItem('restaurant_data', JSON.stringify(data.data.restaurant))
         
         // Redirecionar para o dashboard
         router.push('/admin/dashboard')

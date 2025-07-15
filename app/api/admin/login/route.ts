@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { validateMethod, handleApiError } from '@/lib/api-utils';
 import { validateEmail } from '@/lib/utils';
-import { loginWithSupabase } from '@/lib/auth-supabase';
+import { generateJWT } from '@/lib/jwt';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,19 +29,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fazer login com Supabase
-    const { user, session } = await loginWithSupabase(email, password);
-
-    if (!user || !session) {
-      return NextResponse.json(
-        { error: 'Credenciais inválidas' },
-        { status: 401 }
-      );
-    }
-
-    // Buscar perfil do usuário no nosso banco
+    // Buscar usuário no banco
     const profile = await db.profile.findUnique({
-      where: { id: user.id },
+      where: { email },
       include: {
         restaurant: {
           select: {
@@ -55,8 +46,17 @@ export async function POST(request: NextRequest) {
 
     if (!profile) {
       return NextResponse.json(
-        { error: 'Perfil de usuário não encontrado' },
-        { status: 404 }
+        { error: 'Credenciais inválidas' },
+        { status: 401 }
+      );
+    }
+
+    // Verificar senha
+    const isPasswordValid = await bcrypt.compare(password, profile.password);
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { error: 'Credenciais inválidas' },
+        { status: 401 }
       );
     }
 
@@ -67,14 +67,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Gerar token JWT
+    const token = generateJWT({
+      userId: profile.id,
+      email: profile.email,
+      role: profile.role,
+      restaurantId: profile.restaurantId
+    });
+
+    // Atualizar último login
+    await db.profile.update({
+      where: { id: profile.id },
+      data: { lastLogin: new Date() }
+    });
+
     // Resposta de sucesso
     return NextResponse.json({
       success: true,
       data: {
         user: {
           id: profile.id,
-          email: user.email,
-          name: profile.fullName || user.email,
+          email: profile.email,
+          name: profile.fullName || profile.email,
           role: profile.role,
           restaurantId: profile.restaurantId
         },
@@ -83,11 +97,7 @@ export async function POST(request: NextRequest) {
           slug: profile.restaurant.slug,
           name: profile.restaurant.name
         },
-        session: {
-          access_token: session.access_token,
-          refresh_token: session.refresh_token,
-          expires_at: session.expires_at
-        }
+        token
       }
     });
 
