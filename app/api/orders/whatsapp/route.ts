@@ -70,13 +70,13 @@ export async function POST(request: NextRequest) {
       subtotal += item.price * item.quantity;
     }
 
-    const deliveryFee = deliveryType === 'DELIVERY' ? (restaurant.deliveryFee || 0) : 0;
+    // Decimal -> number para evitar conflito de tipos
+    const deliveryFee = deliveryType === 'DELIVERY' ? Number(restaurant.deliveryFee ?? 0) : 0;
     const total = subtotal + deliveryFee;
 
-    // Verificar pedido mínimo
-    if (restaurant.minimumOrder && subtotal < restaurant.minimumOrder) {
+    if (restaurant.minimumOrder && subtotal < Number(restaurant.minimumOrder)) {
       return NextResponse.json(
-        { error: `Pedido mínimo: R$ ${restaurant.minimumOrder.toFixed(2)}` },
+        { error: `Pedido mínimo: R$ ${Number(restaurant.minimumOrder).toFixed(2)}` },
         { status: 400 }
       );
     }
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
       total
     };
 
-    const message = generateWhatsAppMessage(orderData, restaurant.name, restaurant.whatsappTemplate);
+    const message = generateWhatsAppMessage(orderData, restaurant.name, restaurant.whatsappTemplate ?? undefined);
     const whatsappUrl = generateWhatsAppUrl(restaurant.whatsapp, message);
 
     // Atualizar pedido com URL do WhatsApp
