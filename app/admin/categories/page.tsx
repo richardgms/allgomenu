@@ -45,11 +45,11 @@ export default function CategoriesPage() {
       if (data.success) {
         setUser(data.data);
       } else {
-        router.push('/admin/login');
+        router.push('/admin');
       }
     } catch (error) {
       console.error('Erro ao buscar dados do usuário:', error);
-      router.push('/admin/login');
+      router.push('/admin');
     }
   };
 

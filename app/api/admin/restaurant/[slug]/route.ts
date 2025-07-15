@@ -89,9 +89,12 @@ export async function PUT(
       minimumOrder,
       deliveryTime,
       deliveryRadius,
+      deliveryEnabled,
+      deliveryZones,
       isOpen,
       openingHours,
-      themeConfig
+      themeConfig,
+      whatsappTemplate
     } = body;
 
     // Atualizar restaurante
@@ -108,9 +111,12 @@ export async function PUT(
         minimumOrder: minimumOrder ? parseFloat(minimumOrder) : undefined,
         deliveryTime: deliveryTime ? parseInt(deliveryTime) : undefined,
         deliveryRadius: deliveryRadius ? parseFloat(deliveryRadius) : undefined,
+        deliveryEnabled: deliveryEnabled !== undefined ? deliveryEnabled : true,
+        deliveryZones,
         isOpen,
         openingHours,
-        themeConfig
+        themeConfig,
+        whatsappTemplate
       }
     });
 

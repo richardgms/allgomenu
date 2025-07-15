@@ -24,6 +24,8 @@ export async function GET(
         deliveryFee: true,
         minimumOrder: true,
         deliveryTime: true,
+        deliveryEnabled: true,
+        deliveryZones: true,
         isActive: true,
         isOpen: true,
         openingHours: true,

@@ -57,7 +57,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     if (!isAuthenticated()) {
-      router.push('/admin/login');
+      router.push('/admin');
       return;
     }
 
@@ -247,7 +247,7 @@ export default function ProductsPage() {
             <div className="flex gap-4">
               <button
                 onClick={() => router.push('/admin/dashboard')}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors select-none"
               >
                 Voltar
               </button>
@@ -257,7 +257,7 @@ export default function ProductsPage() {
                   resetForm();
                   setShowForm(true);
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors select-none"
               >
                 Novo Produto
               </button>
@@ -279,13 +279,13 @@ export default function ProductsPage() {
               <div className="flex justify-end gap-4">
                 <button
                   onClick={() => setDeleteConfirm({ show: false, productId: '', productName: '' })}
-                  className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors select-none"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors select-none"
                 >
                   Deletar
                 </button>
@@ -369,8 +369,8 @@ export default function ProductsPage() {
                 </div>
 
                 <ImageUpload
-                  value={formData.imageUrl}
-                  onChange={(url) => setFormData({ ...formData, imageUrl: url })}
+                  currentImage={formData.imageUrl}
+                  onImageChange={(url) => setFormData({ ...formData, imageUrl: url })}
                 />
 
                 <div className="grid grid-cols-2 gap-4">
@@ -421,7 +421,7 @@ export default function ProductsPage() {
                       setEditingProduct(null);
                       resetForm();
                     }}
-                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors select-none"
                     disabled={formLoading}
                   >
                     Cancelar
@@ -429,7 +429,7 @@ export default function ProductsPage() {
                   <button
                     type="submit"
                     disabled={formLoading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed select-none"
                   >
                     {formLoading ? (
                       <div className="flex items-center">
@@ -475,11 +475,13 @@ export default function ProductsPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {product.imageUrl && (
-                          <img
-                            src={product.imageUrl}
-                            alt={product.name}
-                            className="w-10 h-10 rounded-lg object-cover mr-3"
-                          />
+                          <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center mr-3 border border-gray-200">
+                            <img
+                              src={product.imageUrl}
+                              alt={product.name}
+                              className="max-w-full max-h-full object-contain rounded"
+                            />
+                          </div>
                         )}
                         <div>
                           <div className="text-sm font-medium text-gray-900">
@@ -513,13 +515,13 @@ export default function ProductsPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEdit(product)}
-                          className="text-blue-600 hover:text-blue-900 transition-colors"
+                          className="text-blue-600 hover:text-blue-900 transition-colors select-none"
                         >
                           Editar
                         </button>
                         <button
                           onClick={() => handleDeleteConfirm(product.id, product.name)}
-                          className="text-red-600 hover:text-red-900 transition-colors"
+                          className="text-red-600 hover:text-red-900 transition-colors select-none"
                         >
                           Deletar
                         </button>
@@ -541,7 +543,7 @@ export default function ProductsPage() {
                 resetForm();
                 setShowForm(true);
               }}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors select-none"
             >
               Criar Primeiro Produto
             </button>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/api-utils';
 import { getAuthUser } from '@/lib/auth-supabase';
-import { uploadImage, validateImageFile } from '@/lib/cloudinary';
+import { uploadImageLocal, validateImageFile } from '@/lib/upload-local';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,8 +34,8 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Fazer upload da imagem
-    const uploadResult = await uploadImage(buffer, 'allgomenu');
+    // Fazer upload da imagem usando sistema local
+    const uploadResult = await uploadImageLocal(buffer, file.name, 'allgomenu');
 
     return NextResponse.json({
       success: true,

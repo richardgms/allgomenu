@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar senha
-    const isPasswordValid = await bcrypt.compare(password, profile.password);
+    const isPasswordValid = profile.password ? await bcrypt.compare(password, profile.password) : false;
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: 'Credenciais inválidas' },

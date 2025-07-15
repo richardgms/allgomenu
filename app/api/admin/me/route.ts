@@ -29,14 +29,7 @@ export async function GET(request: NextRequest) {
     const profile = await db.profile.findUnique({
       where: { id: decoded.userId },
       include: {
-        restaurant: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            isActive: true
-          }
-        }
+        restaurant: true
       }
     });
 
@@ -63,11 +56,7 @@ export async function GET(request: NextRequest) {
         name: profile.fullName || profile.email,
         role: profile.role,
         restaurantId: profile.restaurantId,
-        restaurant: profile.restaurant ? {
-          id: profile.restaurant.id,
-          name: profile.restaurant.name,
-          slug: profile.restaurant.slug
-        } : null
+        restaurant: profile.restaurant
       }
     });
 

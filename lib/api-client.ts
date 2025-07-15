@@ -32,7 +32,7 @@ export function logout(): void {
   localStorage.removeItem('auth_token');
   localStorage.removeItem('user_data');
   localStorage.removeItem('restaurant_data');
-  window.location.href = '/admin/login';
+  window.location.href = '/admin';
 }
 
 // Função para lidar com erros de autenticação

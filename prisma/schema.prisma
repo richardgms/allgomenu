@@ -26,11 +26,13 @@ model Restaurant {
   minimumOrder   Decimal? @default(0) @db.Decimal(10, 2)
   deliveryTime   Int?     @default(30) // em minutos
   deliveryRadius Float?   @default(5) // em km
+  deliveryEnabled Boolean @default(true) // Se a entrega está habilitada
+  deliveryZones   Json?   // Estrutura: [{ "name": "Centro", "fee": 5.00 }, { "name": "Zona Sul", "fee": 7.50 }]
   
   // Status e horários
   isActive     Boolean @default(true)
   isOpen       Boolean @default(false)
-  openingHours Json?   // Estrutura: { "monday": { "open": "08:00", "close": "22:00", "closed": false }, ... }
+  openingHours Json?   // Estrutura: { "monday": { "open": "08:00", "close": "22:00", "closed": false, "intervals": [{ "start": "14:00", "end": "18:00" }] }, ... }
   
   // Personalização visual
   themeConfig Json? // Estrutura: { "primaryColor": "#3B82F6", "secondaryColor": "#10B981", "logo": "url", "font": "Inter" }

@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { createClient } from '@supabase/supabase-js';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -360,6 +361,8 @@ async function main() {
       console.log('✅ Usuário admin criado no Supabase Auth');
     }
 
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
     // Criar ou atualizar perfil do usuário
     await prisma.profile.upsert({
       where: { id: authData?.user?.id || 'existing-user-id' },
@@ -367,6 +370,7 @@ async function main() {
         email: adminEmail,
         fullName: 'Administrador',
         role: 'ADMIN',
+        password: hashedPassword,
         restaurantId: restaurant.id
       },
       create: {
@@ -374,6 +378,7 @@ async function main() {
         email: adminEmail,
         fullName: 'Administrador',
         role: 'ADMIN',
+        password: hashedPassword,
         restaurantId: restaurant.id
       }
     });
@@ -399,7 +404,7 @@ async function main() {
   console.log(`Senha: ${adminPassword}`);
   console.log('');
   console.log('🌐 URLs:');
-  console.log(`Admin: http://localhost:3000/admin/login`);
+  console.log(`Admin: http://localhost:3000/admin`);
   console.log(`Restaurante: http://localhost:3000/${restaurant.slug}`);
 }
 
