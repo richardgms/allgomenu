@@ -81,7 +81,7 @@ export async function getAuthUser(request: NextRequest): Promise<{
           email: profile.email!,
           name: profile.fullName || profile.email!,
           role: profile.role,
-          restaurantId: profile.restaurantId,
+          restaurantId: profile.restaurantId!,
           restaurant: profile.restaurant ? {
             id: profile.restaurant.id,
             name: profile.restaurant.name,
