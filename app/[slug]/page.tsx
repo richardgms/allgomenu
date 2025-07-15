@@ -702,7 +702,7 @@ export default function RestaurantPage() {
       {/* Header Fixo Mobile-First */}
       <header className="sticky top-0 z-50 bg-white shadow-lg border-b-2" style={{ borderColor: 'var(--primary-color)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14 md:h-16">
+          <div className="flex items-center justify-between h-16 md:h-20">
             <div className="flex items-center space-x-3 flex-1 min-w-0">
               {restaurant.themeConfig?.logo && (
                 <img
@@ -728,35 +728,40 @@ export default function RestaurantPage() {
             </div>
             
             <div className="flex items-center space-x-2">
-              {/* Botão do carrinho melhorado */}
-              <button
-                onClick={() => setShowCart(true)}
-                className="relative text-white px-3 py-2 md:px-4 md:py-2 rounded-xl transition-all duration-300 font-medium flex items-center space-x-1 md:space-x-2 hover:shadow-lg transform hover:scale-105"
-                style={{ 
-                  backgroundColor: getButtonColorPalette().primary
-                }}
-                onMouseEnter={(e) => {
-                  const colorPalette = getButtonColorPalette();
-                  e.currentTarget.style.backgroundColor = colorPalette.primaryDark;
-                }}
-                onMouseLeave={(e) => {
-                  const colorPalette = getButtonColorPalette();
-                  e.currentTarget.style.backgroundColor = colorPalette.primary;
-                }}
-              >
-                <span>🛒</span>
-                <span className="hidden sm:inline">Carrinho</span>
-                {cartItemCount > 0 && (
-                  <span 
-                    className="absolute -top-2 -right-2 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold animate-pulse"
-                    style={{ 
-                      backgroundColor: getButtonColorPalette().primaryDarker
-                    }}
-                  >
-                    {cartItemCount}
-                  </span>
-                )}
-              </button>
+              {/* Cart Button */}
+              <div className="flex-shrink-0">
+                <button
+                  onClick={() => setShowCart(true)}
+                  className="relative flex items-center gap-2 text-white font-semibold py-1.5 px-4 rounded-xl shadow-md hover:scale-105 transition-transform text-sm"
+                  style={{ 
+                    backgroundColor: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primary
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                  </svg>
+                  
+                  <div className="sm:hidden">
+                    <span className="text-sm font-bold">Carrinho</span>
+                  </div>
+                  
+                  <div className="hidden sm:block text-left">
+                    <span className="text-sm font-bold">Ver Carrinho</span>
+                    <span className="block text-[10px] font-semibold opacity-90">{cartItemCount} {cartItemCount === 1 ? 'item' : 'itens'} • {formatPrice(cartTotal)}</span>
+                  </div>
+
+                  {cartItemCount > 0 && (
+                    <span
+                      className="absolute -top-2 -right-2 grid h-5 w-5 place-items-center rounded-full text-xs font-bold text-white"
+                      style={{ 
+                        backgroundColor: getButtonColorPalette().primaryDarker
+                      }}
+                    >
+                      {cartItemCount}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -768,36 +773,52 @@ export default function RestaurantPage() {
       }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p className="text-sm md:text-lg mb-4 md:mb-6 opacity-90">
+            <p className="text-lg md:text-2xl mb-6 md:mb-8 opacity-90 max-w-3xl mx-auto font-medium leading-relaxed">
               {restaurant.description}
             </p>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 max-w-4xl mx-auto">
-              <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 md:p-6">
-                <div className="text-xl md:text-3xl mb-1 md:mb-2">🕒</div>
-                <h3 className="font-semibold text-sm md:text-base mb-1">Entrega</h3>
-                <p className="text-xs md:text-sm opacity-90">{restaurant.deliveryTime}min</p>
-              </div>
-              
-              <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 md:p-6">
-                <div className="text-xl md:text-3xl mb-1 md:mb-2">
-                  {restaurant.deliveryEnabled ? '🚚' : '🏪'}
+            <div className="grid grid-cols-2 gap-3 max-w-4xl mx-auto md:grid-cols-3 md:gap-6">
+              {/* Tempo de Entrega */}
+              <div className="bg-white/20 backdrop-blur-md rounded-xl p-4 border border-white/30 shadow-lg md:rounded-2xl md:p-6">
+                <div className="text-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 mx-auto mb-2 opacity-70 md:w-8 md:h-8 md:mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="text-sm font-bold md:text-lg">Entrega</div>
+                  <div className="text-lg font-normal opacity-90 md:text-xl">{restaurant.deliveryTime} min</div>
                 </div>
-                <h3 className="font-semibold text-sm md:text-base mb-1">
-                  {restaurant.deliveryEnabled ? 'Taxa' : 'Retirada'}
-                </h3>
-                <p className="text-xs md:text-sm opacity-90">
-                  {restaurant.deliveryEnabled 
-                    ? formatPrice(restaurant.deliveryFee)
-                    : 'Grátis'
-                  }
-                </p>
+              </div>
+
+              {/* Taxa de Entrega / Retirada */}
+              <div className="bg-white/20 backdrop-blur-md rounded-xl p-4 border border-white/30 shadow-lg md:rounded-2xl md:p-6">
+                <div className="text-center">
+                  {restaurant.deliveryEnabled ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 mx-auto mb-2 opacity-70 md:w-8 md:h-8 md:mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 mx-auto mb-2 opacity-70 md:w-8 md:h-8 md:mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5A2.25 2.25 0 0011.25 11.25H4.5A2.25 2.25 0 002.25 13.5V21M3 3h18M5.25 3v18m13.5-18v18M9 6.75h6.375a.625.625 0 01.625.625v3.75a.625.625 0 01-.625.625H9v-5z" />
+                    </svg>
+                  )}
+                  <div className="text-sm font-bold md:text-lg">
+                    {restaurant.deliveryEnabled ? 'Taxa de Entrega' : 'Retirada'}
+                  </div>
+                  <div className="text-lg font-normal opacity-90 md:text-xl">
+                    {restaurant.deliveryEnabled ? formatPrice(restaurant.deliveryFee) : 'No local'}
+                  </div>
+                </div>
               </div>
               
-              <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 md:p-6 col-span-2 md:col-span-1">
-                <div className="text-xl md:text-3xl mb-1 md:mb-2">💰</div>
-                <h3 className="font-semibold text-sm md:text-base mb-1">Pedido Mínimo</h3>
-                <p className="text-xs md:text-sm opacity-90">{formatPrice(restaurant.minimumOrder)}</p>
+              {/* Pedido Mínimo */}
+              <div className="bg-white/20 backdrop-blur-md rounded-xl p-4 border border-white/30 shadow-lg md:rounded-2xl md:p-6 col-span-2 md:col-span-1">
+                <div className="text-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 mx-auto mb-2 opacity-70 md:w-8 md:h-8 md:mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                  </svg>
+                  <div className="text-sm font-bold md:text-lg">Pedido Mínimo</div>
+                  <div className="text-lg font-normal opacity-90 md:text-xl">{formatPrice(restaurant.minimumOrder)}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -828,7 +849,7 @@ export default function RestaurantPage() {
           ) : (
             <>
               {/* Category Navigation - Melhorado e Fixo */}
-              <div id="category-nav-sticky" className="sticky top-14 md:top-16 z-40 bg-white md:shadow-sm py-2 border-b">
+              <div id="category-nav-sticky" className="sticky top-16 md:top-20 z-40 bg-white md:shadow-sm py-2 border-b">
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   {/* Container centralizado para desktop */}
                   <div className="hidden md:flex justify-center items-center">
@@ -1616,16 +1637,26 @@ export default function RestaurantPage() {
 
                     <div>
                       <h4 className="font-medium text-gray-900 mb-2">📋 Pedido</h4>
-                      <div className="space-y-1">
+                      <div className="space-y-1 text-sm text-gray-600">
                         {cart.map((item) => (
-                          <div key={item.id} className="flex justify-between text-sm">
+                          <div key={item.id} className="flex justify-between">
                             <span>{item.quantity}x {item.name}</span>
                             <span>{formatPrice(item.price * item.quantity)}</span>
                           </div>
                         ))}
                       </div>
-                      <div className="border-t pt-2 mt-2">
-                        <div className="flex justify-between font-medium">
+                      <div className="border-t pt-2 mt-2 space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Subtotal</span>
+                          <span className="text-gray-600">{formatPrice(cartTotal)}</span>
+                        </div>
+                        {deliveryFee > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Taxa de entrega</span>
+                            <span className="text-gray-600">{formatPrice(deliveryFee)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-bold text-gray-900">
                           <span>Total</span>
                           <span>{formatPrice(finalTotal)}</span>
                         </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { fetchWithAuth, handleAuthError, logout, isAuthenticated } from '@/lib/api-client'
+import { isRestaurantOpen } from '@/lib/utils'
 
 interface User {
   id: string;
@@ -17,6 +18,8 @@ interface Restaurant {
   name: string;
   slug: string;
   description?: string;
+  isOpen: boolean;
+  openingHours?: any;
   themeConfig?: {
     primaryColor: string;
     secondaryColor: string;
@@ -116,6 +119,8 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     logout()
   }
+
+  const isCurrentlyOpen = restaurant?.isOpen && isRestaurantOpen(restaurant.openingHours);
 
   if (loading) {
     return (
@@ -222,10 +227,12 @@ export default function AdminDashboard() {
               
               <div className="bg-white/15 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-8 border border-white/20">
                 <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 rounded-full bg-white/20 flex items-center justify-center">
-                  <div className="w-2 h-2 md:w-3 md:h-3 bg-green-400 rounded-full animate-pulse"></div>
+                  <div className={`w-2 h-2 md:w-3 md:h-3 rounded-full animate-pulse ${isCurrentlyOpen ? 'bg-green-400' : 'bg-red-400'}`}></div>
                 </div>
-                <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">Status do Sistema</h3>
-                <p className="text-white/90 text-sm md:text-lg">Online e Funcionando</p>
+                <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">Status do Restaurante</h3>
+                <p className="text-white/90 text-sm md:text-lg">
+                  {isCurrentlyOpen ? 'Aberto e Recebendo Pedidos' : 'Fechado no Momento'}
+                </p>
               </div>
             </div>
           </div>
