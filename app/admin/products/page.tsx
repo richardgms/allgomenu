@@ -43,6 +43,7 @@ export default function ProductsPage() {
     productId: '',
     productName: ''
   });
+  const [imageInputMethod, setImageInputMethod] = useState<'upload' | 'url'>('upload');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -368,10 +369,67 @@ export default function ProductsPage() {
                   </div>
                 </div>
 
-                <ImageUpload
-                  currentImage={formData.imageUrl}
-                  onImageChange={(url) => setFormData({ ...formData, imageUrl: url })}
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Imagem do Produto
+                  </label>
+                  <div className="flex gap-2 mb-2">
+                    <button
+                      type="button"
+                      onClick={() => setImageInputMethod('upload')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium ${
+                        imageInputMethod === 'upload'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      Fazer Upload
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImageInputMethod('url')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium ${
+                        imageInputMethod === 'url'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      Usar URL
+                    </button>
+                  </div>
+
+                  {imageInputMethod === 'upload' ? (
+                    <ImageUpload
+                      currentImage={formData.imageUrl}
+                      onImageChange={(url) => setFormData({ ...formData, imageUrl: url })}
+                    />
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        URL da Imagem
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.imageUrl}
+                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="https://exemplo.com/imagem.jpg"
+                        disabled={formLoading}
+                      />
+                      {formData.imageUrl && (
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-600">Pré-visualização:</p>
+                          <img 
+                            src={formData.imageUrl} 
+                            alt="Pré-visualização da imagem" 
+                            className="mt-1 w-32 h-32 object-cover rounded-md border border-gray-200" 
+                            onError={(e) => (e.currentTarget.style.display = 'none')}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>

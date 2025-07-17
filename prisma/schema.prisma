@@ -94,14 +94,16 @@ model Category {
 }
 
 model Product {
-  id          String  @id @default(cuid())
-  name        String
-  description String?
-  price       Decimal @db.Decimal(10, 2)
-  imageUrl    String? // Agora apontará para o Supabase Storage
-  isFeatured  Boolean @default(false)
-  isActive    Boolean @default(true)
-  order       Int     @default(0)
+  id               String    @id @default(cuid())
+  name             String
+  description      String?
+  price            Float
+  promotionalPrice Float?
+  imageUrl         String? // Agora apontará para o Supabase Storage
+  isFeatured       Boolean   @default(false)
+  isActive         Boolean   @default(true)
+  isAvailable      Boolean   @default(true)
+  order            Int       @default(0)
   
   // Opções do produto (tamanhos, complementos, etc.)
   options Json? // Estrutura: { "sizes": [{ "name": "Pequeno", "price": 0 }], "extras": [{ "name": "Queijo extra", "price": 2.50 }] }

@@ -49,6 +49,8 @@ interface Product {
   imageUrl: string
   isFeatured: boolean
   options: any
+  promotionalPrice?: number
+  isAvailable?: boolean
 }
 
 interface Category {
@@ -97,6 +99,7 @@ export default function RestaurantPage() {
   const { slug } = useParams()
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [menu, setMenu] = useState<Category[]>([])
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [cart, setCart] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -288,6 +291,7 @@ export default function RestaurantPage() {
   useEffect(() => {
     fetchRestaurant()
     fetchMenu()
+    fetchFeaturedProducts()
   }, [slug])
 
   // Aplicar tema dinamicamente
@@ -367,6 +371,21 @@ export default function RestaurantPage() {
       setError('Erro ao carregar cardápio')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchFeaturedProducts = async () => {
+    try {
+      const response = await fetch(`/api/restaurant/${slug}/featured`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setFeaturedProducts(data.data)
+      } else {
+        console.error('Erro ao carregar produtos em destaque:', data.error)
+      }
+    } catch (err) {
+      console.error('Erro ao carregar produtos em destaque:', err)
     }
   }
 
@@ -794,7 +813,7 @@ export default function RestaurantPage() {
                 <div className="text-center">
                   {restaurant.deliveryEnabled ? (
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 mx-auto mb-2 opacity-70 md:w-8 md:h-8 md:mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                     </svg>
                   ) : (
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 mx-auto mb-2 opacity-70 md:w-8 md:h-8 md:mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -814,7 +833,7 @@ export default function RestaurantPage() {
               <div className="bg-white/20 backdrop-blur-md rounded-xl p-4 border border-white/30 shadow-lg md:rounded-2xl md:p-6 col-span-2 md:col-span-1">
                 <div className="text-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 mx-auto mb-2 opacity-70 md:w-8 md:h-8 md:mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
                   </svg>
                   <div className="text-sm font-bold md:text-lg">Pedido Mínimo</div>
                   <div className="text-lg font-normal opacity-90 md:text-xl">{formatPrice(restaurant.minimumOrder)}</div>
@@ -916,72 +935,136 @@ export default function RestaurantPage() {
                 </div>
               </div>
 
-              {/* Products List Mobile-First */}
-              <div className="max-w-7xl mx-auto">
-                <div className="pt-8">
-                  {menu.map((category) => (
-                    <div
-                      key={category.id}
-                      id={`category-${category.id}`}
-                      className="px-4 sm:px-6 lg:px-8 scroll-mt-32 md:scroll-mt-40 mb-8"
-                    >
-                      {/* Título da categoria */}
-                      <div className="mb-4">
-                        <h3 className="category-title text-xl md:text-2xl font-bold text-gray-800 mb-4">
-                          {category.name}
-                        </h3>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        {category.products.map((product) => {
+              {/* Featured Products Section */}
+              {featuredProducts.length > 0 && (
+                <div className="py-6 md:py-8 bg-gray-50 border-b">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900">Destaques</h2>
+                    </div>
+
+                    <div className="relative">
+                      <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
+                        {featuredProducts.map(product => {
                           const colorPalette = getButtonColorPalette();
-                          
+                          const isAvailable = product.isAvailable !== false;
+                          const hasPromo = product.promotionalPrice && product.promotionalPrice < product.price;
+
                           return (
-                            <button
+                            <div
                               key={product.id}
+                              className={`flex-shrink-0 w-48 bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 ${
+                                isAvailable ? 'cursor-pointer hover:-translate-y-1' : 'cursor-not-allowed'
+                              }`}
                               onClick={() => {
+                                if (!isAvailable) return;
                                 setSelectedProduct(product);
                                 setProductQuantity(1);
                                 setProductObservation('');
+                                setShowProductModal(true);
                               }}
-                              className="w-full text-left bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group select-none flex items-center p-3 border border-gray-100 hover:border-gray-200"
                             >
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-gray-800 line-clamp-2 group-hover:text-gray-900">{product.name}</h4>
-                                <p className="text-gray-500 text-sm mt-1 line-clamp-1 group-hover:text-gray-600">{product.description}</p>
-                                <div className="flex items-center mt-2">
-                                  <p 
-                                    className="font-bold text-lg"
-                                    style={{ 
-                                      color: colorPalette.primary
-                                    }}
-                                  >
-                                    {formatPrice(product.price)}
-                                  </p>
-                                  {product.isFeatured && (
-                                    <span 
-                                      className="ml-2 px-2 py-1 text-xs font-bold rounded-full text-white"
-                                      style={{ 
-                                        backgroundColor: colorPalette.primaryDark
-                                      }}
-                                    >
-                                      ⭐ Destaque
-                                    </span>
+                              <div className="relative">
+                                <img
+                                  className="aspect-square w-full object-cover"
+                                  src={product.imageUrl || '/placeholder.png'}
+                                  alt={product.name}
+                                />
+                              </div>
+                              <div className="p-3">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {hasPromo ? (
+                                    <>
+                                      <p className="text-base font-bold text-gray-900">{formatPrice(product.promotionalPrice!)}</p>
+                                      <p className="text-sm text-gray-500 line-through">{formatPrice(product.price)}</p>
+                                      <span className="bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded-full">
+                                        -{Math.round(((product.price - product.promotionalPrice!) / product.price) * 100)}%
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <p className="text-base font-bold text-gray-900">{formatPrice(product.price)}</p>
+                                  )}
+                                </div>
+
+                                <h3 className="mt-2 font-semibold text-gray-700 truncate">{product.name}</h3>
+
+                                <div className="mt-3">
+                                  {!isAvailable && (
+                                    <div className="w-full text-center text-sm bg-red-500 text-white py-1.5 px-3 rounded-md font-bold">
+                                      Esgotado
+                                    </div>
                                   )}
                                 </div>
                               </div>
-                              {product.imageUrl && (
-                                <div className="w-24 h-24 flex-shrink-0 ml-4">
-                                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover rounded-xl"/>
-                                </div>
-                              )}
-                            </button>
-                          );
+                            </div>
+                          )
                         })}
                       </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
+              )}
+
+              {/* Renderização das categorias e produtos */}
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+                {menu.map(category => (
+                  <div key={category.id} id={`category-${category.id}`} className="mb-12">
+                    {/* Título da categoria */}
+                    <div className="mb-4">
+                      <h3 className="category-title text-xl md:text-2xl font-bold text-gray-800 mb-4">
+                        {category.name}
+                      </h3>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {category.products.map((product) => {
+                        const colorPalette = getButtonColorPalette();
+                        
+                        return (
+                          <button
+                            key={product.id}
+                            onClick={() => {
+                              setSelectedProduct(product);
+                              setProductQuantity(1);
+                              setProductObservation('');
+                            }}
+                            className="w-full text-left bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group select-none flex items-center p-3 border border-gray-100 hover:border-gray-200"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-gray-800 line-clamp-2 group-hover:text-gray-900">{product.name}</h4>
+                              <p className="text-gray-500 text-sm mt-1 line-clamp-1 group-hover:text-gray-600">{product.description}</p>
+                              <div className="flex items-center mt-2">
+                                <p 
+                                  className="font-bold text-lg"
+                                  style={{ 
+                                    color: colorPalette.primary
+                                  }}
+                                >
+                                  {formatPrice(product.price)}
+                                </p>
+                                {product.isFeatured && (
+                                  <span 
+                                    className="ml-2 px-2 py-1 text-xs font-bold rounded-full text-white"
+                                    style={{ 
+                                      backgroundColor: colorPalette.primaryDark
+                                    }}
+                                  >
+                                    ⭐ Destaque
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {product.imageUrl && (
+                              <div className="w-24 h-24 flex-shrink-0 ml-4">
+                                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover rounded-xl"/>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             </>
           )}
