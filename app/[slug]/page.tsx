@@ -937,14 +937,17 @@ export default function RestaurantPage() {
 
               {/* Featured Products Section */}
               {featuredProducts.length > 0 && (
-                <div className="py-6 md:py-8 bg-gray-50 border-b">
+                <div className="py-8 md:py-12 bg-gradient-to-br from-gray-50 to-gray-100 border-b">
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-center items-center mb-4">
-                      <h2 className="text-xl md:text-2xl font-bold text-gray-900">Destaques</h2>
+                    <div className="flex justify-center items-center mb-6">
+                      <div className="text-center">
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Destaques</h2>
+                        <p className="text-gray-600 text-sm md:text-base">Nossos produtos mais populares</p>
+                      </div>
                     </div>
 
                     <div className="relative">
-                      <div className="flex justify-center overflow-x-auto space-x-4 pb-4 scrollbar-hide">
+                      <div className="flex justify-center overflow-x-auto space-x-6 pb-6 scrollbar-hide">
                         {featuredProducts.map(product => {
                           const colorPalette = getButtonColorPalette();
                           const isAvailable = product.isAvailable !== false;
@@ -953,8 +956,8 @@ export default function RestaurantPage() {
                           return (
                             <div
                               key={product.id}
-                              className={`flex-shrink-0 w-48 bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 ${
-                                isAvailable ? 'cursor-pointer hover:-translate-y-1' : 'cursor-not-allowed'
+                              className={`flex-shrink-0 w-48 bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 border border-gray-100 hover:border-gray-200 ${
+                                isAvailable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl' : 'cursor-not-allowed opacity-75'
                               }`}
                               onClick={() => {
                                 if (!isAvailable) return;
@@ -970,27 +973,33 @@ export default function RestaurantPage() {
                                   src={product.imageUrl || '/placeholder.png'}
                                   alt={product.name}
                                 />
+                                {hasPromo && (
+                                  <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                    -{Math.round(((product.price - product.promotionalPrice!) / product.price) * 100)}%
+                                  </div>
+                                )}
                               </div>
-                              <div className="p-3">
-                                <div className="flex items-center gap-2 flex-wrap">
+                              <div className="p-4">
+                                <div className="flex items-center gap-2 flex-wrap mb-2">
                                   {hasPromo ? (
                                     <>
-                                      <p className="text-base font-bold text-gray-900">{formatPrice(product.promotionalPrice!)}</p>
+                                      <p className="text-lg font-bold text-gray-900">{formatPrice(product.promotionalPrice!)}</p>
                                       <p className="text-sm text-gray-500 line-through">{formatPrice(product.price)}</p>
-                                      <span className="bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded-full">
-                                        -{Math.round(((product.price - product.promotionalPrice!) / product.price) * 100)}%
-                                      </span>
                                     </>
                                   ) : (
-                                    <p className="text-base font-bold text-gray-900">{formatPrice(product.price)}</p>
+                                    <p className="text-lg font-bold text-gray-900">{formatPrice(product.price)}</p>
                                   )}
                                 </div>
 
-                                <h3 className="mt-2 font-semibold text-gray-700 truncate">{product.name}</h3>
+                                <h3 className="font-semibold text-gray-800 text-sm leading-tight line-clamp-2 mb-2">{product.name}</h3>
 
-                                <div className="mt-3">
+                                {product.description && (
+                                  <p className="text-xs text-gray-600 line-clamp-2 mb-3">{product.description}</p>
+                                )}
+
+                                <div className="mt-auto">
                                   {!isAvailable && (
-                                    <div className="w-full text-center text-sm bg-red-500 text-white py-1.5 px-3 rounded-md font-bold">
+                                    <div className="w-full text-center text-xs bg-red-500 text-white py-2 px-3 rounded-lg font-bold">
                                       Esgotado
                                     </div>
                                   )}
@@ -999,6 +1008,18 @@ export default function RestaurantPage() {
                             </div>
                           )
                         })}
+                      </div>
+                      
+                      {/* Indicador de scroll */}
+                      <div className="flex justify-center mt-4">
+                        <div className="flex space-x-2">
+                          {featuredProducts.map((_, index) => (
+                            <div
+                              key={index}
+                              className="w-2 h-2 bg-gray-300 rounded-full transition-colors duration-300"
+                            />
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
