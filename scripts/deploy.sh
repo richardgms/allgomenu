@@ -36,4 +36,8 @@ npx prisma db push
 echo "🏗️ Executando build..."
 npm run build
 
+# Populate com dados de exemplo (opcional)
+echo "🌱 Populando banco com dados de exemplo..."
+npm run db:seed-examples
+
 echo "✅ Deploy concluído com sucesso!" 
