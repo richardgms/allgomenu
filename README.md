@@ -196,6 +196,54 @@ O sistema permite personalização completa:
 - **Fonte**: Seleção de fontes
 - **Layout**: Diferentes disposições
 
+## 🚀 Deploy em Produção
+
+### Deploy no Netlify
+
+1. **Preparar o projeto:**
+   - Certifique-se de que todas as variáveis de ambiente estão configuradas
+   - O arquivo `netlify.toml` já está configurado
+
+2. **Conectar ao Netlify:**
+   - Acesse [netlify.com](https://netlify.com)
+   - Faça login e clique em "New site from Git"
+   - Conecte seu repositório
+
+3. **Configurar build:**
+   - **Build command:** `npm run build`
+   - **Publish directory:** `.next`
+   - **Node version:** 18
+
+4. **Configurar variáveis de ambiente:**
+   Vá em Site settings > Environment variables e adicione:
+   ```env
+   DATABASE_URL="sua-string-de-conexao-supabase"
+   NEXT_PUBLIC_SUPABASE_URL="sua-url-supabase"
+   NEXT_PUBLIC_SUPABASE_ANON_KEY="sua-chave-anonima-supabase"
+   SUPABASE_SERVICE_ROLE_KEY="sua-chave-de-servico-supabase"
+   NEXT_PUBLIC_APP_URL="https://seu-site.netlify.app"
+   APP_URL="https://seu-site.netlify.app"
+   ```
+
+5. **Deploy:**
+   - O Netlify fará o deploy automaticamente
+   - Acesse seu site em `https://seu-site.netlify.app`
+
+### Configuração do Supabase
+
+1. **Criar projeto no Supabase:**
+   - Acesse [supabase.com](https://supabase.com)
+   - Crie um novo projeto
+   - Anote a URL e as chaves
+
+2. **Configurar banco de dados:**
+   - Execute as migrações: `npx prisma db push`
+   - Popule com dados: `npm run db:seed`
+
+3. **Configurar Storage (opcional):**
+   - Crie um bucket para uploads
+   - Configure as políticas de acesso
+
 ## 🔧 Comandos Disponíveis
 
 ```bash

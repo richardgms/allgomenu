@@ -54,6 +54,12 @@
     "eslint-config-next": "14.0.0",
     "tsx": "^4.0.0"
   },
+  "netlify": {
+    "build": {
+      "command": "npm run build",
+      "publish": ".next"
+    }
+  },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   }

@@ -939,12 +939,12 @@ export default function RestaurantPage() {
               {featuredProducts.length > 0 && (
                 <div className="py-6 md:py-8 bg-gray-50 border-b">
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center mb-4">
+                    <div className="flex justify-center items-center mb-4">
                       <h2 className="text-xl md:text-2xl font-bold text-gray-900">Destaques</h2>
                     </div>
 
                     <div className="relative">
-                      <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
+                      <div className="flex justify-center overflow-x-auto space-x-4 pb-4 scrollbar-hide">
                         {featuredProducts.map(product => {
                           const colorPalette = getButtonColorPalette();
                           const isAvailable = product.isAvailable !== false;

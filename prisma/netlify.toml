@@ -1,0 +1,5 @@
+[build]
+  command = "npx prisma generate && npm run build"
+
+[build.environment]
+  PRISMA_GENERATE_DATAPROXY = "true" 
