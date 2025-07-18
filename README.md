@@ -1,4 +1,4 @@
-# AllGoMenu - Sistema de Delivery Personalizado
+# All Go Menu - Sistema de Delivery Personalizado
 
 Um sistema completo de delivery com integração WhatsApp, desenvolvido com Next.js 14, TypeScript, Prisma e PostgreSQL.
 
@@ -62,7 +62,7 @@ NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-nextauth-secret"
 
 # App
-APP_NAME="AllGoMenu"
+APP_NAME="All Go Menu"
 APP_URL="http://localhost:3000"
 ```
 
@@ -218,8 +218,8 @@ O sistema permite personalização completa:
    Vá em Site settings > Environment variables e adicione:
    ```env
    DATABASE_URL="sua-string-de-conexao-supabase"
-   NEXT_PUBLIC_SUPABASE_URL="sua-url-supabase"
-   NEXT_PUBLIC_SUPABASE_ANON_KEY="sua-chave-anonima-supabase"
+   NEXT_PUBLIC_SUPABASE_URL="URL_DO_SEU_PROJETO_SUPABASE"
+   NEXT_PUBLIC_SUPABASE_ANON_KEY="SUA_CHAVE_ANON_SUPABASE"
    SUPABASE_SERVICE_ROLE_KEY="sua-chave-de-servico-supabase"
    NEXT_PUBLIC_APP_URL="https://seu-site.netlify.app"
    APP_URL="https://seu-site.netlify.app"

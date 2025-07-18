@@ -1,12 +1,13 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
+import { Metadata } from 'next';
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata = {
-  title: 'AllGoMenu - Sistema de Delivery',
-  description: 'Crie seu sistema de delivery personalizado com integração WhatsApp',
-}
+export const metadata: Metadata = {
+  title: 'All Go Menu - Sistema de Delivery',
+  description: 'Sistema de Delivery para restaurantes',
+};
 
 export default function RootLayout({
   children,

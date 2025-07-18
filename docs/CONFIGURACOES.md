@@ -1,8 +1,8 @@
-# Sistema de Configurações - AllGoMenu
+# Sistema de Configurações - All Go Menu
 
 ## Visão Geral
 
-O sistema de configurações permite que os administradores personalizem completamente a aparência e comportamento do seu restaurante na plataforma AllGoMenu. O painel é organizado em abas para facilitar a navegação e configuração.
+O painel administrativo de configurações permite que você gerencie todos os aspectos do seu restaurante na plataforma All Go Menu. O painel é organizado em abas para facilitar a navegação e configuração.
 
 ## Estrutura das Configurações
 

@@ -110,7 +110,7 @@ export default function AdminPage() {
                 <span className="text-3xl font-bold text-white">A</span>
               )}
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">AllgoMenu</h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">All Go Menu</h1>
             <p className="text-gray-600 text-lg">Painel Administrativo</p>
           </div>
 
@@ -197,7 +197,7 @@ export default function AdminPage() {
           {/* Footer */}
           <div className="text-center mt-8">
             <p className="text-sm text-gray-500">
-              © 2024 AllgoMenu. Todos os direitos reservados.
+              © 2024 All Go Menu. Todos os direitos reservados.
             </p>
           </div>
         </div>
