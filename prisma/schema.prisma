@@ -8,7 +8,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL") // Necessário para o Prisma Migrate no Supabase
+  directUrl = env("DATABASE_DIRECT_URL")
 }
 
 model Restaurant {
