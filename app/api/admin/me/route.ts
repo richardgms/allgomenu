@@ -52,7 +52,8 @@ export async function GET(request: NextRequest) {
       success: true,
       user: {
         id: profile.id,
-        name: profile.fullName,
+        email: profile.email,
+        name: profile.fullName || profile.email,
         role: profile.role,
         restaurantId: profile.restaurantId,
         restaurant: profile.restaurant

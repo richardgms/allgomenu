@@ -13,6 +13,7 @@ interface Restaurant {
   description?: string;
   phone?: string;
   whatsapp?: string;
+  email?: string;
   address?: string;
   deliveryFee?: number;
   minimumOrder?: number;
@@ -57,6 +58,7 @@ export default function SettingsPage() {
     description: '',
     phone: '',
     whatsapp: '',
+    email: '',
     address: '',
     
     // Entrega
@@ -113,6 +115,7 @@ export default function SettingsPage() {
             description: rest.description || '',
             phone: rest.phone || '',
             whatsapp: rest.whatsapp || '',
+            email: rest.email || '',
             address: rest.address || '',
             deliveryFee: rest.deliveryFee?.toString() || '',
             minimumOrder: rest.minimumOrder?.toString() || '',
@@ -168,6 +171,7 @@ export default function SettingsPage() {
           description: formData.description,
           phone: formData.phone,
           whatsapp: formData.whatsapp,
+          email: formData.email,
           address: formData.address,
           deliveryFee: formData.deliveryFee,
           minimumOrder: formData.minimumOrder,
@@ -339,88 +343,80 @@ export default function SettingsPage() {
 
 // Componente para Informações Básicas
 function BasicInfoSection({ formData, setFormData }: any) {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev: any) => ({ ...prev, [name]: value }));
-  };
-
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Informações Básicas</h3>
-        <p className="mt-1 text-sm text-gray-600">Atualize os detalhes do seu restaurante.</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Informações Básicas</h3>
+        <p className="text-sm text-gray-600 mb-6">
+          Configure as informações principais do seu restaurante
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-6">
-        <div className="sm:col-span-2">
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-            Nome do Restaurante
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Nome do Restaurante *
           </label>
           <input
             type="text"
-            name="name"
-            id="name"
             value={formData.name}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            required
           />
         </div>
 
-        <div className="sm:col-span-2">
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Descrição
-          </label>
-          <textarea
-            name="description"
-            id="description"
-            rows={4}
-            value={formData.description}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          ></textarea>
-        </div>
-
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Telefone
           </label>
           <input
-            type="text"
-            name="phone"
-            id="phone"
+            type="tel"
             value={formData.phone}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="(11) 99999-9999"
           />
         </div>
 
         <div>
-          <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             WhatsApp
           </label>
           <input
-            type="text"
-            name="whatsapp"
-            id="whatsapp"
+            type="tel"
             value={formData.whatsapp}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="5511999999999"
           />
         </div>
+      </div>
 
-        <div className="sm:col-span-2">
-          <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-            Endereço
-          </label>
-          <input
-            type="text"
-            name="address"
-            id="address"
-            value={formData.address}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          />
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Descrição
+        </label>
+        <textarea
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          rows={3}
+          placeholder="Conte sobre seu restaurante..."
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Endereço
+        </label>
+        <textarea
+          value={formData.address}
+          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          rows={2}
+          placeholder="Endereço completo do restaurante"
+        />
       </div>
     </div>
   );

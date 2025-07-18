@@ -52,30 +52,29 @@ async function main() {
   }
 
   // 2. Verificar e criar o usuário administrador
-  let adminUser = await prisma.profile.findUnique({
-    where: {
-      id: "admin_user_placeholder_id" 
-    },
+  const adminUser = await prisma.profile.findUnique({
+    where: { email: adminEmail },
   });
 
   if (!adminUser) {
-    console.log('  Usuário "admin" não encontrado. Criando...');
+    console.log(` Usuário admin "${adminEmail}" não encontrado. Criando...`);
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
-    adminUser = await prisma.profile.create({
+    await prisma.profile.create({
       data: {
-        id: "admin_user_placeholder_id", 
+        id: 'auth0|admin-user-placeholder', // ID de placeholder, ajuste se usar Supabase Auth
+        email: adminEmail,
         password: hashedPassword,
         fullName: 'Administrador',
         role: 'ADMIN',
         restaurantId: restaurant.id,
       },
     });
-    console.log(`  Usuário "admin" criado com o ID: ${adminUser.id}`);
+    console.log(' Usuário admin criado.');
   } else {
-    console.log('  Usuário "admin" já existe.');
+    console.log(` Usuário admin "${adminEmail}" já existe.`);
   }
-
-  console.log('✅ Seed concluído com sucesso!');
+  
+  console.log('✅ Seed finalizado com sucesso!');
   console.log('');
   console.log('🌐 URLs do sistema:');
   console.log(`Página Principal: http://localhost:3000`);
