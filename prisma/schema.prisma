@@ -18,7 +18,6 @@ model Restaurant {
   description String?
   phone       String?
   whatsapp    String?
-  email       String?
   address     String?
   
   // Configurações de entrega
@@ -55,7 +54,6 @@ model Restaurant {
 
 model Profile {
   id           String    @id // Corresponde a auth.users.id do Supabase
-  email        String?   @unique
   password     String?   // Hash da senha para autenticação JWT
   fullName     String?
   role         UserRole  @default(ADMIN)
@@ -131,7 +129,6 @@ model Order {
   // Dados do cliente
   customerName    String
   customerPhone   String
-  customerEmail   String?
   deliveryAddress String
   reference       String?
   observations    String?

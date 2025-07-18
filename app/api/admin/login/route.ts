@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { validateMethod, handleApiError } from '@/lib/api-utils';
-import { validateEmail } from '@/lib/utils';
 import { generateJWT } from '@/lib/jwt';
 import bcrypt from 'bcryptjs';
 
@@ -12,26 +11,19 @@ export async function POST(request: NextRequest) {
     if (methodValidation) return methodValidation;
 
     const body = await request.json();
-    const { email, password } = body;
+    const { username, password } = body;
 
     // Validar dados de entrada
-    if (!email || !password) {
+    if (!username || !password) {
       return NextResponse.json(
-        { error: 'Email e senha são obrigatórios' },
-        { status: 400 }
-      );
-    }
-
-    if (!validateEmail(email)) {
-      return NextResponse.json(
-        { error: 'Email inválido' },
+        { error: 'Usuário e senha são obrigatórios' },
         { status: 400 }
       );
     }
 
     // Buscar usuário no banco
     const profile = await db.profile.findUnique({
-      where: { email },
+      where: { id: username },
       include: {
         restaurant: {
           select: {
@@ -70,7 +62,6 @@ export async function POST(request: NextRequest) {
     // Gerar token JWT
     const token = generateJWT({
       userId: profile.id,
-      email: profile.email!,
       role: profile.role,
       restaurantId: profile.restaurantId!,
     });
@@ -87,8 +78,7 @@ export async function POST(request: NextRequest) {
       data: {
         user: {
           id: profile.id,
-          email: profile.email!,
-          name: (profile.fullName ?? profile.email!) as string,
+          name: profile.fullName as string,
           role: profile.role,
           restaurantId: profile.restaurantId
         },

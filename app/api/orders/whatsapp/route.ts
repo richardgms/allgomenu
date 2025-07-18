@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
       restaurantSlug,
       customerName,
       customerPhone,
-      customerEmail,
       deliveryAddress,
       reference,
       observations,
@@ -90,7 +89,6 @@ export async function POST(request: NextRequest) {
         code: orderCode,
         customerName,
         customerPhone,
-        customerEmail,
         deliveryAddress,
         reference,
         observations,
@@ -117,7 +115,6 @@ export async function POST(request: NextRequest) {
     const orderData = {
       customerName,
       customerPhone,
-      customerEmail,
       deliveryAddress,
       reference,
       observations,
