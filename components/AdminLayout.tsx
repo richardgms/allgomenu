@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { fetchWithAuth, handleAuthError, logout, isAuthenticated } from '@/lib/api-client'
+import { isRestaurantOpen } from '@/lib/utils'
 
 interface User {
   id: string;
@@ -23,6 +24,8 @@ interface Restaurant {
     logo?: string;
     font: string;
   };
+  openingHours?: string;
+  isOpen?: boolean;
 }
 
 interface AdminLayoutProps {
@@ -122,11 +125,86 @@ export default function AdminLayout({ children, title, description }: AdminLayou
   }, [restaurant])
 
   const navigation = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: '🏠', current: pathname === '/admin/dashboard' },
-    { name: 'Produtos', href: '/admin/products', icon: '🍽️', current: pathname === '/admin/products' },
-    { name: 'Categorias', href: '/admin/categories', icon: '📂', current: pathname === '/admin/categories' },
-    { name: 'Configurações', href: '/admin/settings', icon: '⚙️', current: pathname === '/admin/settings' },
+    { 
+      name: 'Dashboard', 
+      href: '/admin/dashboard', 
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+        </svg>
+      ),
+      current: pathname === '/admin/dashboard' 
+    },
+    { 
+      name: 'Pedidos', 
+      href: '/admin/pedidos', 
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+        </svg>
+      ),
+      current: pathname === '/admin/pedidos',
+      badge: '0' // Será dinâmico futuramente
+    },
+    { 
+      name: 'Cardápio', 
+      href: '#', 
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0118 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+        </svg>
+      ),
+      isDropdown: true,
+      current: pathname.includes('/admin/products') || pathname.includes('/admin/categories'),
+      submenu: [
+        { 
+          name: 'Produtos', 
+          href: '/admin/products', 
+          icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c.232.232.232.608 0 .84l-1.8 1.8a.6.6 0 01-.84 0L18 18.5M5 14.5l1.402 1.402c.232.232.232.608 0 .84l-1.8 1.8a.6.6 0 01-.84 0L3 18.5" />
+            </svg>
+          ),
+          current: pathname === '/admin/products' 
+        },
+        { 
+          name: 'Categorias', 
+          href: '/admin/categories', 
+          icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v3.776" />
+            </svg>
+          ),
+          current: pathname === '/admin/categories' 
+        }
+      ]
+    },
+    { 
+      name: 'Relatórios', 
+      href: '/admin/relatorios', 
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+        </svg>
+      ),
+      current: pathname === '/admin/relatorios',
+      disabled: true
+    },
+    { 
+      name: 'Configurações', 
+      href: '/admin/settings', 
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.272-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      ),
+      current: pathname === '/admin/settings' 
+    },
   ]
+
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null)
 
   const handleLogout = () => {
     logout()
@@ -182,30 +260,109 @@ export default function AdminLayout({ children, title, description }: AdminLayou
           </div>
         </div>
         
-        <nav className="mt-8">
-          <div className="px-4 space-y-2">
+        <nav className="mt-8 flex-1">
+          <div className="px-4 space-y-1">
             {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors ${
-                  item.current
-                    ? 'text-white shadow-lg'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-                style={item.current ? { backgroundColor: 'var(--primary-color)' } : {}}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className="text-xl mr-3">{item.icon}</span>
-                {item.name}
-              </Link>
+              <div key={item.name}>
+                {item.isDropdown ? (
+                  <div>
+                    <button
+                      onClick={() => setDropdownOpen(dropdownOpen === item.name ? null : item.name)}
+                      className={`group flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+                        item.current
+                          ? 'text-white shadow-lg transform scale-[0.98]'
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                      style={item.current ? { backgroundColor: 'var(--primary-color)' } : {}}
+                    >
+                      <div className="flex items-center">
+                        <span className="mr-3 transition-transform group-hover:scale-110">{item.icon}</span>
+                        {item.name}
+                      </div>
+                      <svg 
+                        className={`w-4 h-4 transition-transform duration-200 ${dropdownOpen === item.name ? 'rotate-180' : ''}`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    {dropdownOpen === item.name && item.submenu && (
+                      <div className="mt-2 ml-4 space-y-1">
+                        {item.submenu.map((subItem) => (
+                          <Link
+                            key={subItem.name}
+                            href={subItem.href}
+                            className={`group flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                              subItem.current
+                                ? 'text-white shadow-md'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                            style={subItem.current ? { backgroundColor: 'var(--primary-color)' } : {}}
+                            onClick={() => setSidebarOpen(false)}
+                          >
+                            <span className="mr-3">{subItem.icon}</span>
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    href={item.disabled ? '#' : item.href}
+                    className={`group flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+                      item.disabled 
+                        ? 'text-gray-400 cursor-not-allowed opacity-60'
+                        : item.current
+                          ? 'text-white shadow-lg transform scale-[0.98]'
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:scale-[0.99]'
+                    }`}
+                    style={item.current && !item.disabled ? { backgroundColor: 'var(--primary-color)' } : {}}
+                    onClick={item.disabled ? (e) => e.preventDefault() : () => setSidebarOpen(false)}
+                  >
+                    <div className="flex items-center">
+                      <span className="mr-3 transition-transform group-hover:scale-110">{item.icon}</span>
+                      {item.name}
+                      {item.disabled && (
+                        <span className="ml-2 text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">
+                          Em breve
+                        </span>
+                      )}
+                    </div>
+                    {item.badge && !item.disabled && (
+                      <span 
+                        className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center"
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                )}
+              </div>
             ))}
+          </div>
+          
+          {/* Status do Restaurante */}
+          <div className="px-4 mt-8">
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">Status</span>
+                <div className={`w-2 h-2 rounded-full ${isRestaurantOpen(restaurant?.openingHours) && restaurant?.isOpen ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+              </div>
+              <p className="text-xs text-gray-600">
+                {isRestaurantOpen(restaurant?.openingHours) && restaurant?.isOpen ? 'Aberto para pedidos' : 'Fechado no momento'}
+              </p>
+            </div>
           </div>
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+        {/* Seção do usuário no rodapé */}
+        <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-t-2xl">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md"
                  style={{ backgroundColor: 'var(--primary-color)' }}>
               {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
             </div>
@@ -213,15 +370,32 @@ export default function AdminLayout({ children, title, description }: AdminLayou
               <p className="text-sm font-medium text-gray-900 truncate">
                 {user?.name || user?.email}
               </p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+              <p className="text-xs text-gray-500 capitalize">{user?.role || 'Admin'}</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-medium transition-colors text-sm"
-          >
-            Sair
-          </button>
+          
+          <div className="space-y-2">
+            <Link
+              href={`/${restaurant?.slug}`}
+              target="_blank"
+              className="flex items-center justify-center w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors text-sm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              </svg>
+              Ver Site
+            </Link>
+            
+            <button
+              onClick={handleLogout}
+              className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-medium transition-colors text-sm flex items-center justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m-6-3h12m0 0l-3-3m3 3l-3 3" />
+              </svg>
+              Sair
+            </button>
+          </div>
         </div>
       </div>
 
