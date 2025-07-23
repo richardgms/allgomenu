@@ -73,6 +73,76 @@ async function main() {
   } else {
     console.log(` Usuário admin "${adminEmail}" já existe.`);
   }
+
+  // ---- Início: Novo restaurante e usuário para Delícias da Karine ----
+
+  const karineRestaurantSlug = 'delicias-da-karine';
+  const karineAdminEmail = 'deliciasdakarine@admin.com';
+  const karineAdminPassword = 'deliciasdakarine123';
+
+  // 1. Verificar e criar o restaurante Delícias da Karine
+  let karineRestaurant = await prisma.restaurant.findUnique({
+    where: { slug: karineRestaurantSlug },
+  });
+
+  if (!karineRestaurant) {
+    console.log(`\n Restaurante "${karineRestaurantSlug}" não encontrado. Criando...`);
+    karineRestaurant = await prisma.restaurant.create({
+      data: {
+        slug: karineRestaurantSlug,
+        name: 'Delícias da Karine',
+        description: 'Os melhores bolos e doces da cidade, feitos com amor.',
+        address: 'Rua dos Doces, 456, Bairro Confeitaria',
+        phone: '11988887777',
+        whatsapp: '5511988887777',
+        deliveryFee: 7.0,
+        minimumOrder: 20.0,
+        deliveryTime: 60,
+        isActive: true,
+        isOpen: true,
+        themeConfig: {
+          primaryColor: "#D53F8C", // Rosa
+          secondaryColor: "#FBBF24", // Amarelo
+          logo: ""
+        },
+        openingHours: {
+          "tuesday": { "open": "10:00", "close": "19:00" },
+          "wednesday": { "open": "10:00", "close": "19:00" },
+          "thursday": { "open": "10:00", "close": "19:00" },
+          "friday": { "open": "10:00", "close": "20:00" },
+          "saturday": { "open": "10:00", "close": "20:00" },
+        }
+      },
+    });
+    console.log(` Restaurante criado com o ID: ${karineRestaurant.id}`);
+  } else {
+    console.log(`\n Restaurante "${karineRestaurantSlug}" já existe.`);
+  }
+
+  // 2. Verificar e criar o usuário administrador para Delícias da Karine
+  const karineAdminUser = await prisma.profile.findUnique({
+    where: { email: karineAdminEmail },
+  });
+
+  if (!karineAdminUser) {
+    console.log(` Usuário admin "${karineAdminEmail}" não encontrado. Criando...`);
+    const hashedPassword = await bcrypt.hash(karineAdminPassword, 10);
+    await prisma.profile.create({
+      data: {
+        id: `auth0|admin-karine-${new Date().getTime()}`, // ID de placeholder único
+        email: karineAdminEmail,
+        password: hashedPassword,
+        fullName: 'Delícias da Karine Admin',
+        role: 'ADMIN',
+        restaurantId: karineRestaurant.id,
+      },
+    });
+    console.log(' Usuário admin criado.');
+  } else {
+    console.log(` Usuário admin "${karineAdminEmail}" já existe.`);
+  }
+
+  // ---- Fim: Novo restaurante e usuário ----
   
   console.log('✅ Seed finalizado com sucesso!');
   console.log('');
@@ -80,10 +150,13 @@ async function main() {
   console.log(`Página Principal: http://localhost:3000`);
   console.log(`Admin: http://localhost:3000/admin`);
   console.log(`Tapiocaria: http://localhost:3000/${restaurantSlug}`);
+  console.log(`Delícias da Karine: http://localhost:3000/${karineRestaurantSlug}`);
   console.log('');
   console.log('👤 Credenciais de acesso:');
   console.log(`Email: ${adminEmail}`);
   console.log(`Senha: ${adminPassword}`);
+  console.log(`\nEmail Karine: ${karineAdminEmail}`);
+  console.log(`Senha Karine: ${karineAdminPassword}`);
 }
 
 main()
