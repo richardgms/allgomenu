@@ -35,7 +35,7 @@ model Restaurant {
   openingHours Json?   // Estrutura: { "monday": { "open": "08:00", "close": "22:00", "closed": false, "intervals": [{ "start": "14:00", "end": "18:00" }] }, ... }
   
   // Personalização visual
-  themeConfig Json? // Estrutura: { "primaryColor": "#3B82F6", "secondaryColor": "#10B981", "logo": "url", "font": "Inter" }
+  themeConfig Json? // Estrutura: { "primaryColor": "#3B82F6", "secondaryColor": "#10B981", "logo": "url", "font": "Inter", "colorPalette": { "primary": ["#color1", "#color2", "#color3"], "secondary": ["#color1", "#color2", "#color3"] } }
   
   // Configurações do WhatsApp
   whatsappTemplate String? @default("🍴 *Novo Pedido - {{restaurantName}}*\n\n👤 *Cliente:* {{customerName}}\n📱 *Telefone:* {{customerPhone}}\n📍 *Endereço:* {{deliveryAddress}}\n\n🛍️ *Pedido:*\n{{orderItems}}\n\n💰 *Total:* R$ {{totalAmount}}\n💳 *Pagamento:* {{paymentMethod}}\n🚚 *Entrega:* {{deliveryType}}\n\n---\n⏰ Pedido realizado em: {{timestamp}}")

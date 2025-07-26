@@ -116,25 +116,100 @@ export function isLightColor(hexColor: string): boolean {
   return hsl.l > 80;
 }
 
-// Função para aplicar tema inteligente baseado na claridade da cor primária
+// Função para gerar paleta de 6 cores (3 da primária + 3 da secundária)
+export function generateSixColorPalette(primaryColor: string, secondaryColor: string) {
+  const primaryHsl = hexToHsl(primaryColor);
+  const secondaryHsl = hexToHsl(secondaryColor);
+
+  // Gerar 3 variações da cor primária com diferentes luminosidades
+  const primaryPalette = [
+    hslToHex(primaryHsl.h, Math.max(primaryHsl.s - 10, 10), Math.min(primaryHsl.l + 25, 90)), // Mais clara
+    primaryColor, // Original
+    hslToHex(primaryHsl.h, Math.min(primaryHsl.s + 10, 90), Math.max(primaryHsl.l - 25, 15)) // Mais escura
+  ];
+
+  // Gerar 3 variações da cor secundária com diferentes luminosidades
+  const secondaryPalette = [
+    hslToHex(secondaryHsl.h, Math.max(secondaryHsl.s - 10, 10), Math.min(secondaryHsl.l + 25, 90)), // Mais clara
+    secondaryColor, // Original
+    hslToHex(secondaryHsl.h, Math.min(secondaryHsl.s + 10, 90), Math.max(secondaryHsl.l - 25, 15)) // Mais escura
+  ];
+
+  return {
+    primary: primaryPalette,
+    secondary: secondaryPalette,
+    // Cores individuais para fácil acesso
+    primaryLight: primaryPalette[0],
+    primaryBase: primaryPalette[1],
+    primaryDark: primaryPalette[2],
+    secondaryLight: secondaryPalette[0],
+    secondaryBase: secondaryPalette[1],
+    secondaryDark: secondaryPalette[2]
+  };
+}
+
+// Função para verificar contraste entre duas cores
+export function getContrastRatio(color1: string, color2: string): number {
+  const getLuminance = (hex: string) => {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return 0;
+    
+    const [r, g, b] = [rgb.r, rgb.g, rgb.b].map(c => {
+      c = c / 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+
+  const lum1 = getLuminance(color1);
+  const lum2 = getLuminance(color2);
+  
+  return (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05);
+}
+
+// Função helper para converter hex para RGB
+function hexToRgb(hex: string) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+}
+
+// Função para aplicar tema inteligente baseado na claridade da cor primária usando paleta de 6 cores
 export function applyIntelligentTheme(primaryColor: string, secondaryColor: string) {
   const isLightPrimary = isLightColor(primaryColor);
+  const palette = generateSixColorPalette(primaryColor, secondaryColor);
+  
+  // Verificar contrastes para garantir acessibilidade
+  const whiteContrast = getContrastRatio('#ffffff', palette.primaryDark);
+  const darkTextContrast = getContrastRatio('#1F2937', palette.primaryLight);
   
   if (isLightPrimary) {
-    // Se a cor primária for clara, usar ela como background e a secundária para botões
+    // Se a cor primária for clara, usar ela como background e cores mais escuras para elementos
     return {
-      backgroundColor: primaryColor,
-      buttonColor: secondaryColor,
-      textColor: '#1F2937', // Texto escuro para contraste
-      useSecondaryForButtons: true
+      backgroundColor: palette.primaryLight,
+      buttonColor: whiteContrast >= 4.5 ? palette.primaryDark : palette.secondaryDark,
+      buttonColorHover: palette.primaryBase,
+      textColor: '#1F2937',
+      accentColor: palette.secondaryBase,
+      borderColor: palette.primaryBase,
+      useSecondaryForButtons: true,
+      palette
     };
   } else {
-    // Se a cor primária for escura, usar configuração normal
+    // Se a cor primária for escura, usar configuração normal com cores mais claras para backgrounds
     return {
       backgroundColor: '#ffffff',
-      buttonColor: primaryColor,
+      buttonColor: palette.primaryBase,
+      buttonColorHover: palette.primaryDark,
       textColor: '#1F2937',
-      useSecondaryForButtons: false
+      accentColor: palette.secondaryBase,
+      borderColor: palette.primaryLight,
+      useSecondaryForButtons: false,
+      palette
     };
   }
 }

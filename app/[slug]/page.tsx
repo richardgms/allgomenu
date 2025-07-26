@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
-import { formatPrice, generateColorPalette, applyIntelligentTheme } from '@/lib/utils'
+import { formatPrice, generateColorPalette, applyIntelligentTheme, generateSixColorPalette } from '@/lib/utils'
 // A interface CartItem será definida localmente para adicionar o campo 'observation'
 // import { CartItem } from '@/types'
 
@@ -297,34 +297,34 @@ export default function RestaurantPage() {
   // Aplicar tema dinamicamente
   useEffect(() => {
     if (restaurant?.themeConfig) {
-      const { primaryColor, secondaryColor, font } = restaurant.themeConfig;
+      const { primaryColor, secondaryColor, font, colorPalette } = restaurant.themeConfig;
       
       // Aplicar tema inteligente baseado na claridade da cor primária
       const intelligentTheme = applyIntelligentTheme(primaryColor || '#DC2626', secondaryColor || '#059669');
+      
+      // Usar paleta de 6 cores se disponível, senão gerar automaticamente
+      const palette = colorPalette || generateSixColorPalette(primaryColor || '#DC2626', secondaryColor || '#059669');
       
       // Aplicar cores principais
       document.documentElement.style.setProperty('--primary-color', primaryColor || '#DC2626');
       document.documentElement.style.setProperty('--secondary-color', secondaryColor || '#059669');
       document.documentElement.style.setProperty('--font-family', font || 'Inter');
       
-      // Aplicar background inteligente
+      // Aplicar paleta de 6 cores
+      document.documentElement.style.setProperty('--primary-light', palette.primaryLight);
+      document.documentElement.style.setProperty('--primary-base', palette.primaryBase);
+      document.documentElement.style.setProperty('--primary-dark', palette.primaryDark);
+      document.documentElement.style.setProperty('--secondary-light', palette.secondaryLight);
+      document.documentElement.style.setProperty('--secondary-base', palette.secondaryBase);
+      document.documentElement.style.setProperty('--secondary-dark', palette.secondaryDark);
+      
+      // Aplicar background inteligente usando as cores da paleta
       document.documentElement.style.setProperty('--page-background', intelligentTheme.backgroundColor);
       document.documentElement.style.setProperty('--button-color', intelligentTheme.buttonColor);
+      document.documentElement.style.setProperty('--button-color-hover', intelligentTheme.buttonColorHover);
+      document.documentElement.style.setProperty('--accent-color', intelligentTheme.accentColor);
+      document.documentElement.style.setProperty('--border-color', intelligentTheme.borderColor);
       document.documentElement.style.setProperty('--use-secondary-for-buttons', intelligentTheme.useSecondaryForButtons ? 'true' : 'false');
-      
-      // Gerar variações das cores para hover e outros estados
-      const primaryRgb = hexToRgb(primaryColor || '#DC2626');
-      const secondaryRgb = hexToRgb(secondaryColor || '#059669');
-      
-      if (primaryRgb) {
-        document.documentElement.style.setProperty('--primary-dark', `rgb(${Math.max(primaryRgb.r - 30, 0)}, ${Math.max(primaryRgb.g - 30, 0)}, ${Math.max(primaryRgb.b - 30, 0)})`);
-        document.documentElement.style.setProperty('--primary-light', `rgb(${Math.min(primaryRgb.r + 30, 255)}, ${Math.min(primaryRgb.g + 30, 255)}, ${Math.min(primaryRgb.b + 30, 255)})`);
-      }
-      
-      if (secondaryRgb) {
-        document.documentElement.style.setProperty('--secondary-dark', `rgb(${Math.max(secondaryRgb.r - 30, 0)}, ${Math.max(secondaryRgb.g - 30, 0)}, ${Math.max(secondaryRgb.b - 30, 0)})`);
-        document.documentElement.style.setProperty('--secondary-light', `rgb(${Math.min(secondaryRgb.r + 30, 255)}, ${Math.min(secondaryRgb.g + 30, 255)}, ${Math.min(secondaryRgb.b + 30, 255)})`);
-      }
       
       // Aplicar fonte
       if (font && font !== 'Inter') {
@@ -673,10 +673,17 @@ export default function RestaurantPage() {
   const getButtonColor = () => {
     if (!restaurant?.themeConfig) return '#DC2626';
     
-    const { primaryColor, secondaryColor } = restaurant.themeConfig;
+    const { primaryColor, secondaryColor, colorPalette } = restaurant.themeConfig;
     const intelligentTheme = applyIntelligentTheme(primaryColor || '#DC2626', secondaryColor || '#059669');
     
     return intelligentTheme.buttonColor;
+  };
+
+  const getColorPalette = () => {
+    if (!restaurant?.themeConfig) return generateSixColorPalette('#DC2626', '#059669');
+    
+    const { primaryColor, secondaryColor, colorPalette } = restaurant.themeConfig;
+    return colorPalette || generateSixColorPalette(primaryColor || '#DC2626', secondaryColor || '#059669');
   };
 
   // Função para obter a paleta de cores do botão
@@ -753,7 +760,7 @@ export default function RestaurantPage() {
                   onClick={() => setShowCart(true)}
                   className="relative flex items-center gap-2 text-white font-semibold py-1.5 px-4 rounded-xl shadow-md hover:scale-105 transition-transform text-sm"
                   style={{ 
-                    backgroundColor: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primary
+                    backgroundColor: getButtonColor()
                   }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -1476,9 +1483,9 @@ export default function RestaurantPage() {
                               : 'border-gray-200 hover:border-gray-300'
                         }`}
                         style={checkoutData.deliveryType === 'delivery' ? {
-                          borderColor: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primary,
-                          backgroundColor: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primaryVeryLight + '40', // 25% de opacidade
-                          color: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primaryDark
+                          borderColor: getColorPalette().primaryBase,
+                          backgroundColor: getColorPalette().primaryLight + '80', // 50% de opacidade
+                          color: getColorPalette().primaryDark
                         } : {}}
                       >
                           <div className="text-2xl mb-2">🚚</div>
@@ -1496,9 +1503,9 @@ export default function RestaurantPage() {
                               : 'border-gray-200 hover:border-gray-300'
                         }`}
                         style={checkoutData.deliveryType === 'pickup' ? {
-                          borderColor: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primary,
-                          backgroundColor: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primaryVeryLight + '40', // 25% de opacidade
-                          color: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primaryDark
+                          borderColor: getColorPalette().primaryBase,
+                          backgroundColor: getColorPalette().primaryLight + '80', // 50% de opacidade
+                          color: getColorPalette().primaryDark
                         } : {}}
                       >
                           <div className="text-2xl mb-2">🏪</div>
@@ -1618,9 +1625,9 @@ export default function RestaurantPage() {
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                       style={checkoutData.paymentMethod === 'money' ? {
-                        borderColor: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primary,
-                        backgroundColor: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primaryVeryLight + '40',
-                        color: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primaryDark
+                        borderColor: getColorPalette().primaryBase,
+                        backgroundColor: getColorPalette().primaryLight + '80',
+                        color: getColorPalette().primaryDark
                       } : {}}
                     >
                       <div className="text-2xl mb-2">💵</div>
@@ -1637,9 +1644,9 @@ export default function RestaurantPage() {
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                       style={checkoutData.paymentMethod === 'card' ? {
-                        borderColor: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primary,
-                        backgroundColor: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primaryVeryLight + '40',
-                        color: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primaryDark
+                        borderColor: getColorPalette().primaryBase,
+                        backgroundColor: getColorPalette().primaryLight + '80',
+                        color: getColorPalette().primaryDark
                       } : {}}
                     >
                       <div className="text-2xl mb-2">💳</div>
@@ -1656,9 +1663,9 @@ export default function RestaurantPage() {
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                       style={checkoutData.paymentMethod === 'pix' ? {
-                        borderColor: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primary,
-                        backgroundColor: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primaryVeryLight + '40',
-                        color: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primaryDark
+                        borderColor: getColorPalette().primaryBase,
+                        backgroundColor: getColorPalette().primaryLight + '80',
+                        color: getColorPalette().primaryDark
                       } : {}}
                     >
                       <div className="text-2xl mb-2">📱</div>
@@ -1793,7 +1800,7 @@ export default function RestaurantPage() {
                     disabled={!canProceedToNextStep()}
                     className="px-8 py-3 text-white rounded-xl transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
                     style={{
-                      backgroundColor: generateColorPalette(restaurant?.themeConfig?.primaryColor || '#DC2626').primary
+                      backgroundColor: getButtonColor()
                     }}
                   >
                     Continuar

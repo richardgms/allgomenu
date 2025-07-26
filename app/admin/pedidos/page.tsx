@@ -88,7 +88,7 @@ export default function PedidosPage() {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pendente: { color: 'bg-yellow-100 text-yellow-800', label: 'Pendente' },
-      preparando: { color: 'bg-blue-100 text-blue-800', label: 'Preparando' },
+      preparando: { color: 'bg-theme-light text-theme-dark', label: 'Preparando' },
       pronto: { color: 'bg-green-100 text-green-800', label: 'Pronto' },
       entregue: { color: 'bg-gray-100 text-gray-800', label: 'Entregue' },
     }
@@ -131,8 +131,8 @@ export default function PedidosPage() {
                 onClick={() => setSelectedFilter(option.value)}
                 className={`p-4 rounded-xl transition-all duration-200 ${
                   selectedFilter === option.value
-                    ? 'bg-primary text-white shadow-lg transform scale-95'
-                    : 'bg-white hover:bg-gray-50 border border-gray-200'
+                    ? 'bg-primary-base text-white shadow-lg transform scale-95'
+                    : 'admin-surface hover:admin-surface-hover admin-border'
                 }`}
                 style={selectedFilter === option.value ? { backgroundColor: 'var(--primary-color)' } : {}}
               >
@@ -150,9 +150,9 @@ export default function PedidosPage() {
         </div>
 
         {/* Lista de Pedidos */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
+        <div className="admin-card rounded-2xl shadow-sm">
+          <div className="px-6 py-4 border-b admin-border">
+            <h3 className="text-lg font-semibold admin-text-primary">
               {selectedFilter === 'todos' ? 'Todos os Pedidos' : 
                filterOptions.find(f => f.value === selectedFilter)?.label}
             </h3>
@@ -161,17 +161,17 @@ export default function PedidosPage() {
           {filteredOrders.length === 0 ? (
             <div className="p-12 text-center">
               <div className="text-6xl mb-4">📝</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium admin-text-primary mb-2">
                 Nenhum pedido encontrado
               </h3>
-              <p className="text-gray-600">
+              <p className="admin-text-secondary">
                 {selectedFilter === 'todos' 
                   ? 'Ainda não há pedidos registrados no sistema.'
                   : `Não há pedidos com status "${filterOptions.find(f => f.value === selectedFilter)?.label}".`
                 }
               </p>
               <div className="mt-6">
-                <div className="inline-flex items-center px-4 py-2 bg-gray-100 rounded-lg text-sm text-gray-600">
+                <div className="inline-flex items-center px-4 py-2 admin-bg-secondary rounded-lg text-sm admin-text-muted">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                   </svg>
@@ -239,17 +239,17 @@ export default function PedidosPage() {
                   {/* Ações */}
                   <div className="flex gap-2 flex-wrap">
                     {order.status === 'pendente' && (
-                      <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                      <button className="px-4 py-2 btn-primary rounded-lg text-sm">
                         Aceitar Pedido
                       </button>
                     )}
                     {order.status === 'preparando' && (
-                      <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm">
+                      <button className="px-4 py-2 btn-secondary rounded-lg text-sm">
                         Marcar como Pronto
                       </button>
                     )}
                     {order.status === 'pronto' && (
-                      <button className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm">
+                      <button className="px-4 py-2 btn-primary rounded-lg text-sm">
                         Marcar como Entregue
                       </button>
                     )}

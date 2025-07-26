@@ -35,8 +35,8 @@ export default function AdminPage() {
     const { primaryColor, secondaryColor, font } = themeConfig;
     
     // Aplicar cores principais
-    document.documentElement.style.setProperty('--primary-color', primaryColor || '#DC2626');
-    document.documentElement.style.setProperty('--secondary-color', secondaryColor || '#059669');
+    document.documentElement.style.setProperty('--primary-color', primaryColor || '#0E202C');
+    document.documentElement.style.setProperty('--secondary-color', secondaryColor || '#F0E3D2');
     document.documentElement.style.setProperty('--font-family', font || 'Inter');
     
     // Aplicar fonte
@@ -93,51 +93,73 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100" style={{ fontFamily: 'var(--font-family, Inter)' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#F8F4F0', fontFamily: 'Nunito, Inter, sans-serif' }}>
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md w-full">
-          {/* Logo/Brand */}
+        <div className="max-w-sm w-full">
+          {/* Logo/Brand Minimalista */}
           <div className="text-center mb-8">
-            <div className="mx-auto h-20 w-20 rounded-2xl flex items-center justify-center mb-6 shadow-lg"
-                 style={{ backgroundColor: 'var(--primary-color)' }}>
-              {restaurant?.themeConfig?.logo ? (
-                <img
-                  src={restaurant.themeConfig.logo}
-                  alt="Logo"
-                  className="h-12 w-12 object-contain"
-                />
-              ) : (
-                <span className="text-3xl font-bold text-white">A</span>
-              )}
+            <div className="mx-auto mb-6">
+              <div className="flex flex-col items-center">
+                <div className="relative mb-6">
+                  <a 
+                    href="https://instagram.com/allgoweb" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block hover:scale-105 transition-transform duration-300"
+                  >
+                    <div className="w-28 h-28 rounded-full bg-gradient-to-br from-white to-[#F8F4F0] shadow-xl flex items-center justify-center border-4 border-[#0E202C] overflow-hidden hover:shadow-2xl transition-all duration-500">
+                      <img
+                        src="/logo.png"
+                        alt="AllGo Menu Logo"
+                        className="w-24 h-24 object-cover scale-110"
+                        onError={(e) => {
+                          // Fallback para texto se a imagem não carregar
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                      <div className="hidden text-[#0E202C] font-bold text-center leading-tight">
+                        <div className="text-base">ALL</div>
+                        <div className="text-2xl">GO</div>
+                        <div className="text-base">WEB</div>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+                <div className="space-y-3">
+                  <h1 className="text-4xl font-bold text-[#0E202C] font-nunito tracking-tight">
+                    AllGo Menu
+                  </h1>
+                  <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-[#0E202C] to-transparent mx-auto"></div>
+                  <p className="text-lg text-[#2A3F4F] font-medium leading-relaxed max-w-xs">
+                    Transforme seu cardápio em experiência digital
+                  </p>
+                </div>
+              </div>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">AllgoMenu</h1>
-            <p className="text-gray-600 text-lg">Painel Administrativo</p>
           </div>
 
-          {/* Card de Login */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">
+          {/* Card de Login Minimalista */}
+          <div className="bg-white rounded-2xl border border-[#E8D5C0] p-8 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+            <div className="mb-6">
+              <h2 className="text-3xl font-bold text-[#0E202C] text-center mb-2 font-nunito">
                 Bem-vindo de volta!
               </h2>
-              <p className="text-gray-600 text-center">
-                Entre com suas credenciais para acessar o painel
+              <p className="text-[#4A5A6A] text-center text-sm font-nunito">
+                Faça login para acessar seu painel administrativo
               </p>
             </div>
             
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-5">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center">
-                  <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
+                <div className="bg-[#FEF2F2] border border-[#FECACA] text-[#DC2626] px-4 py-3 rounded-xl text-sm">
                   {error}
                 </div>
               )}
               
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
+                <label htmlFor="email" className="block text-base font-semibold text-[#0E202C] mb-2">
+                  Endereço de email
                 </label>
                 <input
                   id="email"
@@ -146,14 +168,14 @@ export default function AdminPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
-                  placeholder="seu@email.com"
+                  className="w-full px-4 py-3 border-2 border-[#E8D5C0] rounded-xl focus:outline-none focus:border-[#0E202C] focus:ring-2 focus:ring-[#0E202C] focus:ring-opacity-20 transition-all duration-200 bg-white hover:border-[#D4C4B0] text-sm"
+                  placeholder="Digite seu email aqui..."
                 />
               </div>
               
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Senha
+                <label htmlFor="password" className="block text-base font-semibold text-[#0E202C] mb-2">
+                  Senha de acesso
                 </label>
                 <input
                   id="password"
@@ -162,42 +184,39 @@ export default function AdminPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
-                  placeholder="••••••••"
+                  className="w-full px-4 py-3 border-2 border-[#E8D5C0] rounded-xl focus:outline-none focus:border-[#0E202C] focus:ring-2 focus:ring-[#0E202C] focus:ring-opacity-20 transition-all duration-200 bg-white hover:border-[#D4C4B0] text-sm"
+                  placeholder="Digite sua senha..."
                 />
               </div>
               
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full text-white py-3 px-4 rounded-xl font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                style={{ backgroundColor: 'var(--primary-color)' }}
+                className="w-full text-white py-3 px-4 rounded-xl font-semibold hover:bg-[#0A1A24] focus:outline-none focus:ring-2 focus:ring-[#0E202C] focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
+                style={{ backgroundColor: '#1A2F3A' }}
               >
                 {loading ? (
                   <div className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Entrando...
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Acessando...
                   </div>
                 ) : (
-                  'Entrar'
+                  'Acessar Painel'
                 )}
               </button>
             </form>
             
-            <div className="mt-8 text-center">
-              <p className="text-sm text-gray-600">
-                Esqueceu sua senha? Entre em contato com o administrador.
+            <div className="mt-6 text-center">
+              <p className="text-xs text-[#2A3F4F]">
+                Precisa de ajuda? Entre em contato com nosso suporte
               </p>
             </div>
           </div>
           
-          {/* Footer */}
+          {/* Footer Minimalista */}
           <div className="text-center mt-8">
-            <p className="text-sm text-gray-500">
-              © 2024 AllgoMenu. Todos os direitos reservados.
+            <p className="text-xs text-[#2A3F4F]">
+              © 2024 AllGo Menu
             </p>
           </div>
         </div>

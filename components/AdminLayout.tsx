@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { fetchWithAuth, handleAuthError, logout, isAuthenticated } from '@/lib/api-client'
-import { isRestaurantOpen } from '@/lib/utils'
+import { isRestaurantOpen, generateSixColorPalette, applyIntelligentTheme } from '@/lib/utils'
 
 interface User {
   id: string;
@@ -23,6 +23,16 @@ interface Restaurant {
     secondaryColor: string;
     logo?: string;
     font: string;
+    colorPalette?: {
+      primary: string[];
+      secondary: string[];
+      primaryLight: string;
+      primaryBase: string;
+      primaryDark: string;
+      secondaryLight: string;
+      secondaryBase: string;
+      secondaryDark: string;
+    };
   };
   openingHours?: string;
   isOpen?: boolean;
@@ -50,6 +60,7 @@ export default function AdminLayout({ children, title, description }: AdminLayou
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -90,26 +101,36 @@ export default function AdminLayout({ children, title, description }: AdminLayou
   // Aplicar tema dinamicamente
   useEffect(() => {
     if (restaurant?.themeConfig) {
-      const { primaryColor, secondaryColor, font } = restaurant.themeConfig;
+      const { primaryColor, secondaryColor, font, colorPalette } = restaurant.themeConfig;
       
-      // Aplicar cores principais
+      // Usar paleta de 6 cores se disponível, senão gerar automaticamente
+      const palette = colorPalette || generateSixColorPalette(primaryColor || '#DC2626', secondaryColor || '#059669');
+      
+      // Aplicar tema inteligente baseado na claridade da cor primária
+      const intelligentTheme = applyIntelligentTheme(primaryColor || '#DC2626', secondaryColor || '#059669');
+      
+      // Aplicar cores base (compatibilidade)
       document.documentElement.style.setProperty('--primary-color', primaryColor || '#DC2626');
       document.documentElement.style.setProperty('--secondary-color', secondaryColor || '#059669');
       document.documentElement.style.setProperty('--font-family', font || 'Inter');
       
-      // Gerar variações das cores para hover e outros estados
-      const primaryRgb = hexToRgb(primaryColor || '#DC2626');
-      const secondaryRgb = hexToRgb(secondaryColor || '#059669');
+      // Aplicar paleta de 6 cores
+      document.documentElement.style.setProperty('--primary-light', palette.primaryLight);
+      document.documentElement.style.setProperty('--primary-base', palette.primaryBase);
+      document.documentElement.style.setProperty('--primary-dark', palette.primaryDark);
+      document.documentElement.style.setProperty('--secondary-light', palette.secondaryLight);
+      document.documentElement.style.setProperty('--secondary-base', palette.secondaryBase);
+      document.documentElement.style.setProperty('--secondary-dark', palette.secondaryDark);
       
-      if (primaryRgb) {
-        document.documentElement.style.setProperty('--primary-dark', `rgb(${Math.max(primaryRgb.r - 30, 0)}, ${Math.max(primaryRgb.g - 30, 0)}, ${Math.max(primaryRgb.b - 30, 0)})`);
-        document.documentElement.style.setProperty('--primary-light', `rgb(${Math.min(primaryRgb.r + 30, 255)}, ${Math.min(primaryRgb.g + 30, 255)}, ${Math.min(primaryRgb.b + 30, 255)})`);
-      }
-      
-      if (secondaryRgb) {
-        document.documentElement.style.setProperty('--secondary-dark', `rgb(${Math.max(secondaryRgb.r - 30, 0)}, ${Math.max(secondaryRgb.g - 30, 0)}, ${Math.max(secondaryRgb.b - 30, 0)})`);
-        document.documentElement.style.setProperty('--secondary-light', `rgb(${Math.min(secondaryRgb.r + 30, 255)}, ${Math.min(secondaryRgb.g + 30, 255)}, ${Math.min(secondaryRgb.b + 30, 255)})`);
-      }
+      // Aplicar estados e aplicações específicas
+      document.documentElement.style.setProperty('--button-primary', intelligentTheme.buttonColor);
+      document.documentElement.style.setProperty('--button-primary-hover', intelligentTheme.buttonColorHover);
+      document.documentElement.style.setProperty('--button-secondary', intelligentTheme.accentColor);
+      document.documentElement.style.setProperty('--button-secondary-hover', palette.secondaryDark);
+      document.documentElement.style.setProperty('--border-color', intelligentTheme.borderColor);
+      document.documentElement.style.setProperty('--accent-color', intelligentTheme.accentColor);
+      document.documentElement.style.setProperty('--page-background', intelligentTheme.backgroundColor);
+      document.documentElement.style.setProperty('--text-color', intelligentTheme.textColor);
       
       // Aplicar fonte
       if (font && font !== 'Inter') {
@@ -204,18 +225,16 @@ export default function AdminLayout({ children, title, description }: AdminLayou
     },
   ]
 
-  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null)
-
   const handleLogout = () => {
     logout()
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Carregando...</p>
+      <div className="min-h-screen admin-bg-secondary flex items-center justify-center">
+        <div className="text-center admin-surface p-8 rounded-2xl shadow-lg">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary-base border-t-transparent mx-auto mb-4"></div>
+          <p className="admin-text-primary font-medium">Carregando...</p>
         </div>
       </div>
     )
@@ -223,12 +242,12 @@ export default function AdminLayout({ children, title, description }: AdminLayou
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100">
+      <div className="min-h-screen admin-bg-secondary flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-6">
-          <div className="bg-white rounded-3xl shadow-2xl p-8">
+          <div className="admin-surface rounded-3xl shadow-2xl p-8">
             <div className="text-6xl mb-4">⚠️</div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Erro!</h1>
-            <p className="text-gray-600 mb-6">{error}</p>
+            <h1 className="text-2xl font-bold admin-text-primary mb-2">Erro!</h1>
+            <p className="admin-text-secondary mb-6">{error}</p>
           </div>
         </div>
       </div>
@@ -236,10 +255,14 @@ export default function AdminLayout({ children, title, description }: AdminLayou
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100" style={{ fontFamily: 'var(--font-family, Inter)' }}>
+    <div className="min-h-screen admin-bg-secondary flex" style={{ fontFamily: 'var(--font-family, Inter)' }}>
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
-        <div className="flex items-center justify-center h-20 border-b border-gray-200">
+      <div className={`
+        fixed inset-y-0 left-0 z-40 w-64 admin-bg-primary shadow-lg transform transition-transform duration-300 ease-in-out flex flex-col
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+        lg:translate-x-0 lg:relative lg:flex-shrink-0
+      `}>
+        <div className="flex items-center justify-center h-20 border-b admin-border">
           <div className="flex items-center space-x-3">
             {restaurant?.themeConfig?.logo ? (
               <img
@@ -248,19 +271,18 @@ export default function AdminLayout({ children, title, description }: AdminLayou
                 className="h-10 w-10 object-contain rounded-lg"
               />
             ) : (
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold"
-                   style={{ backgroundColor: 'var(--primary-color)' }}>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold bg-theme-base">
                 {restaurant?.name?.charAt(0) || 'A'}
               </div>
             )}
             <div>
-              <h1 className="text-lg font-bold text-gray-900">Admin</h1>
-              <p className="text-xs text-gray-600">{restaurant?.name}</p>
+              <h1 className="text-lg font-bold admin-text-inverse">Admin</h1>
+              <p className="text-xs admin-text-inverse-muted">{restaurant?.name}</p>
             </div>
           </div>
         </div>
         
-        <nav className="mt-8 flex-1">
+        <nav className="mt-8 flex-1 overflow-y-auto">
           <div className="px-4 space-y-1">
             {navigation.map((item) => (
               <div key={item.name}>
@@ -270,10 +292,9 @@ export default function AdminLayout({ children, title, description }: AdminLayou
                       onClick={() => setDropdownOpen(dropdownOpen === item.name ? null : item.name)}
                       className={`group flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                         item.current
-                          ? 'text-white shadow-lg transform scale-[0.98]'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                          ? 'bg-primary-base text-white shadow-lg transform scale-[0.98]'
+                          : 'admin-text-inverse-muted hover:admin-bg-tertiary hover:admin-text-inverse'
                       }`}
-                      style={item.current ? { backgroundColor: 'var(--primary-color)' } : {}}
                     >
                       <div className="flex items-center">
                         <span className="mr-3 transition-transform group-hover:scale-110">{item.icon}</span>
@@ -297,11 +318,13 @@ export default function AdminLayout({ children, title, description }: AdminLayou
                             href={subItem.href}
                             className={`group flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                               subItem.current
-                                ? 'text-white shadow-md'
-                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                ? 'bg-primary-base text-white shadow-md'
+                                : 'admin-text-inverse-muted hover:admin-bg-tertiary hover:admin-text-inverse'
                             }`}
-                            style={subItem.current ? { backgroundColor: 'var(--primary-color)' } : {}}
-                            onClick={() => setSidebarOpen(false)}
+                            onClick={() => {
+                              setSidebarOpen(false)
+                              setDropdownOpen(null)
+                            }}
                           >
                             <span className="mr-3">{subItem.icon}</span>
                             {subItem.name}
@@ -315,13 +338,15 @@ export default function AdminLayout({ children, title, description }: AdminLayou
                     href={item.disabled ? '#' : item.href}
                     className={`group flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                       item.disabled 
-                        ? 'text-gray-400 cursor-not-allowed opacity-60'
+                        ? 'admin-text-muted cursor-not-allowed opacity-60'
                         : item.current
-                          ? 'text-white shadow-lg transform scale-[0.98]'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:scale-[0.99]'
+                          ? 'bg-primary-base text-white shadow-lg transform scale-[0.98]'
+                          : 'admin-text-inverse-muted hover:admin-bg-tertiary hover:admin-text-inverse hover:scale-[0.99]'
                     }`}
-                    style={item.current && !item.disabled ? { backgroundColor: 'var(--primary-color)' } : {}}
-                    onClick={item.disabled ? (e) => e.preventDefault() : () => setSidebarOpen(false)}
+                    onClick={item.disabled ? (e) => e.preventDefault() : () => {
+                      setSidebarOpen(false)
+                      setDropdownOpen(null)
+                    }}
                   >
                     <div className="flex items-center">
                       <span className="mr-3 transition-transform group-hover:scale-110">{item.icon}</span>
@@ -334,7 +359,7 @@ export default function AdminLayout({ children, title, description }: AdminLayou
                     </div>
                     {item.badge && !item.disabled && (
                       <span 
-                        className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center"
+                        className="bg-theme-base text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center"
                       >
                         {item.badge}
                       </span>
@@ -344,87 +369,89 @@ export default function AdminLayout({ children, title, description }: AdminLayou
               </div>
             ))}
           </div>
-          
-          {/* Status do Restaurante */}
-          <div className="px-4 mt-8">
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Status</span>
-                <div className={`w-2 h-2 rounded-full ${isRestaurantOpen(restaurant?.openingHours) && restaurant?.isOpen ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
-              </div>
-              <p className="text-xs text-gray-600">
-                {isRestaurantOpen(restaurant?.openingHours) && restaurant?.isOpen ? 'Aberto para pedidos' : 'Fechado no momento'}
-              </p>
-            </div>
-          </div>
         </nav>
 
-        {/* Seção do usuário no rodapé */}
-        <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-t-2xl">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md"
-                 style={{ backgroundColor: 'var(--primary-color)' }}>
-              {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+        {/* Status do Restaurante */}
+        <div className="px-4 mt-8">
+          <div className="admin-bg-tertiary rounded-xl p-4 border admin-border">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium admin-text-inverse">Status</span>
+              <div className={`w-2 h-2 rounded-full ${isRestaurantOpen(restaurant?.openingHours) && restaurant?.isOpen ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {user?.name || user?.email}
-              </p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role || 'Admin'}</p>
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Link
-              href={`/${restaurant?.slug}`}
-              target="_blank"
-              className="flex items-center justify-center w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors text-sm"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-              </svg>
-              Ver Site
-            </Link>
-            
-            <button
-              onClick={handleLogout}
-              className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-medium transition-colors text-sm flex items-center justify-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m-6-3h12m0 0l-3-3m3 3l-3 3" />
-              </svg>
-              Sair
-            </button>
+            <p className="text-xs admin-text-inverse-muted">
+              {isRestaurantOpen(restaurant?.openingHours) && restaurant?.isOpen ? 'Aberto para pedidos' : 'Fechado no momento'}
+            </p>
           </div>
         </div>
+
+        {/* Seção do usuário no final absoluto */}
+        <div className="border-t admin-border p-4 admin-bg-tertiary mt-8">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md bg-theme-base">
+            {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium admin-text-inverse truncate">
+              {user?.name || user?.email}
+            </p>
+            <p className="text-xs admin-text-inverse-muted capitalize">{user?.role || 'Admin'}</p>
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <Link
+            href={`/${restaurant?.slug}`}
+            target="_blank"
+            className="flex items-center justify-center w-full admin-bg-secondary hover:bg-gray-200 admin-text-inverse py-2 px-4 rounded-lg font-medium transition-colors text-sm"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+            </svg>
+            Ver Site
+          </Link>
+          
+          <button
+            onClick={handleLogout}
+            className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-medium transition-colors text-sm flex items-center justify-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m-6-3h12m0 0l-3-3m3 3l-3 3" />
+            </svg>
+            Sair
+          </button>
+        </div>
+      </div>
       </div>
 
       {/* Overlay para mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Main content */}
-      <div className="lg:pl-64">
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+        <header className="admin-surface shadow-sm border-b admin-border sticky top-0 z-20">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center">
+              {/* Mobile menu button - agora dentro do header */}
               <button
-                onClick={() => setSidebarOpen(true)}
-                className="text-gray-500 hover:text-gray-700 lg:hidden"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden p-2 rounded-md admin-text-secondary hover:admin-text-primary hover:bg-gray-100 transition-colors mr-3"
               >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
-              <div className="ml-4 lg:ml-0">
-                <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+              
+              <div>
+                <h1 className="text-xl lg:text-2xl font-bold admin-text-primary">{title}</h1>
                 {description && (
-                  <p className="text-sm text-gray-600 mt-1">{description}</p>
+                  <p className="text-sm admin-text-secondary mt-1 hidden sm:block">{description}</p>
                 )}
               </div>
             </div>
@@ -433,18 +460,20 @@ export default function AdminLayout({ children, title, description }: AdminLayou
               <Link
                 href={`/${restaurant?.slug}`}
                 target="_blank"
-                className="text-white px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-colors text-sm"
-                style={{ backgroundColor: 'var(--primary-color)' }}
+                className="admin-btn-primary px-3 py-2 rounded-lg font-medium text-sm"
               >
-                Ver Site
+                <span className="hidden sm:inline">Ver Site</span>
+                <svg className="w-4 h-4 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
               </Link>
             </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1">
-          <div className="py-8">
+        <main className="flex-1 overflow-auto">
+          <div className="py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
             {children}
           </div>
         </main>

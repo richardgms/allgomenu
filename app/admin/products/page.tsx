@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { isAuthenticated, fetchWithAuth, handleAuthError } from '@/lib/api-client';
 import ImageUpload from '@/components/ImageUpload';
 import TruncatedText from '@/components/TruncatedText';
+import AdminLayout from '@/components/AdminLayout';
 
 interface Product {
   id: string;
@@ -99,23 +100,14 @@ export default function ProductsPage() {
   }, [router]);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    // Implementação simples de toast - pode ser melhorada com uma biblioteca
-    const toast = document.createElement('div');
-    toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 ${
-      type === 'success' ? 'bg-green-500' : 'bg-red-500'
-    }`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-      document.body.removeChild(toast);
-    }, 3000);
+    // Implementar toast notification
+    console.log(`${type}: ${message}`);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormLoading(true);
-    
+
     try {
       const url = editingProduct 
         ? `/api/admin/products/${editingProduct.id}`
@@ -125,26 +117,40 @@ export default function ProductsPage() {
       
       const response = await fetchWithAuth(url, {
         method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          ...formData,
+          name: formData.name,
+          description: formData.description,
           price: parseFloat(formData.price),
+          categoryId: formData.categoryId,
+          imageUrl: formData.imageUrl,
+          isFeatured: formData.isFeatured,
+          isActive: formData.isActive,
+          order: formData.order,
+          options: formData.options
         }),
       });
 
+      handleAuthError(response);
       const data = await response.json();
 
       if (data.success) {
+        showToast(
+          editingProduct 
+            ? 'Produto atualizado com sucesso!' 
+            : 'Produto criado com sucesso!'
+        );
         setShowForm(false);
-        setEditingProduct(null);
         resetForm();
         
-        // Atualizar a lista de produtos
-        const updatedProducts = editingProduct
-          ? products.map(p => p.id === editingProduct.id ? data.data : p)
-          : [...products, data.data];
-        setProducts(updatedProducts);
-        
-        showToast(editingProduct ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!');
+        // Recarregar produtos
+        const productsResponse = await fetchWithAuth('/api/admin/products');
+        const productsData = await productsResponse.json();
+        if (productsData.success) {
+          setProducts(productsData.data);
+        }
       } else {
         showToast(data.error || 'Erro ao salvar produto', 'error');
       }
@@ -160,7 +166,7 @@ export default function ProductsPage() {
     setEditingProduct(product);
     setFormData({
       name: product.name,
-      description: product.description || '',
+      description: product.description,
       price: product.price.toString(),
       categoryId: product.categoryId,
       imageUrl: product.imageUrl || '',
@@ -173,26 +179,21 @@ export default function ProductsPage() {
   };
 
   const handleDeleteConfirm = (productId: string, productName: string) => {
-    setDeleteConfirm({
-      show: true,
-      productId,
-      productName
-    });
+    setDeleteConfirm({ show: true, productId, productName });
   };
 
   const handleDelete = async () => {
-    const { productId } = deleteConfirm;
-    
     try {
-      const response = await fetchWithAuth(`/api/admin/products/${productId}`, {
+      const response = await fetchWithAuth(`/api/admin/products/${deleteConfirm.productId}`, {
         method: 'DELETE',
       });
 
+      handleAuthError(response);
       const data = await response.json();
 
       if (data.success) {
-        setProducts(products.filter(p => p.id !== productId));
         showToast('Produto deletado com sucesso!');
+        setProducts(products.filter(p => p.id !== deleteConfirm.productId));
       } else {
         showToast(data.error || 'Erro ao deletar produto', 'error');
       }
@@ -216,6 +217,7 @@ export default function ProductsPage() {
       order: 0,
       options: null
     });
+    setEditingProduct(null);
   };
 
   const formatPrice = (price: number) => {
@@ -237,32 +239,24 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
+    <AdminLayout title="Produtos" description="Gerencie o cardápio do seu restaurante">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Produtos</h1>
-              <p className="mt-2 text-gray-600">Gerencie o cardápio do seu restaurante</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Produtos</h1>
+              <p className="mt-1 sm:mt-2 text-sm text-gray-600">Gerencie o cardápio do seu restaurante</p>
             </div>
-            <div className="flex gap-4">
-              <button
-                onClick={() => router.push('/admin/dashboard')}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors select-none"
-              >
-                Voltar
-              </button>
-              <button
-                onClick={() => {
-                  setEditingProduct(null);
-                  resetForm();
-                  setShowForm(true);
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors select-none"
-              >
-                Novo Produto
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                setEditingProduct(null);
+                resetForm();
+                setShowForm(true);
+              }}
+              className="w-full sm:w-auto px-4 py-2 btn-primary rounded-md transition-colors select-none"
+            >
+              Novo Produto
+            </button>
           </div>
         </div>
 
@@ -312,7 +306,7 @@ export default function ProductsPage() {
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-base"
                     required
                     disabled={formLoading}
                   />
@@ -325,7 +319,7 @@ export default function ProductsPage() {
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-base"
                     rows={3}
                     disabled={formLoading}
                   />
@@ -342,7 +336,7 @@ export default function ProductsPage() {
                       min="0"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-base"
                       required
                       disabled={formLoading}
                     />
@@ -355,7 +349,7 @@ export default function ProductsPage() {
                     <select
                       value={formData.categoryId}
                       onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-base"
                       required
                       disabled={formLoading}
                     >
@@ -412,7 +406,7 @@ export default function ProductsPage() {
                         type="text"
                         value={formData.imageUrl}
                         onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-base"
                         placeholder="https://exemplo.com/imagem.jpg"
                         disabled={formLoading}
                       />
@@ -441,7 +435,7 @@ export default function ProductsPage() {
                       min="0"
                       value={formData.order}
                       onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-base"
                       disabled={formLoading}
                     />
                   </div>
@@ -487,7 +481,7 @@ export default function ProductsPage() {
                   <button
                     type="submit"
                     disabled={formLoading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed select-none"
+                    className="px-4 py-2 btn-primary rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed select-none"
                   >
                     {formLoading ? (
                       <div className="flex items-center">
@@ -504,25 +498,25 @@ export default function ProductsPage() {
           </div>
         )}
 
-        {/* Lista de Produtos */}
+                {/* Lista de Produtos */}
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Produto
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Categoria
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Preço
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
@@ -530,10 +524,10 @@ export default function ProductsPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {products.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {product.imageUrl && (
-                          <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center mr-3 border border-gray-200">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white flex items-center justify-center mr-2 sm:mr-3 border border-gray-200">
                             <img
                               src={product.imageUrl}
                               alt={product.name}
@@ -541,35 +535,38 @@ export default function ProductsPage() {
                             />
                           </div>
                         )}
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium text-gray-900 truncate">
                             {product.name}
                             {product.isFeatured && (
-                              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                 Destaque
                               </span>
                             )}
                           </div>
-                          <TruncatedText text={product.description} maxLength={40} className="text-sm text-gray-500" />
+                          <div className="sm:hidden text-xs text-gray-500">
+                            {product.category.name} • {formatPrice(product.price)}
+                          </div>
+                          <TruncatedText text={product.description} maxLength={40} className="text-xs sm:text-sm text-gray-500 hidden sm:block" />
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{product.category.name}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{formatPrice(product.price)}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                         product.isActive
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
+                          ? 'bg-theme-light text-theme-dark'
+                          : 'bg-gray-100 text-gray-600'
                       }`}>
                         {product.isActive ? 'Ativo' : 'Inativo'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEdit(product)}
@@ -601,13 +598,13 @@ export default function ProductsPage() {
                 resetForm();
                 setShowForm(true);
               }}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors select-none"
+              className="mt-4 px-4 py-2 btn-primary rounded-md transition-colors select-none"
             >
               Criar Primeiro Produto
             </button>
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 } 
