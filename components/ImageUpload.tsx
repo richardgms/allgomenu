@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Upload, X, Image as ImageIcon } from 'lucide-react'
 
@@ -25,18 +24,53 @@ export function ImageUpload({
   const [preview, setPreview] = useState<string | null>(value || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Sincronizar preview com o valor quando ele mudar externamente
+  useEffect(() => {
+    setPreview(value || null)
+  }, [value])
+
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
 
-    // Create preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const result = e.target?.result as string
-      setPreview(result)
-      onChange(result)
+    console.log('Arquivo selecionado:', file.name, 'Tamanho:', file.size, 'Tipo:', file.type)
+    
+    setUploading(true)
+
+    try {
+      // Criar FormData para enviar o arquivo
+      const formData = new FormData()
+      formData.append('file', file)
+
+      console.log('Enviando arquivo para upload...')
+
+      // Fazer upload para o servidor
+      const response = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      console.log('Resposta do servidor:', response.status, response.statusText)
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Erro na resposta:', errorData)
+        throw new Error(errorData.error || 'Erro no upload da imagem')
+      }
+
+      const result = await response.json()
+      console.log('Upload bem-sucedido:', result)
+      
+      // Atualizar preview e valor
+      setPreview(result.url)
+      onChange(result.url)
+      
+    } catch (error) {
+      console.error('Erro no upload:', error)
+      alert(error instanceof Error ? error.message : 'Erro no upload da imagem')
+    } finally {
+      setUploading(false)
     }
-    reader.readAsDataURL(file)
   }
 
   const handleRemove = () => {
@@ -44,6 +78,18 @@ export function ImageUpload({
     onChange('')
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
+    }
+  }
+
+  const handleButtonClick = () => {
+    console.log('Botão clicado!')
+    console.log('fileInputRef.current:', fileInputRef.current)
+    
+    if (fileInputRef.current) {
+      console.log('Abrindo seletor de arquivo...')
+      fileInputRef.current.click()
+    } else {
+      console.error('fileInputRef.current é null!')
     }
   }
 
@@ -72,7 +118,7 @@ export function ImageUpload({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={handleButtonClick}
                 disabled={uploading}
               >
                 <Upload className="h-4 w-4 mr-2" />
@@ -99,7 +145,7 @@ export function ImageUpload({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={handleButtonClick}
                 disabled={uploading}
               >
                 <Upload className="h-4 w-4 mr-2" />
@@ -113,7 +159,7 @@ export function ImageUpload({
         )}
       </div>
 
-      <Input
+      <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
