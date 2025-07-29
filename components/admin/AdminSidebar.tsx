@@ -23,6 +23,7 @@ import {
   CreditCard,
   Bell,
   Store,
+  Headphones,
   X
 } from 'lucide-react'
 
@@ -132,24 +133,26 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
       isMobile ? "w-80" : "w-64"
     )}>
       {/* Logo */}
-      <div className="p-6 border-b border-gray-200">
-        <Link href={`/${slug}`} className="flex items-center gap-2">
-          <Store className="h-8 w-8 text-blue-600" />
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">AllGoMenu</h1>
-            <p className="text-sm text-gray-500">Admin Dashboard</p>
+      <div className="px-6 py-5 border-b border-gray-200">
+        <Link href={`/${slug}`} className="flex items-center gap-3 group">
+          <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+            <Store className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg font-bold text-gray-900 truncate">AllGoMenu</h1>
+            <p className="text-xs text-gray-500">Admin Dashboard</p>
           </div>
         </Link>
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="p-4 space-y-6">
+        <div className="px-2 py-4 space-y-6">
           {/* Main Navigation */}
           <div>
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">
               Principal
             </h2>
-            <nav className="space-y-1">
+            <nav className="space-y-0.5">
               {menuItems.map((item) => {
                 const Icon = item.icon
                 const active = isActive(item.href)
@@ -159,14 +162,20 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
                     <Button
                       variant={active ? "secondary" : "ghost"}
                       className={cn(
-                        "w-full justify-start gap-3 h-auto p-3",
-                        active && "bg-blue-50 text-blue-700 border-blue-200"
+                        "w-full justify-start gap-3 h-auto py-2.5 px-3 rounded-lg transition-all duration-200",
+                        active 
+                          ? "bg-blue-50 text-blue-700 border border-blue-200 shadow-sm" 
+                          : "hover:bg-gray-50 hover:text-gray-900"
                       )}
                     >
-                      <Icon className="h-5 w-5" />
-                      <div className="text-left">
-                        <div className="font-medium">{item.title}</div>
-                        <div className="text-xs text-gray-500">{item.description}</div>
+                      <div className={cn(
+                        "p-1 rounded-md transition-colors flex-shrink-0",
+                        active ? "bg-blue-100" : "group-hover:bg-gray-100"
+                      )}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="text-left min-w-0 flex-1">
+                        <div className="font-medium text-sm">{item.title}</div>
                       </div>
                     </Button>
                   </Link>
@@ -179,10 +188,10 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
 
           {/* Settings Navigation */}
           <div>
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">
               Configurações
             </h2>
-            <nav className="space-y-1">
+            <nav className="space-y-0.5">
               {settingsItems.map((item) => {
                 const Icon = item.icon
                 const active = isActive(item.href)
@@ -192,14 +201,20 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
                     <Button
                       variant={active ? "secondary" : "ghost"}
                       className={cn(
-                        "w-full justify-start gap-3 h-auto p-3",
-                        active && "bg-blue-50 text-blue-700 border-blue-200"
+                        "w-full justify-start gap-3 h-auto py-2.5 px-3 rounded-lg transition-all duration-200",
+                        active 
+                          ? "bg-blue-50 text-blue-700 border border-blue-200 shadow-sm" 
+                          : "hover:bg-gray-50 hover:text-gray-900"
                       )}
                     >
-                      <Icon className="h-4 w-4" />
-                      <div className="text-left">
+                      <div className={cn(
+                        "p-0.5 rounded-md transition-colors flex-shrink-0",
+                        active ? "bg-blue-100" : "group-hover:bg-gray-100"
+                      )}>
+                        <Icon className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="text-left min-w-0 flex-1">
                         <div className="font-medium text-sm">{item.title}</div>
-                        <div className="text-xs text-gray-500">{item.description}</div>
                       </div>
                     </Button>
                   </Link>
@@ -210,12 +225,26 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
         </div>
       </ScrollArea>
 
+      {/* Botão de Suporte */}
+      <div className="p-4">
+        <Link href="https://wa.me/5583986005326?text=Ol%C3%A1%21%20Preciso%20de%20suporte%20com%20o%20AllGoMenu." target="_blank">
+          <Button variant="outline" className="w-full justify-start gap-3 h-11 border-gray-200 hover:bg-white hover:border-gray-300 transition-all duration-200">
+            <div className="p-1 bg-blue-100 rounded-md">
+              <Headphones className="h-4 w-4 text-blue-600" />
+            </div>
+            <span className="font-medium text-sm">Suporte</span>
+          </Button>
+        </Link>
+      </div>
+
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-100 bg-gray-50/50">
         <Link href={`/${slug}`} target="_blank">
-          <Button variant="outline" className="w-full justify-start gap-3">
-            <Store className="h-4 w-4" />
-            Ver Site Público
+          <Button variant="outline" className="w-full justify-start gap-3 h-11 border-gray-200 hover:bg-white hover:border-gray-300 transition-all duration-200">
+            <div className="p-1 bg-gray-100 rounded-md">
+              <Store className="h-4 w-4 text-gray-600" />
+            </div>
+            <span className="font-medium text-sm">Ver Site Público</span>
           </Button>
         </Link>
       </div>

@@ -14,7 +14,8 @@
       "Bash(npx shadcn:*)",
       "mcp__serena__get_symbols_overview",
       "mcp__serena__search_for_pattern",
-      "mcp__serena__find_file"
+      "mcp__serena__find_file",
+      "mcp__shadcn-ui__get_component_demo"
     ],
     "deny": []
   }
