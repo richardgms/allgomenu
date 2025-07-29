@@ -24,15 +24,17 @@ export function PublicHeader({
   if (loading) {
     return (
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-10 w-10 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-3 w-24" />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
             </div>
+            <Skeleton className="h-10 w-24" />
           </div>
-          <Skeleton className="h-10 w-24" />
         </div>
       </header>
     )
@@ -46,75 +48,77 @@ export function PublicHeader({
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          {/* Logo e Info do Restaurante */}
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <Avatar className="h-10 w-10 flex-shrink-0">
-              <AvatarImage 
-                src={restaurant.themeConfig?.logo} 
-                alt={restaurant.name} 
-              />
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                {restaurant.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            
-            <div className="grid gap-1 min-w-0 flex-1">
-              <h1 className="text-lg font-semibold leading-none truncate">
-                {restaurant.name}
-              </h1>
-              <div className="flex items-center gap-2">
-                <Badge 
-                  variant={isOpen ? "default" : "destructive"}
-                  className="text-xs"
-                >
-                  <div className="mr-1 h-2 w-2 rounded-full bg-current" />
-                  {operationalStatus.currentStatus === 'open' ? 'Aberto' : 'Fechado'}
-                </Badge>
-                
-                {isOpen && (
-                  <>
-                    <span className="text-xs text-muted-foreground hidden sm:inline">
-                      <Clock className="mr-1 h-3 w-3 inline" />
-                      {deliveryConfig.estimatedTime}min
-                    </span>
-                    {operationalStatus.closesAt && (
-                      <span className="text-xs text-muted-foreground hidden md:inline">
-                        Fecha às {operationalStatus.closesAt}
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            {/* Logo e Info do Restaurante */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <Avatar className="h-10 w-10 flex-shrink-0">
+                <AvatarImage 
+                  src={restaurant.themeConfig?.logo} 
+                  alt={restaurant.name} 
+                />
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {restaurant.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              
+              <div className="grid gap-1 min-w-0 flex-1">
+                <h1 className="text-lg font-semibold leading-none truncate">
+                  {restaurant.name}
+                </h1>
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    variant={isOpen ? "default" : "destructive"}
+                    className="text-xs"
+                  >
+                    <div className="mr-1 h-2 w-2 rounded-full bg-current" />
+                    {operationalStatus.currentStatus === 'open' ? 'Aberto' : 'Fechado'}
+                  </Badge>
+                  
+                  {isOpen && (
+                    <>
+                      <span className="text-xs text-muted-foreground hidden sm:inline">
+                        <Clock className="mr-1 h-3 w-3 inline" />
+                        {deliveryConfig.estimatedTime}min
                       </span>
-                    )}
-                  </>
-                )}
-                
-                {!isOpen && operationalStatus.nextOpenTime && (
-                  <span className="text-xs text-muted-foreground hidden sm:inline">
-                    Abre às {operationalStatus.nextOpenTime}
-                  </span>
-                )}
+                      {operationalStatus.closesAt && (
+                        <span className="text-xs text-muted-foreground hidden md:inline">
+                          Fecha às {operationalStatus.closesAt}
+                        </span>
+                      )}
+                    </>
+                  )}
+                  
+                  {!isOpen && operationalStatus.nextOpenTime && (
+                    <span className="text-xs text-muted-foreground hidden sm:inline">
+                      Abre às {operationalStatus.nextOpenTime}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Botão do Carrinho */}
-          <div className="flex-shrink-0">
-            <Button 
-              onClick={onCartClick} 
-              className="relative gap-2" 
-              size="default"
-              disabled={!isOpen}
-              variant={isOpen ? "default" : "secondary"}
-            >
-              <ShoppingBag className="h-5 w-5" />
-              <span className="hidden sm:inline">Carrinho</span>
-              {cartItemCount > 0 && (
-                <Badge 
-                  className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
-                  variant="destructive"
-                >
-                  {cartItemCount}
-                </Badge>
-              )}
-            </Button>
+            {/* Botão do Carrinho */}
+            <div className="flex-shrink-0">
+              <Button 
+                onClick={onCartClick} 
+                className="relative gap-2" 
+                size="default"
+                disabled={!isOpen}
+                variant={isOpen ? "default" : "secondary"}
+              >
+                <ShoppingBag className="h-5 w-5" />
+                <span className="hidden sm:inline">Carrinho</span>
+                {cartItemCount > 0 && (
+                  <Badge 
+                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
+                    variant="destructive"
+                  >
+                    {cartItemCount}
+                  </Badge>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </header>

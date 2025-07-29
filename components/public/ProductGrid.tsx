@@ -27,48 +27,60 @@ interface ProductCardProps {
 export function ProductGrid({ products, onAddToCart, loading = false }: ProductGridProps) {
   if (loading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {[...Array(8)].map((_, i) => (
-          <Card key={i} className="overflow-hidden">
-            <Skeleton className="h-40 w-full" />
-            <CardHeader className="pb-2">
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-6 w-20" />
-                <Skeleton className="h-5 w-16" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(8)].map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="h-40 w-full" />
+                <CardHeader className="pb-2">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-5 w-16" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       </div>
     )
   }
 
   if (!products.length) {
     return (
-      <div className="text-center py-16">
-        <div className="mx-auto max-w-md">
-          <div className="rounded-full bg-muted/50 p-6 mx-auto w-fit mb-4">
-            <Clock className="h-8 w-8 text-muted-foreground" />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-16">
+            <div className="mx-auto max-w-md">
+              <div className="rounded-full bg-muted/50 p-6 mx-auto w-fit mb-4">
+                <Clock className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Nenhum produto encontrado</h3>
+              <p className="text-muted-foreground text-sm">
+                Esta categoria não possui produtos disponíveis no momento.
+              </p>
+            </div>
           </div>
-          <h3 className="text-lg font-semibold mb-2">Nenhum produto encontrado</h3>
-          <p className="text-muted-foreground text-sm">
-            Esta categoria não possui produtos disponíveis no momento.
-          </p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {products.map((product) => (
-        <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
-      ))}
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
