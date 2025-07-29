@@ -134,9 +134,12 @@ export default function CustomizationPage() {
         primaryHex: settings.primaryColor,
         secondaryHex: settings.secondaryColor,
         name: `Preview ${settings.restaurantName}`
-      }).finally(() => {
-        setIsApplyingPreview(false)
       })
+      
+      // Reset do estado após um delay
+      setTimeout(() => {
+        setIsApplyingPreview(false)
+      }, 500)
     }
   }, [settings.primaryColor, settings.secondaryColor, applyTheme])
 
