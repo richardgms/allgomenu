@@ -43,8 +43,6 @@ export function RestaurantThemeProvider({
   const injectCSS = (css: string) => {
     if (typeof window === 'undefined') return
 
-// CSS injected silently
-
     // Remover style anterior se existir
     const existingStyle = document.getElementById(styleId)
     if (existingStyle) {
@@ -56,13 +54,212 @@ export function RestaurantThemeProvider({
     style.id = styleId
     style.setAttribute('data-theme-provider', restaurantSlug)
     
-    // CSS aplicado diretamente no :root
-    style.textContent = `:root { ${css} }`
+    // CSS aplicado diretamente no :root com overrides
+    style.textContent = `
+      :root { 
+        ${css} 
+      }
+      
+      /* APLICAÇÃO GLOBAL DAS CORES DO TEMA - FORÇADA */
+      
+      /* Background principal */
+      body, html {
+        background-color: var(--background) !important;
+        color: var(--foreground) !important;
+      }
+      
+      /* Sidebar - TODOS os elementos */
+      .sidebar, [data-sidebar], nav, aside {
+        background-color: var(--sidebar-bg) !important;
+        border-color: var(--sidebar-border) !important;
+      }
+      
+      .sidebar-item, [data-sidebar-item], nav a, aside a {
+        color: var(--sidebar-foreground) !important;
+      }
+      
+      .sidebar-item[data-state="active"], [data-sidebar-item][data-state="active"], nav a.active, aside a.active {
+        background-color: var(--sidebar-active) !important;
+        color: var(--sidebar-active-foreground) !important;
+      }
+      
+      /* Cards - TODOS os containers */
+      .card, [data-card], .bg-card, .bg-white, div[class*="bg-"] {
+        background-color: var(--card) !important;
+        color: var(--card-foreground) !important;
+        border-color: var(--border) !important;
+      }
+      
+      /* Buttons - TODOS os tipos */
+      button, .btn, [data-button], input[type="button"], input[type="submit"] {
+        transition: all 0.2s !important;
+      }
+      
+      /* Button default/primary - FORÇAR */
+      button[data-variant="default"], 
+      .btn-primary, 
+      .bg-primary,
+      button:not([data-variant]),
+      button[class*="bg-"] {
+        background-color: var(--primary) !important;
+        color: var(--primary-foreground) !important;
+        border-color: var(--primary) !important;
+      }
+      
+      button[data-variant="default"]:hover, 
+      .btn-primary:hover, 
+      .bg-primary:hover,
+      button:not([data-variant]):hover,
+      button[class*="bg-"]:hover {
+        background-color: var(--primary-dark) !important;
+      }
+      
+      /* Button secondary */
+      button[data-variant="secondary"], 
+      .btn-secondary, 
+      .bg-secondary {
+        background-color: var(--secondary) !important;
+        color: var(--secondary-foreground) !important;
+        border-color: var(--secondary) !important;
+      }
+      
+      /* Button outline */
+      button[data-variant="outline"], 
+      .btn-outline, 
+      .border-primary {
+        background-color: transparent !important;
+        color: var(--primary) !important;
+        border-color: var(--primary) !important;
+      }
+      
+      button[data-variant="outline"]:hover, 
+      .btn-outline:hover, 
+      .border-primary:hover {
+        background-color: var(--primary) !important;
+        color: var(--primary-foreground) !important;
+      }
+      
+      /* Button ghost */
+      button[data-variant="ghost"], 
+      .btn-ghost {
+        background-color: transparent !important;
+        color: var(--foreground) !important;
+      }
+      
+      button[data-variant="ghost"]:hover, 
+      .btn-ghost:hover {
+        background-color: var(--accent) !important;
+        color: var(--accent-foreground) !important;
+      }
+      
+      /* Inputs - TODOS os tipos */
+      .input, input, textarea, select, .bg-input, input[type="text"], input[type="email"], input[type="password"] {
+        background-color: var(--input) !important;
+        border-color: var(--border) !important;
+        color: var(--foreground) !important;
+      }
+      
+      .input:focus, input:focus, textarea:focus, select:focus {
+        border-color: var(--ring) !important;
+        box-shadow: 0 0 0 2px var(--ring) !important;
+      }
+      
+      /* Tabs */
+      .tabs-trigger, [data-tabs-trigger] {
+        color: var(--muted-foreground) !important;
+      }
+      
+      .tabs-trigger[data-state="active"], [data-tabs-trigger][data-state="active"] {
+        color: var(--primary) !important;
+        border-color: var(--primary) !important;
+      }
+      
+      /* Badges - FORÇAR APLICAÇÃO */
+      .badge, [data-slot="badge"], span[data-slot="badge"], .bg-primary {
+        background-color: var(--badge-bg) !important;
+        color: var(--badge-foreground) !important;
+        border-color: var(--badge-border) !important;
+      }
+      
+      .badge.border-transparent.bg-primary,
+      [data-slot="badge"].border-transparent.bg-primary,
+      span[data-slot="badge"].border-transparent.bg-primary,
+      .bg-primary {
+        background-color: var(--primary) !important;
+        color: var(--primary-foreground) !important;
+        border-color: transparent !important;
+      }
+      
+      .badge.border-transparent.bg-secondary,
+      [data-slot="badge"].border-transparent.bg-secondary,
+      span[data-slot="badge"].border-transparent.bg-secondary,
+      .bg-secondary {
+        background-color: var(--secondary) !important;
+        color: var(--secondary-foreground) !important;
+        border-color: transparent !important;
+      }
+      
+      /* Headers e textos */
+      h1, h2, h3, h4, h5, h6, .text-foreground, .text-black {
+        color: var(--foreground) !important;
+      }
+      
+      /* Textos específicos */
+      .text-muted-foreground, .text-muted, .text-gray-500, .text-gray-600 {
+        color: var(--muted-foreground) !important;
+      }
+      
+      .text-primary {
+        color: var(--primary) !important;
+      }
+      
+      .text-secondary {
+        color: var(--secondary) !important;
+      }
+      
+      /* Links */
+      a, .text-primary {
+        color: var(--primary) !important;
+      }
+      
+      a:hover, .text-primary:hover {
+        color: var(--primary-dark) !important;
+      }
+      
+      /* Backgrounds específicos */
+      .bg-background {
+        background-color: var(--background) !important;
+      }
+      
+      .bg-muted {
+        background-color: var(--muted) !important;
+      }
+      
+      .bg-accent {
+        background-color: var(--accent) !important;
+      }
+      
+      /* Bordas */
+      .border-border, .border-gray-200 {
+        border-color: var(--border) !important;
+      }
+      
+      .border-primary {
+        border-color: var(--primary) !important;
+      }
+      
+      .border-secondary {
+        border-color: var(--secondary) !important;
+      }
+      
+      /* Transições suaves */
+      * {
+        transition: background-color 0.2s, color 0.2s, border-color 0.2s !important;
+      }
+    `
     
     // Inserir no head
     document.head.appendChild(style)
-    
-// Debug removed for performance
   }
 
   // Aplicar tema com debounce e controle de estado

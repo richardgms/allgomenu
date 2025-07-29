@@ -125,23 +125,7 @@ export default function CustomizationPage() {
     }
   }, [themeSettings])
 
-  // Aplicar preview em tempo real sempre que as cores mudarem
-  useEffect(() => {
-    if (settings.primaryColor && settings.secondaryColor) {
-      setIsApplyingPreview(true)
-      
-      applyTheme({
-        primaryHex: settings.primaryColor,
-        secondaryHex: settings.secondaryColor,
-        name: `Preview ${settings.restaurantName}`
-      })
-      
-      // Reset do estado após um delay
-      setTimeout(() => {
-        setIsApplyingPreview(false)
-      }, 500)
-    }
-  }, [settings.primaryColor, settings.secondaryColor, applyTheme])
+
 
   const updateSetting = (key: keyof ThemeSettings, value: string) => {
     setSettings(prev => ({ ...prev, [key]: value }))
@@ -165,11 +149,23 @@ export default function CustomizationPage() {
 
   const handleSave = async () => {
     try {
+      setIsApplyingPreview(true)
+      
+      // Aplicar preview primeiro
+      await applyTheme({
+        primaryHex: settings.primaryColor,
+        secondaryHex: settings.secondaryColor,
+        name: `Preview ${settings.restaurantName}`
+      })
+      
+      // Salvar configurações
       await updateTheme.mutateAsync(settings)
       alert('✅ Configurações salvas com sucesso!')
       setHasChanges(false)
     } catch (error) {
       alert(`❌ ${error instanceof Error ? error.message : 'Erro ao salvar configurações'}`)
+    } finally {
+      setIsApplyingPreview(false)
     }
   }
 

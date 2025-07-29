@@ -1,0 +1,562 @@
+/* === OVERRIDES PARA COMPONENTES SHADCN/UI === */
+
+/* APLICAÇÃO GLOBAL DAS CORES DO TEMA */
+
+/* Background principal */
+body {
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+}
+
+/* Sidebar e navegação - CONTRASTE MELHORADO */
+.sidebar, [data-sidebar], nav {
+  background-color: var(--sidebar-bg) !important;
+  border-color: var(--sidebar-border) !important;
+}
+
+.sidebar-item, [data-sidebar-item], nav a {
+  color: var(--sidebar-foreground) !important;
+}
+
+.sidebar-item[data-state="active"], [data-sidebar-item][data-state="active"], nav a.active {
+  background-color: var(--sidebar-active) !important;
+  color: var(--sidebar-active-foreground) !important;
+}
+
+/* Estados hover para sidebar */
+.sidebar-item:hover, [data-sidebar-item]:hover, nav a:hover {
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
+/* Cards e containers */
+.card, [data-card], .bg-card {
+  background-color: var(--card) !important;
+  color: var(--card-foreground) !important;
+  border-color: var(--border) !important;
+}
+
+/* Buttons - TODOS os tipos */
+button, .btn, [data-button] {
+  transition: all 0.2s !important;
+}
+
+/* Button default/primary */
+button[data-variant="default"], 
+.btn-primary, 
+.bg-primary,
+button:not([data-variant]) {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border-color: var(--primary) !important;
+}
+
+button[data-variant="default"]:hover, 
+.btn-primary:hover, 
+.bg-primary:hover,
+button:not([data-variant]):hover {
+  background-color: var(--primary-dark) !important;
+}
+
+/* Button secondary */
+button[data-variant="secondary"], 
+.btn-secondary, 
+.bg-secondary {
+  background-color: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
+  border-color: var(--secondary) !important;
+}
+
+/* Button outline */
+button[data-variant="outline"], 
+.btn-outline, 
+.border-primary {
+  background-color: transparent !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+button[data-variant="outline"]:hover, 
+.btn-outline:hover, 
+.border-primary:hover {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+/* Button ghost */
+button[data-variant="ghost"], 
+.btn-ghost {
+  background-color: transparent !important;
+  color: var(--foreground) !important;
+}
+
+button[data-variant="ghost"]:hover, 
+.btn-ghost:hover {
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
+/* Inputs e formulários */
+.input, input, textarea, select, .bg-input {
+  background-color: var(--input) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+.input:focus, input:focus, textarea:focus, select:focus {
+  border-color: var(--ring) !important;
+  box-shadow: 0 0 0 2px var(--ring) !important;
+}
+
+/* Tabs */
+.tabs-trigger, [data-tabs-trigger] {
+  color: var(--muted-foreground) !important;
+}
+
+.tabs-trigger[data-state="active"], [data-tabs-trigger][data-state="active"] {
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+/* Badges */
+.badge, [data-slot="badge"] {
+  background-color: var(--badge-bg) !important;
+  color: var(--badge-foreground) !important;
+  border-color: var(--badge-border) !important;
+}
+
+/* Badge variants específicos */
+.badge[data-variant="default"],
+[data-slot="badge"][data-variant="default"],
+.badge.border-transparent.bg-primary,
+[data-slot="badge"].border-transparent.bg-primary {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border-color: transparent !important;
+}
+
+.badge[data-variant="secondary"],
+[data-slot="badge"][data-variant="secondary"],
+.badge.border-transparent.bg-secondary,
+[data-slot="badge"].border-transparent.bg-secondary {
+  background-color: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
+  border-color: transparent !important;
+}
+
+.badge[data-variant="destructive"],
+[data-slot="badge"][data-variant="destructive"],
+.badge.border-transparent.bg-destructive,
+[data-slot="badge"].border-transparent.bg-destructive {
+  background-color: var(--destructive) !important;
+  color: var(--destructive-foreground) !important;
+  border-color: transparent !important;
+}
+
+.badge[data-variant="outline"],
+[data-slot="badge"][data-variant="outline"],
+.badge.text-foreground,
+[data-slot="badge"].text-foreground {
+  background-color: transparent !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+}
+
+/* Cards */
+.card {
+  background-color: var(--card) !important;
+  color: var(--card-foreground) !important;
+  border-color: var(--border) !important;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark) !important;
+}
+
+.btn-secondary {
+  background-color: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
+}
+
+.btn-secondary:hover {
+  background-color: var(--secondary-dark) !important;
+}
+
+/* Inputs */
+.input {
+  background-color: var(--input) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+.input:focus {
+  border-color: var(--ring) !important;
+  box-shadow: 0 0 0 2px var(--ring) !important;
+}
+
+/* Select */
+.select {
+  background-color: var(--input) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+/* Textarea */
+.textarea {
+  background-color: var(--input) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+/* Tabs */
+.tabs-trigger {
+  color: var(--muted-foreground) !important;
+}
+
+.tabs-trigger[data-state="active"] {
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+/* Sidebar */
+.sidebar {
+  background-color: var(--sidebar-bg) !important;
+  border-color: var(--sidebar-border) !important;
+}
+
+.sidebar-item {
+  color: var(--sidebar-foreground) !important;
+}
+
+.sidebar-item[data-state="active"] {
+  background-color: var(--sidebar-active) !important;
+  color: var(--sidebar-active-foreground) !important;
+}
+
+/* Tables */
+.table {
+  background-color: var(--table-bg) !important;
+  color: var(--table-foreground) !important;
+  border-color: var(--table-border) !important;
+}
+
+.table th {
+  background-color: var(--table-header-bg) !important;
+  color: var(--table-header-foreground) !important;
+}
+
+.table td {
+  border-color: var(--table-border) !important;
+}
+
+/* Progress */
+.progress {
+  background-color: var(--progress-bg) !important;
+}
+
+.progress-indicator {
+  background-color: var(--progress-foreground) !important;
+}
+
+/* Slider */
+.slider-track {
+  background-color: var(--progress-bg) !important;
+}
+
+.slider-thumb {
+  background-color: var(--progress-foreground) !important;
+}
+
+/* Alert */
+.alert {
+  border-color: var(--border) !important;
+}
+
+.alert-destructive {
+  background-color: var(--destructive) !important;
+  color: var(--destructive-foreground) !important;
+}
+
+.alert-success {
+  background-color: var(--success) !important;
+  color: var(--success-foreground) !important;
+}
+
+.alert-warning {
+  background-color: var(--warning) !important;
+  color: var(--warning-foreground) !important;
+}
+
+.alert-info {
+  background-color: var(--info) !important;
+  color: var(--info-foreground) !important;
+}
+
+/* Dialog/Modal */
+.dialog-content {
+  background-color: var(--modal) !important;
+  color: var(--modal-foreground) !important;
+}
+
+/* Popover */
+.popover-content {
+  background-color: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border-color: var(--border) !important;
+}
+
+/* Tooltip */
+.tooltip-content {
+  background-color: var(--tooltip) !important;
+  color: var(--tooltip-foreground) !important;
+}
+
+/* Dropdown */
+.dropdown-content {
+  background-color: var(--dropdown-menu) !important;
+  color: var(--dropdown-menu-foreground) !important;
+  border-color: var(--border) !important;
+}
+
+/* Checkbox */
+.checkbox {
+  border-color: var(--border) !important;
+}
+
+.checkbox[data-state="checked"] {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+/* Radio */
+.radio {
+  border-color: var(--border) !important;
+}
+
+.radio[data-state="checked"] {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+/* Switch */
+.switch {
+  background-color: var(--muted) !important;
+}
+
+.switch[data-state="checked"] {
+  background-color: var(--primary) !important;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Focus states */
+*:focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
+}
+
+/* Hover states para elementos interativos */
+.interactive:hover {
+  background-color: var(--accent) !important;
+}
+
+/* Estados de loading */
+.loading {
+  background-color: var(--muted) !important;
+}
+
+/* Estados de disabled */
+.disabled {
+  opacity: 0.5 !important;
+  pointer-events: none !important;
+}
+
+/* Headers e títulos */
+h1, h2, h3, h4, h5, h6, .text-foreground {
+  color: var(--foreground) !important;
+}
+
+/* Textos e labels */
+.text-muted-foreground, .text-muted {
+  color: var(--muted-foreground) !important;
+}
+
+.text-primary {
+  color: var(--primary) !important;
+}
+
+.text-secondary {
+  color: var(--secondary) !important;
+}
+
+/* Links */
+a, .text-primary {
+  color: var(--primary) !important;
+}
+
+a:hover, .text-primary:hover {
+  color: var(--primary-dark) !important;
+}
+
+/* Backgrounds específicos */
+.bg-background {
+  background-color: var(--background) !important;
+}
+
+.bg-muted {
+  background-color: var(--muted) !important;
+}
+
+.bg-accent {
+  background-color: var(--accent) !important;
+}
+
+.bg-primary {
+  background-color: var(--primary) !important;
+}
+
+.bg-secondary {
+  background-color: var(--secondary) !important;
+}
+
+/* Bordas */
+.border-border {
+  border-color: var(--border) !important;
+}
+
+.border-primary {
+  border-color: var(--primary) !important;
+}
+
+.border-secondary {
+  border-color: var(--secondary) !important;
+}
+
+/* Estados de hover */
+.hover\:bg-accent:hover {
+  background-color: var(--accent) !important;
+}
+
+.hover\:bg-primary:hover {
+  background-color: var(--primary) !important;
+}
+
+.hover\:text-primary:hover {
+  color: var(--primary) !important;
+}
+
+/* Estados de focus */
+.focus\:ring-primary:focus {
+  box-shadow: 0 0 0 2px var(--primary) !important;
+}
+
+.focus\:border-primary:focus {
+  border-color: var(--primary) !important;
+}
+
+/* Estados de active */
+.active\:bg-primary:active {
+  background-color: var(--primary) !important;
+}
+
+/* Ícones */
+.icon, svg {
+  color: inherit !important;
+}
+
+/* Gráficos e charts */
+.chart, .recharts-wrapper {
+  background-color: var(--card) !important;
+}
+
+.chart text, .recharts-text {
+  fill: var(--foreground) !important;
+}
+
+/* Dropdowns e menus */
+.dropdown-menu, .menu {
+  background-color: var(--popover) !important;
+  border-color: var(--border) !important;
+}
+
+.dropdown-item, .menu-item {
+  color: var(--popover-foreground) !important;
+}
+
+.dropdown-item:hover, .menu-item:hover {
+  background-color: var(--accent) !important;
+}
+
+/* Tooltips */
+.tooltip {
+  background-color: var(--tooltip) !important;
+  color: var(--tooltip-foreground) !important;
+}
+
+/* Modais e dialogs */
+.modal, .dialog {
+  background-color: var(--modal) !important;
+  color: var(--modal-foreground) !important;
+}
+
+/* Loading e spinners */
+.loading, .spinner {
+  color: var(--primary) !important;
+}
+
+/* Estados de sucesso, erro, etc */
+.text-success {
+  color: var(--success) !important;
+}
+
+.text-error, .text-destructive {
+  color: var(--destructive) !important;
+}
+
+.text-warning {
+  color: var(--warning) !important;
+}
+
+.text-info {
+  color: var(--info) !important;
+}
+
+/* Override para classes Tailwind específicas */
+.bg-white {
+  background-color: var(--card) !important;
+}
+
+.text-black {
+  color: var(--foreground) !important;
+}
+
+.text-gray-500, .text-gray-600 {
+  color: var(--muted-foreground) !important;
+}
+
+.border-gray-200 {
+  border-color: var(--border) !important;
+} 

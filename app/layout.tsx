@@ -1,4 +1,5 @@
 import './globals.css'
+import '/public/styles/theme-overrides.css'
 import { Inter, Nunito } from 'next/font/google'
 import { Providers } from '@/lib/providers'
 
