@@ -33,7 +33,7 @@ export const CategorySection = forwardRef<HTMLElement, CategorySectionProps>(
           sectionRef.current = el
         }}
         id={sectionId}
-        className="scroll-mt-20" // Offset para a navegação fixa
+        className="scroll-mt-32" // Offset para header (64px) + navegação (~60px)
         role="tabpanel"
         aria-labelledby={`tab-${category.id}`}
         tabIndex={-1}

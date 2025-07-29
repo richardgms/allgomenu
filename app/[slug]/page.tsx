@@ -73,7 +73,7 @@ export default function RestaurantPage() {
   const scrollSpy = useScrollSpy({
     rootMargin: '-20% 0px -60% 0px',
     threshold: 0.1,
-    offset: 100
+    offset: 128 // Header (64px) + navegação (~64px)
   })
 
   // Estados da UI

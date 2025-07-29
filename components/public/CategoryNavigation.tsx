@@ -22,11 +22,11 @@ export function CategoryNavigation({
 }: CategoryNavigationProps) {
   if (loading) {
     return (
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <div className="sticky top-16 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto py-4">
             <ScrollArea className="w-full whitespace-nowrap">
-              <div className="flex gap-2">
+              <div className="flex gap-2 justify-center">
                 {[...Array(5)].map((_, i) => (
                   <Skeleton key={i} className="h-10 w-24 flex-shrink-0" />
                 ))}
@@ -45,14 +45,14 @@ export function CategoryNavigation({
 
   return (
     <nav 
-      className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b"
+      className="sticky top-16 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b"
       role="navigation"
       aria-label="Navegação do menu por categorias"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex gap-2 py-4" role="tablist">
+            <div className="flex gap-2 py-4 justify-center" role="tablist">
               {categories.map((category) => {
                 const isActive = activeSection === `category-${category.id}`
                 
