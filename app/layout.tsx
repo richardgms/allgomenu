@@ -1,5 +1,6 @@
 import './globals.css'
 import { Inter, Nunito } from 'next/font/google'
+import { Providers } from '@/lib/providers'
 
 const inter = Inter({ subsets: ['latin'] })
 const nunito = Nunito({ 
@@ -21,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${inter.className} ${nunito.variable}`}>
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   )

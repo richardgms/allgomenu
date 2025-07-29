@@ -1,14 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
-import { Skeleton } from '@/components/ui/skeleton'
-import { StatCard } from '@/components/StatCard'
-import { StatusBadge } from '@/components/StatusBadge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { SalesLineChart } from '@/components/charts/SalesLineChart'
+import { ProductsBarChart } from '@/components/charts/ProductsBarChart'
+import { MetricCard } from '@/components/charts/MetricCard'
 import { 
   TrendingUp, 
   DollarSign, 
@@ -16,11 +18,15 @@ import {
   Users, 
   Clock, 
   Star,
-  ArrowUpRight,
-  ArrowDownRight,
-  Eye,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react'
+import { 
+  useAnalyticsOverview, 
+  useSalesData, 
+  useProductAnalytics,
+  useAllAnalytics 
+} from '@/hooks/useAnalytics'
 
 interface DashboardStats {
   totalSales: number
@@ -44,77 +50,41 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
+  const params = useParams()
+  const slug = params.slug as string
+  const [selectedPeriod, setSelectedPeriod] = useState('30')
 
-  const fetchDashboardData = async () => {
-    try {
-      // Mock data - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      setStats({
-        totalSales: 12450.50,
-        totalOrders: 156,
-        totalCustomers: 89,
-        averageOrderValue: 79.81,
-        salesGrowth: 12.5,
-        topProducts: [
-          { id: '1', name: 'Pizza Margherita', sales: 45, revenue: 1350.00 },
-          { id: '2', name: 'Hambúrguer Clássico', sales: 38, revenue: 1140.00 },
-          { id: '3', name: 'Batata Frita', sales: 67, revenue: 670.00 },
-          { id: '4', name: 'Refrigerante', sales: 89, revenue: 445.00 },
-        ],
-        recentOrders: [
-          { id: 'ORD-001', customer: 'João Silva', total: 89.50, status: 'preparing', time: '5 min' },
-          { id: 'ORD-002', customer: 'Maria Santos', total: 145.00, status: 'ready', time: '12 min' },
-          { id: 'ORD-003', customer: 'Pedro Costa', total: 67.80, status: 'delivered', time: '25 min' },
-          { id: 'ORD-004', customer: 'Ana Lima', total: 98.20, status: 'pending', time: '2 min' },
-        ]
-      })
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error)
-    } finally {
-      setLoading(false)
-      setRefreshing(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchDashboardData()
-  }, [])
+  // Hooks para dados reais
+  const { 
+    data: overview, 
+    isLoading: overviewLoading, 
+    error: overviewError,
+    refetch: refetchOverview 
+  } = useAnalyticsOverview(slug, parseInt(selectedPeriod))
+  
+  const { 
+    data: salesData, 
+    isLoading: salesLoading,
+    refetch: refetchSales 
+  } = useSalesData(slug, parseInt(selectedPeriod))
+  
+  const { 
+    data: productsData, 
+    isLoading: productsLoading,
+    refetch: refetchProducts 
+  } = useProductAnalytics(slug, parseInt(selectedPeriod))
 
   const handleRefresh = () => {
-    setRefreshing(true)
-    fetchDashboardData()
+    refetchOverview()
+    refetchSales()
+    refetchProducts()
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-96" />
-          </div>
-          <Skeleton className="h-10 w-32" />
-        </div>
-        
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-8 w-32" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-4 w-20" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    )
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value)
   }
 
   return (
@@ -124,185 +94,198 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600">
-            Acompanhe o desempenho do seu restaurante em tempo real
+            Visão geral das métricas do seu restaurante em tempo real
           </p>
         </div>
-        <Button onClick={handleRefresh} disabled={refreshing} variant="outline">
-          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          Atualizar
-        </Button>
+        <div className="flex items-center gap-3">
+          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">Últimos 7 dias</SelectItem>
+              <SelectItem value="30">Últimos 30 dias</SelectItem>
+              <SelectItem value="90">Últimos 90 dias</SelectItem>
+              <SelectItem value="365">Último ano</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button 
+            variant="outline" 
+            onClick={handleRefresh}
+            disabled={overviewLoading || salesLoading || productsLoading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${(overviewLoading || salesLoading || productsLoading) ? 'animate-spin' : ''}`} />
+            Atualizar
+          </Button>
+        </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Vendas Hoje"
-          value={`R$ ${stats?.totalSales.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-          icon={DollarSign}
-          trend={stats?.salesGrowth}
-          trendLabel="vs. ontem"
+      {/* Error State */}
+      {overviewError && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Erro ao carregar dados do dashboard. Tente novamente.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Métricas Principais */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title="Receita Total"
+          value={formatCurrency(overview?.totalRevenue || 0)}
+          subtitle={`${selectedPeriod} dias`}
+          growth={overview?.revenueChange}
+          icon={<DollarSign className="h-4 w-4" />}
+          loading={overviewLoading}
+          variant="revenue"
         />
-        <StatCard
-          title="Pedidos"
-          value={stats?.totalOrders.toString() || '0'}
-          icon={ShoppingBag}
-          trend={8.2}
-          trendLabel="vs. ontem"
+        
+        <MetricCard
+          title="Total de Pedidos"
+          value={overview?.totalOrders || 0}
+          subtitle={`${selectedPeriod} dias`}
+          growth={overview?.ordersChange}
+          icon={<ShoppingBag className="h-4 w-4" />}
+          loading={overviewLoading}
+          variant="orders"
         />
-        <StatCard
-          title="Clientes"
-          value={stats?.totalCustomers.toString() || '0'}
-          icon={Users}
-          trend={-2.1}
-          trendLabel="vs. ontem"
+        
+        <MetricCard
+          title="Clientes Únicos"
+          value={overview?.totalCustomers || 0}
+          subtitle={`${selectedPeriod} dias`}
+          icon={<Users className="h-4 w-4" />}
+          loading={overviewLoading}
+          variant="customers"
         />
-        <StatCard
+        
+        <MetricCard
           title="Ticket Médio"
-          value={`R$ ${stats?.averageOrderValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-          icon={TrendingUp}
-          trend={5.3}
-          trendLabel="vs. ontem"
+          value={formatCurrency(overview?.averageOrderValue || 0)}
+          subtitle={`Taxa conversão: ${overview?.conversionRate?.toFixed(1) || 0}%`}
+          progress={overview?.conversionRate}
+          icon={<TrendingUp className="h-4 w-4" />}
+          loading={overviewLoading}
         />
       </div>
 
-      {/* Main Content */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent Orders */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Pedidos Recentes
-              </CardTitle>
-              <CardDescription>
-                Acompanhe os pedidos em tempo real
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {stats?.recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div>
-                        <p className="font-medium">{order.customer}</p>
-                        <p className="text-sm text-gray-500">{order.id}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <StatusBadge status={order.status} />
-                      <div className="text-right">
-                        <p className="font-medium">R$ {order.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
-                        <p className="text-sm text-gray-500">{order.time} atrás</p>
-                      </div>
-                      <Button variant="ghost" size="icon">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      {/* Gráficos Principais */}
+      <Tabs defaultValue="sales" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="sales">Evolução de Vendas</TabsTrigger>
+          <TabsTrigger value="products">Produtos Mais Vendidos</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="sales">
+          <SalesLineChart 
+            data={salesData || []} 
+            loading={salesLoading}
+            title="Evolução de Vendas"
+            height={350}
+          />
+        </TabsContent>
+        
+        <TabsContent value="products">
+          <div className="grid gap-4 lg:grid-cols-2">
+            <ProductsBarChart 
+              data={productsData || []} 
+              loading={productsLoading}
+              title="Por Quantidade Vendida"
+              height={350}
+              dataKey="sales"
+            />
+            <ProductsBarChart 
+              data={productsData || []} 
+              loading={productsLoading}
+              title="Por Receita Gerada"
+              height={350}
+              dataKey="revenue"
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
 
-        {/* Top Products */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5" />
-                Produtos Populares
-              </CardTitle>
-              <CardDescription>
-                Seus produtos mais vendidos hoje
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {stats?.topProducts.map((product, index) => (
-                  <div key={product.id} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-medium text-blue-700">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{product.name}</p>
-                      <p className="text-xs text-gray-500">{product.sales} vendas</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-sm">
-                        R$ {product.revenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Performance Overview */}
+      {/* Resumo de Status */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Performance das Vendas</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Resumo Operacional
+            </CardTitle>
             <CardDescription>
-              Vendas dos últimos 7 dias
+              Status atual do restaurante
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'].map((day, index) => {
-                const value = Math.floor(Math.random() * 100) + 20
-                return (
-                  <div key={day} className="flex items-center gap-4">
-                    <div className="w-20 text-sm">{day}</div>
-                    <div className="flex-1">
-                      <Progress value={value} className="h-2" />
-                    </div>
-                    <div className="w-16 text-sm font-medium text-right">
-                      R$ {(value * 50).toLocaleString('pt-BR')}
-                    </div>
-                  </div>
-                )
-              })}
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Status do Restaurante</span>
+                <Badge className="bg-green-100 text-green-800">Ativo</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Total de Produtos</span>
+                <span className="text-sm font-medium">{overview?.totalProducts || 0}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Taxa de Conversão</span>
+                <span className="text-sm font-medium">{overview?.conversionRate?.toFixed(1) || 0}%</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Período Analisado</span>
+                <span className="text-sm font-medium">{selectedPeriod} dias</span>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Status Atual</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5" />
+              Top 5 Produtos
+            </CardTitle>
             <CardDescription>
-              Resumo do funcionamento
+              Produtos mais vendidos no período
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Restaurante</span>
-                <Badge className="bg-green-100 text-green-800">Aberto</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Pedidos Pendentes</span>
-                <Badge variant="secondary">4</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Tempo Médio de Preparo</span>
-                <span className="text-sm font-medium">18 min</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Produtos Disponíveis</span>
-                <span className="text-sm font-medium">23/25</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Avaliação Média</span>
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-medium">4.8</span>
-                </div>
-              </div>
+            <div className="space-y-3">
+              {productsLoading ? (
+                [...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-gray-200 animate-pulse" />
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse mb-1" />
+                      <div className="h-3 bg-gray-200 rounded w-2/3 animate-pulse" />
+                    </div>
+                    <div className="w-16 h-4 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                ))
+              ) : (
+                productsData?.slice(0, 5).map((product, index) => (
+                  <div key={product.id} className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium text-primary">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{product.name}</p>
+                      <p className="text-xs text-muted-foreground">{product.sales} vendas</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-sm">
+                        {formatCurrency(product.revenue)}
+                      </p>
+                    </div>
+                  </div>
+                )) || (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Nenhum produto encontrado no período
+                  </p>
+                )
+              )}
             </div>
           </CardContent>
         </Card>
