@@ -128,19 +128,37 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
   }
 
   const sidebarContent = (
-    <div className={cn(
-      "bg-white border-r border-gray-200 flex flex-col h-full",
-      isMobile ? "w-80" : "w-64"
-    )}>
+    <div 
+      className={cn(
+        "flex flex-col h-full border-r",
+        isMobile ? "w-80" : "w-64"
+      )}
+      style={{ 
+        backgroundColor: 'var(--card)', 
+        borderColor: 'var(--border)' 
+      }}
+    >
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-gray-200">
+      <div className="px-6 py-5 border-b" style={{ borderColor: 'var(--border)' }}>
         <Link href={`/${slug}`} className="flex items-center gap-3 group">
-          <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
-            <Store className="h-6 w-6 text-blue-600" />
+          <div 
+            className="p-2 rounded-lg transition-colors"
+            style={{ 
+              backgroundColor: 'var(--primary-color)',
+              opacity: 0.1
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '0.2'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.1'
+            }}
+          >
+            <Store className="h-6 w-6" style={{ color: 'var(--primary-color)' }} />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-bold text-gray-900 truncate">AllGoMenu</h1>
-            <p className="text-xs text-gray-500">Admin Dashboard</p>
+            <h1 className="text-lg font-bold text-foreground truncate">AllGoMenu</h1>
+            <p className="text-xs text-muted-foreground">Admin Dashboard</p>
           </div>
         </Link>
       </div>
@@ -149,7 +167,7 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
         <div className="px-2 py-4 space-y-6">
           {/* Main Navigation */}
           <div>
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">
               Principal
             </h2>
             <nav className="space-y-0.5">
@@ -164,13 +182,13 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
                       className={cn(
                         "w-full justify-start gap-3 h-auto py-2.5 px-3 rounded-lg transition-all duration-200",
                         active 
-                          ? "bg-blue-50 text-blue-700 border border-blue-200 shadow-sm" 
-                          : "hover:bg-gray-50 hover:text-gray-900"
+                          ? "bg-primary/10 text-primary border border-primary/20 shadow-sm" 
+                          : "hover:bg-accent hover:text-accent-foreground"
                       )}
                     >
                       <div className={cn(
                         "p-1 rounded-md transition-colors flex-shrink-0",
-                        active ? "bg-blue-100" : "group-hover:bg-gray-100"
+                        active ? "bg-primary/20" : "group-hover:bg-accent"
                       )}>
                         <Icon className="h-4 w-4" />
                       </div>
@@ -188,7 +206,7 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
 
           {/* Settings Navigation */}
           <div>
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">
               Configurações
             </h2>
             <nav className="space-y-0.5">
@@ -203,13 +221,13 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
                       className={cn(
                         "w-full justify-start gap-3 h-auto py-2.5 px-3 rounded-lg transition-all duration-200",
                         active 
-                          ? "bg-blue-50 text-blue-700 border border-blue-200 shadow-sm" 
-                          : "hover:bg-gray-50 hover:text-gray-900"
+                          ? "bg-primary/10 text-primary border border-primary/20 shadow-sm" 
+                          : "hover:bg-accent hover:text-accent-foreground"
                       )}
                     >
                       <div className={cn(
                         "p-0.5 rounded-md transition-colors flex-shrink-0",
-                        active ? "bg-blue-100" : "group-hover:bg-gray-100"
+                        active ? "bg-primary/20" : "group-hover:bg-accent"
                       )}>
                         <Icon className="h-3.5 w-3.5" />
                       </div>
@@ -228,9 +246,9 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
       {/* Botão de Suporte */}
       <div className="p-4">
         <Link href="https://wa.me/5583986005326?text=Ol%C3%A1%21%20Preciso%20de%20suporte%20com%20o%20AllGoMenu." target="_blank">
-          <Button variant="outline" className="w-full justify-start gap-3 h-11 border-gray-200 hover:bg-white hover:border-gray-300 transition-all duration-200">
-            <div className="p-1 bg-blue-100 rounded-md">
-              <Headphones className="h-4 w-4 text-blue-600" />
+          <Button variant="outline" className="w-full justify-start gap-3 h-11 border-border hover:bg-accent hover:text-accent-foreground transition-all duration-200">
+            <div className="p-1 bg-primary/10 rounded-md">
+              <Headphones className="h-4 w-4 text-primary" />
             </div>
             <span className="font-medium text-sm">Suporte</span>
           </Button>
@@ -238,11 +256,11 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+      <div className="p-4 border-t border-border bg-muted/50">
         <Link href={`/${slug}`} target="_blank">
-          <Button variant="outline" className="w-full justify-start gap-3 h-11 border-gray-200 hover:bg-white hover:border-gray-300 transition-all duration-200">
-            <div className="p-1 bg-gray-100 rounded-md">
-              <Store className="h-4 w-4 text-gray-600" />
+          <Button variant="outline" className="w-full justify-start gap-3 h-11 border-border hover:bg-accent hover:text-accent-foreground transition-all duration-200">
+            <div className="p-1 bg-secondary/10 rounded-md">
+              <Store className="h-4 w-4 text-secondary" />
             </div>
             <span className="font-medium text-sm">Ver Site Público</span>
           </Button>

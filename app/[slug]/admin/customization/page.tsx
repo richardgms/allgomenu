@@ -8,10 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { ImageUpload } from '@/components/ImageUpload'
 import { useTheme } from '@/hooks/useAdminApi'
+import { useRestaurantTheme } from '@/components/theme/RestaurantThemeProvider'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
@@ -25,7 +25,8 @@ import {
   RotateCcw,
   Smartphone,
   Monitor,
-  Tablet
+  Tablet,
+  CheckCircle
 } from 'lucide-react'
 
 interface ThemeSettings {
@@ -86,6 +87,7 @@ const themePresets = {
 
 export default function CustomizationPage() {
   const [previewMode, setPreviewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
+  const [isApplyingPreview, setIsApplyingPreview] = useState(false)
   
   // Use o hook da API
   const {
@@ -95,6 +97,9 @@ export default function CustomizationPage() {
     updateTheme,
     resetTheme
   } = useTheme()
+
+  // Hook para aplicar preview em tempo real
+  const { applyTheme } = useRestaurantTheme()
 
   // Estado local para edição
   const [settings, setSettings] = useState<ThemeSettings>({
@@ -120,6 +125,21 @@ export default function CustomizationPage() {
     }
   }, [themeSettings])
 
+  // Aplicar preview em tempo real sempre que as cores mudarem
+  useEffect(() => {
+    if (settings.primaryColor && settings.secondaryColor) {
+      setIsApplyingPreview(true)
+      
+      applyTheme({
+        primaryHex: settings.primaryColor,
+        secondaryHex: settings.secondaryColor,
+        name: `Preview ${settings.restaurantName}`
+      }).finally(() => {
+        setIsApplyingPreview(false)
+      })
+    }
+  }, [settings.primaryColor, settings.secondaryColor, applyTheme])
+
   const updateSetting = (key: keyof ThemeSettings, value: string) => {
     setSettings(prev => ({ ...prev, [key]: value }))
     setHasChanges(true)
@@ -143,10 +163,10 @@ export default function CustomizationPage() {
   const handleSave = async () => {
     try {
       await updateTheme.mutateAsync(settings)
-      alert('Configurações salvas com sucesso!')
+      alert('✅ Configurações salvas com sucesso!')
       setHasChanges(false)
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Erro ao salvar configurações')
+      alert(`❌ ${error instanceof Error ? error.message : 'Erro ao salvar configurações'}`)
     }
   }
 
@@ -155,10 +175,10 @@ export default function CustomizationPage() {
     
     try {
       await resetTheme.mutateAsync()
-      alert('Tema resetado com sucesso!')
+      alert('✅ Tema resetado com sucesso!')
       setHasChanges(false)
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Erro ao resetar tema')
+      alert(`❌ ${error instanceof Error ? error.message : 'Erro ao resetar tema'}`)
     }
   }
 
@@ -201,14 +221,23 @@ export default function CustomizationPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Personalização</h1>
-          <p className="text-gray-600">
-            Customize a aparência do seu restaurante
+          <h1 className="text-3xl font-bold text-foreground">🎨 Personalização</h1>
+          <p className="text-muted-foreground">
+            Customize a aparência do seu restaurante em tempo real
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {isApplyingPreview && (
+            <Badge variant="outline" className="animate-pulse">
+              <Eye className="h-3 w-3 mr-1" />
+              Aplicando preview...
+            </Badge>
+          )}
           {hasChanges && (
-            <Badge variant="secondary">Alterações não salvas</Badge>
+            <Badge variant="secondary">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              Alterações não salvas
+            </Badge>
           )}
           <Button 
             variant="outline" 
@@ -252,16 +281,37 @@ export default function CustomizationPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {Object.entries(themePresets).map(([key, preset]) => (
-                    <div key={key} className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer" onClick={() => applyPreset(key)}>
+                    <div 
+                      key={key} 
+                      className={`border rounded-lg p-4 hover:bg-accent cursor-pointer transition-all ${
+                        settings.category === key ? 'border-primary bg-primary/5' : ''
+                      }`}
+                      onClick={() => applyPreset(key)}
+                    >
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold">{preset.name}</h4>
+                        <h4 className="font-semibold flex items-center gap-2">
+                          {preset.name}
+                          {settings.category === key && <CheckCircle className="h-4 w-4 text-primary" />}
+                        </h4>
                         <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: preset.primaryColor }} />
-                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: preset.secondaryColor }} />
-                          <div className="w-4 h-4 rounded-full border" style={{ backgroundColor: preset.backgroundColor }} />
+                          <div 
+                            className="w-4 h-4 rounded-full border" 
+                            style={{ backgroundColor: preset.primaryColor }} 
+                            title="Cor Primária"
+                          />
+                          <div 
+                            className="w-4 h-4 rounded-full border" 
+                            style={{ backgroundColor: preset.secondaryColor }} 
+                            title="Cor Secundária"
+                          />
+                          <div 
+                            className="w-4 h-4 rounded-full border" 
+                            style={{ backgroundColor: preset.backgroundColor }} 
+                            title="Cor de Fundo"
+                          />
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600">{preset.description}</p>
+                      <p className="text-sm text-muted-foreground">{preset.description}</p>
                     </div>
                   ))}
                 </CardContent>
@@ -276,80 +326,87 @@ export default function CustomizationPage() {
                     Personalizar Cores
                   </CardTitle>
                   <CardDescription>
-                    Ajuste as cores principais do seu tema
+                    As mudanças são aplicadas em tempo real no preview e no sistema
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="primaryColor">Cor Primária</Label>
+                      <Label htmlFor="primaryColor">🎯 Cor Primária</Label>
                       <div className="flex items-center gap-2">
                         <Input
                           id="primaryColor"
                           type="color"
                           value={settings.primaryColor}
                           onChange={(e) => updateSetting('primaryColor', e.target.value)}
-                          className="w-16 h-10 p-1 rounded border"
+                          className="w-16 h-10 p-1 rounded border cursor-pointer"
                         />
                         <Input
                           value={settings.primaryColor}
                           onChange={(e) => updateSetting('primaryColor', e.target.value)}
-                          className="flex-1"
+                          className="flex-1 font-mono"
+                          placeholder="#000000"
                         />
                       </div>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="secondaryColor">Cor Secundária</Label>
+                      <Label htmlFor="secondaryColor">🎨 Cor Secundária</Label>
                       <div className="flex items-center gap-2">
                         <Input
                           id="secondaryColor"
                           type="color"
                           value={settings.secondaryColor}
                           onChange={(e) => updateSetting('secondaryColor', e.target.value)}
-                          className="w-16 h-10 p-1 rounded border"
+                          className="w-16 h-10 p-1 rounded border cursor-pointer"
                         />
                         <Input
                           value={settings.secondaryColor}
                           onChange={(e) => updateSetting('secondaryColor', e.target.value)}
-                          className="flex-1"
+                          className="flex-1 font-mono"
+                          placeholder="#000000"
                         />
                       </div>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="backgroundColor">Cor de Fundo</Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id="backgroundColor"
-                          type="color"
-                          value={settings.backgroundColor}
-                          onChange={(e) => updateSetting('backgroundColor', e.target.value)}
-                          className="w-16 h-10 p-1 rounded border"
-                        />
-                        <Input
-                          value={settings.backgroundColor}
-                          onChange={(e) => updateSetting('backgroundColor', e.target.value)}
-                          className="flex-1"
-                        />
+                  </div>
+
+                  {/* Seção de cores extras (menos importante) */}
+                  <div className="pt-4 border-t">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="backgroundColor">Fundo</Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            id="backgroundColor"
+                            type="color"
+                            value={settings.backgroundColor}
+                            onChange={(e) => updateSetting('backgroundColor', e.target.value)}
+                            className="w-12 h-8 p-1 rounded border"
+                          />
+                          <Input
+                            value={settings.backgroundColor}
+                            onChange={(e) => updateSetting('backgroundColor', e.target.value)}
+                            className="flex-1 text-xs font-mono"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="textColor">Cor do Texto</Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id="textColor"
-                          type="color"
-                          value={settings.textColor}
-                          onChange={(e) => updateSetting('textColor', e.target.value)}
-                          className="w-16 h-10 p-1 rounded border"
-                        />
-                        <Input
-                          value={settings.textColor}
-                          onChange={(e) => updateSetting('textColor', e.target.value)}
-                          className="flex-1"
-                        />
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="textColor">Texto</Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            id="textColor"
+                            type="color"
+                            value={settings.textColor}
+                            onChange={(e) => updateSetting('textColor', e.target.value)}
+                            className="w-12 h-8 p-1 rounded border"
+                          />
+                          <Input
+                            value={settings.textColor}
+                            onChange={(e) => updateSetting('textColor', e.target.value)}
+                            className="flex-1 text-xs font-mono"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -397,7 +454,7 @@ export default function CustomizationPage() {
                       onChange={(url) => updateSetting('logo', url)}
                       aspectRatio="square"
                     />
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Recomendamos uma imagem quadrada de pelo menos 200x200px
                     </p>
                   </div>
@@ -409,7 +466,7 @@ export default function CustomizationPage() {
                       onChange={(url) => updateSetting('bannerImage', url)}
                       aspectRatio="banner"
                     />
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Imagem para o cabeçalho, recomendamos 1200x400px
                     </p>
                   </div>
@@ -450,16 +507,100 @@ export default function CustomizationPage() {
           </Tabs>
         </div>
 
-        {/* Preview Panel */}
+        {/* Preview Panel - COMPLETAMENTE REFORMULADO */}
         <div className="space-y-4">
+          {/* Teste Visual REAL das Cores */}
+          <Card>
+            <CardHeader>
+              <CardTitle>🎨 Teste Visual do Tema</CardTitle>
+              <CardDescription>
+                Cores aplicadas em tempo real - estas são as cores reais sendo usadas no sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div 
+                  className="p-4 rounded-lg text-center font-bold text-white shadow-sm border-2"
+                  style={{ 
+                    backgroundColor: settings.primaryColor,
+                    borderColor: settings.primaryColor
+                  }}
+                >
+                  Cor Primária
+                  <div className="text-xs mt-1 opacity-90 font-mono">
+                    {settings.primaryColor}
+                  </div>
+                </div>
+                
+                <div 
+                  className="p-4 rounded-lg text-center font-bold text-white shadow-sm border-2"
+                  style={{ 
+                    backgroundColor: settings.secondaryColor,
+                    borderColor: settings.secondaryColor
+                  }}
+                >
+                  Cor Secundária
+                  <div className="text-xs mt-1 opacity-90 font-mono">
+                    {settings.secondaryColor}
+                  </div>
+                </div>
+                
+                <div 
+                  className="p-4 rounded-lg text-center font-medium border-2"
+                  style={{ 
+                    backgroundColor: settings.backgroundColor,
+                    color: settings.textColor,
+                    borderColor: settings.primaryColor
+                  }}
+                >
+                  Background
+                  <div className="text-xs mt-1 opacity-70 font-mono">
+                    {settings.backgroundColor}
+                  </div>
+                </div>
+                
+                <div 
+                  className="p-4 rounded-lg text-center font-medium border"
+                  style={{ 
+                    backgroundColor: '#f8f9fa',
+                    color: settings.textColor,
+                    borderColor: settings.secondaryColor
+                  }}
+                >
+                  Card/Muted
+                  <div className="text-xs mt-1 opacity-70">
+                    Cor de texto: {settings.textColor}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Botões de teste */}
+              <div className="flex gap-2 pt-2">
+                <button 
+                  className="flex-1 py-2 px-4 rounded-lg font-medium text-white shadow-sm hover:shadow-md transition-all"
+                  style={{ backgroundColor: settings.primaryColor }}
+                >
+                  Botão Primário
+                </button>
+                <button 
+                  className="flex-1 py-2 px-4 rounded-lg font-medium text-white shadow-sm hover:shadow-md transition-all"
+                  style={{ backgroundColor: settings.secondaryColor }}
+                >
+                  Botão Secundário
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Preview do Site */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Eye className="h-5 w-5" />
-                Visualizar
+                Preview do Site
               </CardTitle>
               <CardDescription>
-                Veja como ficará seu site com as configurações atuais
+                Visualização em tempo real usando as cores definidas acima
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -492,7 +633,7 @@ export default function CustomizationPage() {
               </div>
 
               {/* Preview Container */}
-              <div className={`border rounded-lg overflow-hidden ${
+              <div className={`border rounded-lg overflow-hidden shadow-inner ${
                 previewMode === 'desktop' ? 'w-full h-96' :
                 previewMode === 'tablet' ? 'w-3/4 h-80 mx-auto' :
                 'w-1/2 h-96 mx-auto'
@@ -514,7 +655,10 @@ export default function CustomizationPage() {
                       {settings.logo ? (
                         <img src={settings.logo} alt="Logo" className="w-8 h-8 rounded" />
                       ) : (
-                        <div className="w-8 h-8 bg-white rounded flex items-center justify-center text-sm font-bold" style={{ color: settings.primaryColor }}>
+                        <div 
+                          className="w-8 h-8 bg-white rounded flex items-center justify-center text-sm font-bold"
+                          style={{ color: settings.primaryColor }}
+                        >
                           R
                         </div>
                       )}
@@ -527,7 +671,10 @@ export default function CustomizationPage() {
 
                   {/* Banner */}
                   {settings.bannerImage && (
-                    <div className="h-24 bg-cover bg-center" style={{ backgroundImage: `url(${settings.bannerImage})` }} />
+                    <div 
+                      className="h-24 bg-cover bg-center" 
+                      style={{ backgroundImage: `url(${settings.bannerImage})` }} 
+                    />
                   )}
 
                   {/* Content */}
@@ -565,7 +712,7 @@ export default function CustomizationPage() {
                     </div>
 
                     <button 
-                      className="w-full py-2 px-4 rounded-lg text-white font-medium"
+                      className="w-full py-2 px-4 rounded-lg text-white font-medium shadow-sm hover:shadow-md transition-all"
                       style={{ backgroundColor: settings.secondaryColor }}
                     >
                       Fazer Pedido

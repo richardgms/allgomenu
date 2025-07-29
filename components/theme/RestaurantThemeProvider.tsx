@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { buildThemeTokens, type ThemeInput, type BuildThemeResult } from '@/lib/color/theme-builder'
 import { RestaurantStatus } from '@/types/restaurant'
 
@@ -32,13 +32,18 @@ export function RestaurantThemeProvider({
   const [restaurantStatus, setRestaurantStatus] = useState<RestaurantStatus | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [lastAppliedConfig, setLastAppliedConfig] = useState<string | null>(null)
+  const isApplyingTheme = useRef(false)
+  const themeDebounceTimer = useRef<NodeJS.Timeout | null>(null)
 
   // ID do style tag específico do restaurante
   const styleId = `restaurant-theme-${restaurantSlug}`
 
-  // Função para injetar CSS no DOM
+  // Função simplificada para injetar CSS no DOM
   const injectCSS = (css: string) => {
     if (typeof window === 'undefined') return
+
+// CSS injected silently
 
     // Remover style anterior se existir
     const existingStyle = document.getElementById(styleId)
@@ -49,63 +54,119 @@ export function RestaurantThemeProvider({
     // Criar novo style tag
     const style = document.createElement('style')
     style.id = styleId
+    style.setAttribute('data-theme-provider', restaurantSlug)
+    
+    // CSS aplicado diretamente no :root
     style.textContent = `:root { ${css} }`
+    
+    // Inserir no head
     document.head.appendChild(style)
+    
+// Debug removed for performance
   }
 
-  // Cache simples para evitar re-processamento desnecessário
-  const [lastThemeConfig, setLastThemeConfig] = useState<string | null>(null)
-
-  // Aplicar tema
+  // Aplicar tema com debounce e controle de estado
   const applyTheme = async (input: ThemeInput) => {
-    try {
-      setError(null)
-
-      // Verificar se é necessário re-processar o tema
-      const themeKey = `${input.primaryHex}-${input.secondaryHex}`
-      if (themeKey === lastThemeConfig && currentTheme) {
-        return // Tema já aplicado
-      }
-
-      const themeResult = buildThemeTokens(input)
-      
-      // Injetar CSS no DOM
-      injectCSS(themeResult.css)
-      
-      setCurrentTheme(themeResult)
-      setLastThemeConfig(themeKey)
-      
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao aplicar tema'
-      setError(errorMessage)
-      console.error('Theme application error:', err)
+    // Evitar múltiplas aplicações simultâneas
+    if (isApplyingTheme.current) {
+// Theme application in progress, skipping
+      return
     }
+
+    // Limpar timer anterior se existir
+    if (themeDebounceTimer.current) {
+      clearTimeout(themeDebounceTimer.current)
+    }
+
+    // Debounce de 300ms
+    themeDebounceTimer.current = setTimeout(async () => {
+      try {
+        isApplyingTheme.current = true
+        setError(null)
+// Applying theme silently
+
+        const themeResult = buildThemeTokens(input)
+        
+        // Injetar CSS no DOM
+        injectCSS(themeResult.css)
+        
+        setCurrentTheme(themeResult)
+// Theme applied successfully
+        
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Erro ao aplicar tema'
+        setError(errorMessage)
+        console.error(`[Theme ${restaurantSlug}] Theme application error:`, err)
+      } finally {
+        isApplyingTheme.current = false
+      }
+    }, 300)
   }
 
   // Reset para tema padrão
   const resetTheme = () => {
     const defaultTheme: ThemeInput = {
-      primaryHex: '#dc2626',
-      secondaryHex: '#059669',
+      primaryHex: '#3b82f6',
+      secondaryHex: '#10b981',
       name: 'Tema Padrão AllGoMenu'
     }
     applyTheme(defaultTheme)
   }
 
-  // Buscar status do restaurante e aplicar tema
+  // Função para calcular cor de contraste
+  const getContrastColor = (hex: string): string => {
+    try {
+      const color = parseInt(hex.slice(1), 16)
+      const r = (color >> 16) & 255
+      const g = (color >> 8) & 255
+      const b = color & 255
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+      return luminance > 0.5 ? '#000000' : '#ffffff'
+    } catch {
+      return '#000000'
+    }
+  }
+
+  // Buscar dados do restaurante e aplicar tema (otimizado para evitar reaplicações)
   useEffect(() => {
     let isCancelled = false
 
-    const fetchRestaurantData = async () => {
+    const fetchAndApplyTheme = async () => {
       try {
         setIsLoading(true)
         setError(null)
 
-        // Fetch restaurant status (que inclui tema)
+        // Usar dados iniciais se disponíveis
+        if (initialThemeConfig) {
+          const themeConfig = initialThemeConfig as any
+          const configKey = `${restaurantSlug}-${themeConfig?.primaryColor || '#3b82f6'}-${themeConfig?.secondaryColor || '#10b981'}`
+          
+          // Evitar reaplicação se a configuração não mudou
+          if (lastAppliedConfig === configKey) {
+  // Configuration unchanged, skipping reapplication
+            setIsLoading(false)
+            return
+          }
+          
+          const themeInput: ThemeInput = {
+            primaryHex: themeConfig?.primaryColor || '#3b82f6',
+            secondaryHex: themeConfig?.secondaryColor || '#10b981',
+            name: 'Tema do Restaurante'
+          }
+
+          if (!isCancelled) {
+            await applyTheme(themeInput)
+            setLastAppliedConfig(configKey)
+            setIsLoading(false)
+          }
+          return
+        }
+
+        // Buscar da API se não tiver dados iniciais
         const response = await fetch(`/api/restaurant/${restaurantSlug}/status`)
         
         if (!response.ok) {
-          throw new Error(`Erro ao carregar dados do restaurante: ${response.status}`)
+          throw new Error(`Erro ao carregar dados: ${response.status}`)
         }
 
         const statusData: RestaurantStatus = await response.json()
@@ -116,42 +177,32 @@ export function RestaurantThemeProvider({
 
         // Extrair cores do tema
         const themeConfig = statusData.restaurant.themeConfig as any
+        const configKey = `${restaurantSlug}-${themeConfig?.primaryColor || '#3b82f6'}-${themeConfig?.secondaryColor || '#10b981'}`
         
-        let themeInput: ThemeInput
-
-        if (themeConfig?.primaryColor && themeConfig?.secondaryColor) {
-          // Usar cores configuradas
-          themeInput = {
-            primaryHex: themeConfig.primaryColor,
-            secondaryHex: themeConfig.secondaryColor,
-            name: `Tema ${statusData.restaurant.name}`
-          }
-        } else if (themeConfig?.palette) {
-          // Fallback para o sistema legado
-          themeInput = {
-            primaryHex: themeConfig.palette['cor-primaria-500'] || '#dc2626',
-            secondaryHex: themeConfig.palette['cor-secundaria-500'] || '#059669',
-            name: `Tema ${statusData.restaurant.name}`
-          }
-        } else {
-          // Usar tema padrão
-          themeInput = {
-            primaryHex: '#dc2626',
-            secondaryHex: '#059669',
-            name: 'Tema Padrão AllGoMenu'
-          }
+        // Evitar reaplicação se a configuração não mudou
+        if (lastAppliedConfig === configKey) {
+// Configuration unchanged, skipping reapplication
+          setIsLoading(false)
+          return
+        }
+        
+        const themeInput: ThemeInput = {
+          primaryHex: themeConfig?.primaryColor || '#3b82f6',
+          secondaryHex: themeConfig?.secondaryColor || '#10b981',
+          name: `Tema ${statusData.restaurant.name}`
         }
 
         await applyTheme(themeInput)
+        setLastAppliedConfig(configKey)
 
       } catch (err) {
         if (isCancelled) return
         
-        const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar tema do restaurante'
+        const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar tema'
         setError(errorMessage)
         console.error('Restaurant theme loading error:', err)
         
-        // Aplicar tema fallback em caso de erro
+        // Aplicar tema fallback
         resetTheme()
       } finally {
         if (!isCancelled) {
@@ -160,43 +211,18 @@ export function RestaurantThemeProvider({
       }
     }
 
-    // Usar dados iniciais se disponíveis, senão buscar da API
-    if (initialThemeConfig) {
-      const themeConfig = initialThemeConfig as any
-      
-      let themeInput: ThemeInput = {
-        primaryHex: '#dc2626',
-        secondaryHex: '#059669',
-        name: 'Tema Padrão AllGoMenu'
-      }
-
-      if (themeConfig?.primaryColor && themeConfig?.secondaryColor) {
-        themeInput = {
-          primaryHex: themeConfig.primaryColor,
-          secondaryHex: themeConfig.secondaryColor,
-          name: 'Tema do Restaurante'
-        }
-      } else if (themeConfig?.palette) {
-        themeInput = {
-          primaryHex: themeConfig.palette['cor-primaria-500'] || '#dc2626',
-          secondaryHex: themeConfig.palette['cor-secundaria-500'] || '#059669',
-          name: 'Tema do Restaurante'
-        }
-      }
-
-      applyTheme(themeInput).then(() => {
-        setIsLoading(false)
-        // Ainda buscar dados atualizados da API em background
-        fetchRestaurantData()
-      })
-    } else {
-      fetchRestaurantData()
-    }
+    fetchAndApplyTheme()
 
     return () => {
       isCancelled = true
+      // Limpar timer de debounce
+      if (themeDebounceTimer.current) {
+        clearTimeout(themeDebounceTimer.current)
+        themeDebounceTimer.current = null
+      }
+      isApplyingTheme.current = false
     }
-  }, [restaurantSlug])
+  }, [restaurantSlug, initialThemeConfig])
 
   // Cleanup no unmount
   useEffect(() => {
@@ -207,6 +233,12 @@ export function RestaurantThemeProvider({
           existingStyle.remove()
         }
       }
+      // Limpar timers e referencias
+      if (themeDebounceTimer.current) {
+        clearTimeout(themeDebounceTimer.current)
+        themeDebounceTimer.current = null
+      }
+      isApplyingTheme.current = false
     }
   }, [styleId])
 

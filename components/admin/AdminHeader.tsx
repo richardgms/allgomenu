@@ -61,7 +61,13 @@ export const AdminHeader = React.memo(function AdminHeader({ slug, onMenuToggle 
   }
 
   return (
-    <header className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
+    <header 
+      className="border-b px-4 lg:px-6 py-4"
+      style={{ 
+        backgroundColor: 'var(--background)', 
+        borderColor: 'var(--border)' 
+      }}
+    >
       <div className="flex items-center justify-between">
         {/* Left side - Breadcrumb and Mobile Menu */}
         <div className="flex items-center gap-4">
@@ -70,7 +76,7 @@ export const AdminHeader = React.memo(function AdminHeader({ slug, onMenuToggle 
             variant="ghost"
             size="sm"
             onClick={handleMenuToggle}
-            className="lg:hidden p-2 touch-manipulation hover:bg-gray-100 active:bg-gray-200"
+            className="lg:hidden p-2 touch-manipulation hover:bg-accent active:bg-accent/80"
             type="button"
             aria-label="Abrir menu"
             style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -97,7 +103,7 @@ export const AdminHeader = React.memo(function AdminHeader({ slug, onMenuToggle 
 
           {/* Mobile title */}
           <div className="lg:hidden">
-            <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
+            <h1 className="text-lg font-semibold text-foreground">Dashboard</h1>
           </div>
         </div>
 
@@ -143,8 +149,8 @@ export const AdminHeader = React.memo(function AdminHeader({ slug, onMenuToggle 
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium">{user?.name}</p>
-                  <p className="text-xs text-gray-500">{user?.email}</p>
-                  <p className="text-xs text-blue-600">{restaurant?.name}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  <p className="text-xs text-primary">{restaurant?.name}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

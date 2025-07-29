@@ -366,6 +366,8 @@ export function useTheme() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-theme', params.slug] })
       queryClient.invalidateQueries({ queryKey: ['restaurant-status', params.slug] })
+      // Invalidar cache do RestaurantThemeProvider para atualizar site público
+      queryClient.invalidateQueries({ queryKey: ['restaurant-theme', params.slug] })
     }
   })
 
@@ -386,6 +388,8 @@ export function useTheme() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-theme', params.slug] })
       queryClient.invalidateQueries({ queryKey: ['restaurant-status', params.slug] })
+      // Invalidar cache do RestaurantThemeProvider para atualizar site público
+      queryClient.invalidateQueries({ queryKey: ['restaurant-theme', params.slug] })
     }
   })
 

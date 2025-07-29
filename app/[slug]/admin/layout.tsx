@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
 import { AdminHeader } from '@/components/admin/AdminHeader'
+import { RestaurantThemeProvider } from '@/components/theme/RestaurantThemeProvider'
 import { useAuth } from '@/hooks/useAuth'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -63,30 +64,32 @@ export default function AdminLayout({ children, params }: AdminLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Desktop sidebar - sempre visível */}
-      <div className="hidden lg:block">
-        <AdminSidebar slug={params.slug} />
+    <RestaurantThemeProvider restaurantSlug={params.slug}>
+      <div className="flex h-screen bg-background">
+        {/* Desktop sidebar - sempre visível */}
+        <div className="hidden lg:block">
+          <AdminSidebar slug={params.slug} />
+        </div>
+        
+        {/* Mobile sidebar - renderizado separadamente para overlay */}
+        <div className="lg:hidden">
+          <AdminSidebar 
+            slug={params.slug} 
+            isOpen={sidebarOpen}
+            onClose={handleSidebarClose}
+          />
+        </div>
+        
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AdminHeader 
+            slug={params.slug} 
+            onMenuToggle={handleMenuToggle}
+          />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-muted/30 p-4 lg:p-6">
+            {children}
+          </main>
+        </div>
       </div>
-      
-      {/* Mobile sidebar - renderizado separadamente para overlay */}
-      <div className="lg:hidden">
-        <AdminSidebar 
-          slug={params.slug} 
-          isOpen={sidebarOpen}
-          onClose={handleSidebarClose}
-        />
-      </div>
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <AdminHeader 
-          slug={params.slug} 
-          onMenuToggle={handleMenuToggle}
-        />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 lg:p-6">
-          {children}
-        </main>
-      </div>
-    </div>
+    </RestaurantThemeProvider>
   )
 }

@@ -9,43 +9,48 @@ module.exports = {
   theme: {
   	extend: {
   		colors: {
-  			border: 'hsl(var(--border))',
-  			input: 'hsl(var(--input))',
-  			ring: 'hsl(var(--ring))',
-  			background: 'hsl(var(--background))',
-  			foreground: 'hsl(var(--foreground))',
-  			'primaria-50': 'var(--cor-primaria-50)',
-  			'primaria-100': 'var(--cor-primaria-100)',
-  			'primaria-200': 'var(--cor-primaria-200)',
-  			'primaria-300': 'var(--cor-primaria-300)',
-  			'primaria-500': 'var(--cor-primaria-500)',
-  			'primaria-600': 'var(--cor-primaria-600)',
-  			'primaria-700': 'var(--cor-primaria-700)',
-  			'primaria-900': 'var(--cor-primaria-900)',
-  			'secundaria-500': 'var(--cor-secundaria-500)',
-  			'secundaria-600': 'var(--cor-secundaria-600)',
-  			'secundaria-700': 'var(--cor-secundaria-700)',
-  			'secundaria-800': 'var(--cor-secundaria-800)',
-  			'secundaria-900': 'var(--cor-secundaria-900)',
-  			'secundaria-100': 'var(--cor-secundaria-100)',
-  			'secundaria-300': 'var(--cor-secundaria-300)',
-  			'secundaria-400': 'var(--cor-secundaria-400)',
-  			sucesso: 'var(--cor-sucesso)',
-  			aviso: 'var(--cor-aviso)',
-  			perigo: 'var(--cor-perigo)',
+  			border: 'oklch(var(--border))',
+  			input: 'oklch(var(--input))',
+  			ring: 'oklch(var(--ring))',
+  			background: 'oklch(var(--background))',
+  			foreground: 'oklch(var(--foreground))',
+  			// Sistema moderno de cores
+  			'primary-25': 'var(--primary-25)',
+  			'primary-50': 'var(--primary-50)',
+  			'primary-100': 'var(--primary-100)',
+  			'primary-300': 'var(--primary-300)',
+  			'primary-600': 'var(--primary-600)',
+  			'primary-700': 'var(--primary-700)',
+  			'primary-900': 'var(--primary-900)',
+  			'primary-950': 'var(--primary-950)',
+  			'secondary-25': 'var(--secondary-25)',
+  			'secondary-50': 'var(--secondary-50)',
+  			'secondary-100': 'var(--secondary-100)',
+  			'secondary-300': 'var(--secondary-300)',
+  			'secondary-600': 'var(--secondary-600)',
+  			'secondary-700': 'var(--secondary-700)',
+  			'secondary-900': 'var(--secondary-900)',
+  			'secondary-950': 'var(--secondary-950)',
+  			// Aliases para compatibilidade legada
+  			'primaria-500': 'var(--primary-600)',
+  			'primaria-700': 'var(--primary-700)',
+  			'secundaria-500': 'var(--secondary-600)',
+  			sucesso: 'var(--badge-success-bg)',
+  			aviso: 'var(--badge-warning-bg)',
+  			perigo: 'var(--badge-danger-bg)',
   			primary: {
   				light: 'var(--primary-light)',
   				base: 'var(--primary-base)',
-  				DEFAULT: 'hsl(var(--primary))',
+  				DEFAULT: 'oklch(var(--primary))',
   				dark: 'var(--primary-dark)',
-  				foreground: 'hsl(var(--primary-foreground))'
+  				foreground: 'oklch(var(--primary-foreground))'
   			},
   			secondary: {
   				light: 'var(--secondary-light)',
   				base: 'var(--secondary-base)',
-  				DEFAULT: 'hsl(var(--secondary))',
+  				DEFAULT: 'oklch(var(--secondary))',
   				dark: 'var(--secondary-dark)',
-  				foreground: 'hsl(var(--secondary-foreground))'
+  				foreground: 'oklch(var(--secondary-foreground))'
   			},
   			'color-success': 'var(--color-success)',
   			'color-success-light': 'var(--color-success-light)',
@@ -60,41 +65,41 @@ module.exports = {
   			'color-info-light': 'var(--color-info-light)',
   			'color-info-dark': 'var(--color-info-dark)',
   			destructive: {
-  				DEFAULT: 'hsl(var(--destructive))',
-  				foreground: 'hsl(var(--destructive-foreground))'
+  				DEFAULT: 'oklch(var(--destructive))',
+  				foreground: 'oklch(var(--destructive-foreground))'
   			},
   			muted: {
-  				DEFAULT: 'hsl(var(--muted))',
-  				foreground: 'hsl(var(--muted-foreground))'
+  				DEFAULT: 'oklch(var(--muted))',
+  				foreground: 'oklch(var(--muted-foreground))'
   			},
   			accent: {
-  				DEFAULT: 'hsl(var(--accent))',
-  				foreground: 'hsl(var(--accent-foreground))'
+  				DEFAULT: 'oklch(var(--accent))',
+  				foreground: 'oklch(var(--accent-foreground))'
   			},
   			popover: {
-  				DEFAULT: 'hsl(var(--popover))',
-  				foreground: 'hsl(var(--popover-foreground))'
+  				DEFAULT: 'oklch(var(--popover))',
+  				foreground: 'oklch(var(--popover-foreground))'
   			},
   			card: {
-  				DEFAULT: 'hsl(var(--card))',
-  				foreground: 'hsl(var(--card-foreground))'
+  				DEFAULT: 'oklch(var(--card))',
+  				foreground: 'oklch(var(--card-foreground))'
   			},
   			chart: {
-  				'1': 'hsl(var(--chart-1))',
-  				'2': 'hsl(var(--chart-2))',
-  				'3': 'hsl(var(--chart-3))',
-  				'4': 'hsl(var(--chart-4))',
-  				'5': 'hsl(var(--chart-5))'
+  				'1': 'oklch(var(--chart-1))',
+  				'2': 'oklch(var(--chart-2))',
+  				'3': 'oklch(var(--chart-3))',
+  				'4': 'oklch(var(--chart-4))',
+  				'5': 'oklch(var(--chart-5))'
   			},
   			sidebar: {
-  				DEFAULT: 'hsl(var(--sidebar-background))',
-  				foreground: 'hsl(var(--sidebar-foreground))',
-  				primary: 'hsl(var(--sidebar-primary))',
-  				'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-  				accent: 'hsl(var(--sidebar-accent))',
-  				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-  				border: 'hsl(var(--sidebar-border))',
-  				ring: 'hsl(var(--sidebar-ring))'
+  				DEFAULT: 'oklch(var(--sidebar-background))',
+  				foreground: 'oklch(var(--sidebar-foreground))',
+  				primary: 'oklch(var(--sidebar-primary))',
+  				'primary-foreground': 'oklch(var(--sidebar-primary-foreground))',
+  				accent: 'oklch(var(--sidebar-accent))',
+  				'accent-foreground': 'oklch(var(--sidebar-accent-foreground))',
+  				border: 'oklch(var(--sidebar-border))',
+  				ring: 'oklch(var(--sidebar-ring))'
   			}
   		},
   		borderRadius: {

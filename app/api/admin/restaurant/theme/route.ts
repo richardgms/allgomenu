@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { handleApiError } from '@/lib/api-utils'
 
-interface ThemeConfig {
+interface SimpleThemeConfig {
   primaryColor: string
   secondaryColor: string
   backgroundColor?: string
@@ -15,7 +15,7 @@ interface ThemeConfig {
   category?: string
 }
 
-// GET - Buscar configurações de tema do restaurante
+// GET - Buscar configurações de tema simplificadas
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -45,20 +45,20 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Parsear configuração de tema atual ou usar padrão
-    const currentThemeConfig = (restaurantData.themeConfig as any) || {}
+    // Simplificar extração de configurações de tema
+    const themeConfig = (restaurantData.themeConfig as any) || {}
     
-    const themeSettings = {
-      primaryColor: currentThemeConfig.primaryColor || '#3b82f6',
-      secondaryColor: currentThemeConfig.secondaryColor || '#10b981',
-      backgroundColor: currentThemeConfig.backgroundColor || '#ffffff',
-      textColor: currentThemeConfig.textColor || '#1f2937',
-      fontFamily: currentThemeConfig.fontFamily || 'Inter',
-      logo: currentThemeConfig.logo || '',
-      bannerImage: currentThemeConfig.bannerImage || '',
+    const themeSettings: SimpleThemeConfig = {
+      primaryColor: themeConfig.primaryColor || '#3b82f6',
+      secondaryColor: themeConfig.secondaryColor || '#10b981',
+      backgroundColor: themeConfig.backgroundColor || '#ffffff',
+      textColor: themeConfig.textColor || '#1f2937',
+      fontFamily: themeConfig.fontFamily || 'Inter',
+      logo: themeConfig.logo || '',
+      bannerImage: themeConfig.bannerImage || '',
       restaurantName: restaurantData.name,
       description: restaurantData.description || '',
-      category: currentThemeConfig.category || 'geral'
+      category: themeConfig.category || 'geral'
     }
 
     return NextResponse.json(themeSettings)
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PUT - Atualizar configurações de tema
+// PUT - Atualizar configurações de tema (simplificado)
 export async function PUT(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -82,7 +82,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const body = await request.json() as ThemeConfig
+    const body = await request.json() as SimpleThemeConfig
 
     if (!body.primaryColor || !body.secondaryColor) {
       return NextResponse.json(
@@ -90,6 +90,11 @@ export async function PUT(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    console.log(`[Theme API] Updating theme for ${restaurant}:`, {
+      primary: body.primaryColor,
+      secondary: body.secondaryColor
+    })
 
     // Verificar se o restaurante existe
     const restaurantData = await db.restaurant.findUnique({
@@ -104,18 +109,16 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Mesclar configurações existentes com as novas
-    const currentThemeConfig = (restaurantData.themeConfig as any) || {}
+    // Configuração simplificada - focar nas cores principais
     const updatedThemeConfig = {
-      ...currentThemeConfig,
       primaryColor: body.primaryColor,
       secondaryColor: body.secondaryColor,
-      backgroundColor: body.backgroundColor || currentThemeConfig.backgroundColor || '#ffffff',
-      textColor: body.textColor || currentThemeConfig.textColor || '#1f2937',
-      fontFamily: body.fontFamily || currentThemeConfig.fontFamily || 'Inter',
-      logo: body.logo !== undefined ? body.logo : currentThemeConfig.logo,
-      bannerImage: body.bannerImage !== undefined ? body.bannerImage : currentThemeConfig.bannerImage,
-      category: body.category || currentThemeConfig.category || 'geral',
+      backgroundColor: body.backgroundColor || '#ffffff',
+      textColor: body.textColor || '#1f2937',
+      fontFamily: body.fontFamily || 'Inter',
+      logo: body.logo || '',
+      bannerImage: body.bannerImage || '',
+      category: body.category || 'geral',
       lastUpdated: new Date().toISOString()
     }
 
@@ -124,7 +127,7 @@ export async function PUT(request: NextRequest) {
       themeConfig: updatedThemeConfig
     }
 
-    // Se nome ou descrição foram fornecidos, atualizar também
+    // Atualizar nome e descrição se fornecidos
     if (body.restaurantName) {
       updateData.name = body.restaurantName
     }
@@ -143,8 +146,10 @@ export async function PUT(request: NextRequest) {
       }
     })
 
-    // Retornar configurações atualizadas
-    const themeSettings = {
+    console.log(`[Theme API] Theme updated successfully for ${restaurant}`)
+
+    // Retornar configurações atualizadas simplificadas
+    const responseSettings: SimpleThemeConfig = {
       primaryColor: updatedThemeConfig.primaryColor,
       secondaryColor: updatedThemeConfig.secondaryColor,
       backgroundColor: updatedThemeConfig.backgroundColor,
@@ -159,7 +164,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Theme updated successfully',
-      themeSettings
+      themeSettings: responseSettings
     })
 
   } catch (error) {
@@ -168,7 +173,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// POST - Resetar tema para padrão
+// POST - Resetar tema para padrão (simplificado)
 export async function POST(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -180,6 +185,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    console.log(`[Theme API] Resetting theme to default for ${restaurant}`)
 
     // Verificar se o restaurante existe
     const restaurantData = await db.restaurant.findUnique({
@@ -194,7 +201,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Tema padrão
+    // Tema padrão simplificado
     const defaultThemeConfig = {
       primaryColor: '#3b82f6',
       secondaryColor: '#10b981',
@@ -214,7 +221,9 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    const themeSettings = {
+    console.log(`[Theme API] Theme reset successfully for ${restaurant}`)
+
+    const responseSettings: SimpleThemeConfig = {
       primaryColor: defaultThemeConfig.primaryColor,
       secondaryColor: defaultThemeConfig.secondaryColor,
       backgroundColor: defaultThemeConfig.backgroundColor,
@@ -229,7 +238,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Theme reset to default successfully',
-      themeSettings
+      themeSettings: responseSettings
     })
 
   } catch (error) {
