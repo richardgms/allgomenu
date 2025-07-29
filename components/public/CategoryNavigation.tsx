@@ -2,7 +2,6 @@
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ProcessedCategory } from '@/types/restaurant'
 
@@ -86,30 +85,28 @@ export function CategoryNavigation({
             className="w-full"
           >
             <div className="flex justify-center mb-8">
-              <ScrollArea className="w-full max-w-4xl">
-                <TabsList 
-                  className="grid w-full gap-2" 
-                  style={{
-                    gridTemplateColumns: `repeat(${Math.min(categories.length, 4)}, 1fr)`
-                  }}
-                >
-                  {categories.map((category) => (
-                    <TabsTrigger 
-                      key={category.id} 
-                      value={category.id}
-                      className="flex items-center gap-2 text-sm px-4 py-2"
+              <TabsList 
+                className="grid w-full max-w-4xl gap-2" 
+                style={{
+                  gridTemplateColumns: `repeat(${Math.min(categories.length, 4)}, 1fr)`
+                }}
+              >
+                {categories.map((category) => (
+                  <TabsTrigger 
+                    key={category.id} 
+                    value={category.id}
+                    className="flex items-center gap-2 text-sm px-4 py-2"
+                  >
+                    <span className="truncate">{category.name}</span>
+                    <Badge 
+                      variant="secondary" 
+                      className="h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center flex-shrink-0"
                     >
-                      <span className="truncate">{category.name}</span>
-                      <Badge 
-                        variant="secondary" 
-                        className="h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center flex-shrink-0"
-                      >
-                        {category.availableCount}
-                      </Badge>
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </ScrollArea>
+                      {category.availableCount}
+                    </Badge>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
             </div>
 
             {/* Estatísticas das categorias */}

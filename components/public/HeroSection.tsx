@@ -3,14 +3,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Clock, MapPin, Phone, Star, Truck, CreditCard } from 'lucide-react'
-import { formatPrice } from '@/lib/utils'
+import { Clock, Truck, Phone, ChevronDown } from 'lucide-react'
 import { RestaurantStatus } from '@/types/restaurant'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface HeroSectionProps {
-  restaurantStatus: RestaurantStatus | null
+  restaurantStatus: RestaurantStatus
   onScrollToMenu: () => void
   loading?: boolean
 }
@@ -22,21 +20,13 @@ export function HeroSection({ restaurantStatus, onScrollToMenu, loading = false 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <Card className="shadow-lg">
-              <CardHeader className="text-center pb-6">
-                <div className="mx-auto mb-4">
-                  <Skeleton className="h-20 w-20 rounded-full mx-auto" />
-                </div>
-                <Skeleton className="h-10 w-3/4 mx-auto mb-2" />
-                <Skeleton className="h-6 w-full max-w-2xl mx-auto" />
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex justify-center gap-4">
-                  <Skeleton className="h-6 w-24" />
-                  <Skeleton className="h-6 w-24" />
-                  <Skeleton className="h-6 w-24" />
-                </div>
-                <div className="text-center">
-                  <Skeleton className="h-10 w-48 mx-auto" />
+              <CardContent className="p-8">
+                <div className="flex flex-wrap gap-6 justify-center">
+                  <Skeleton className="h-20 w-20 rounded-full" />
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <Skeleton className="h-8 w-48" />
+                    <Skeleton className="h-4 w-64" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -46,9 +36,7 @@ export function HeroSection({ restaurantStatus, onScrollToMenu, loading = false 
     )
   }
 
-  if (!restaurantStatus) return null
-
-  const { restaurant, operationalStatus, deliveryConfig } = restaurantStatus
+  const { restaurant, operationalStatus } = restaurantStatus
   const isOpen = operationalStatus.isOpen && operationalStatus.isAcceptingOrders
 
   return (
@@ -57,120 +45,120 @@ export function HeroSection({ restaurantStatus, onScrollToMenu, loading = false 
         <div className="max-w-4xl mx-auto">
           <Card className="shadow-lg">
             <CardHeader className="text-center pb-6">
-              <div className="mx-auto mb-4">
-                {restaurant.themeConfig?.logo ? (
-                  <img 
-                    src={restaurant.themeConfig.logo} 
-                    alt={restaurant.name}
-                    className="h-20 w-20 rounded-full object-cover mx-auto shadow-lg ring-4 ring-primary/10"
-                  />
-                ) : (
-                  <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto shadow-lg ring-4 ring-primary/10">
-                    <span className="text-2xl font-bold text-primary">
-                      {restaurant.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <CardTitle className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                {restaurant.name}
-              </CardTitle>
-              {restaurant.description && (
-                <CardDescription className="text-lg mt-2 max-w-2xl mx-auto">
-                  {restaurant.description}
-                </CardDescription>
-              )}
-              
-              {/* Status Badge Prominente */}
-              <div className="flex justify-center mt-4">
-                <Badge 
-                  variant={isOpen ? "default" : "destructive"} 
-                  className="text-sm px-4 py-2"
-                >
-                  <div className="mr-2 h-2 w-2 rounded-full bg-current animate-pulse" />
-                  {isOpen ? 'Aceitando Pedidos' : operationalStatus.statusMessage || 'Fechado'}
-                </Badge>
+              {/* Header Flexível */}
+              <div className="flex flex-wrap items-center justify-center gap-6">
+                {/* Logo */}
+                <div className="flex-shrink-0">
+                  {restaurant.themeConfig?.logo ? (
+                    <img 
+                      src={restaurant.themeConfig.logo} 
+                      alt={restaurant.name}
+                      className="h-20 w-20 rounded-full object-cover shadow-lg ring-4 ring-primary/10"
+                    />
+                  ) : (
+                    <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center shadow-lg ring-4 ring-primary/10">
+                      <span className="text-2xl font-bold text-primary">
+                        {restaurant.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Nome e Descrição */}
+                <div className="flex-1 min-w-0 text-center sm:text-left">
+                  <CardTitle className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    {restaurant.name}
+                  </CardTitle>
+                  {restaurant.description && (
+                    <CardDescription className="text-lg mt-2 max-w-2xl">
+                      {restaurant.description}
+                    </CardDescription>
+                  )}
+                </div>
+                
+                {/* Status Badge */}
+                <div className="flex-shrink-0">
+                  <Badge 
+                    variant={isOpen ? "default" : "destructive"} 
+                    className="text-sm px-4 py-2"
+                  >
+                    <div className="mr-2 h-2 w-2 rounded-full bg-current animate-pulse" />
+                    {isOpen ? 'Aceitando Pedidos' : operationalStatus.statusMessage || 'Fechado'}
+                  </Badge>
+                </div>
               </div>
             </CardHeader>
             
             <CardContent className="space-y-6">
-              {/* Informações Operacionais */}
-              <div className="flex flex-wrap justify-center gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    {isOpen ? (
-                      <>Entrega: {deliveryConfig.estimatedTime} min</>
-                    ) : operationalStatus.nextOpenTime ? (
-                      <>Abre às {operationalStatus.nextOpenTime}</>
-                    ) : (
-                      'Horário não disponível'
-                    )}
-                  </span>
+              {/* Informações Operacionais - Flexbox Dinâmico */}
+              <div className="flex flex-wrap gap-4 justify-center">
+                {/* Tempo de Entrega */}
+                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg flex-1 min-w-0 max-w-xs">
+                  <Clock className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">Entrega</p>
+                    <p className="text-sm text-muted-foreground">
+                      {restaurant.deliveryTime || 45} min
+                    </p>
+                  </div>
                 </div>
-                
-                <Separator orientation="vertical" className="h-4" />
-                
-                <div className="flex items-center gap-2">
-                  <Truck className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    {deliveryConfig.isDeliveryEnabled ? 'Entrega disponível' : 'Apenas retirada'}
-                  </span>
+
+                {/* Status da Entrega */}
+                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg flex-1 min-w-0 max-w-xs">
+                  <Truck className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">Entrega</p>
+                    <p className="text-sm text-muted-foreground">
+                      {restaurant.deliveryFee ? 'Disponível' : 'Indisponível'}
+                    </p>
+                  </div>
                 </div>
-                
+
+                {/* Telefone */}
                 {restaurant.phone && (
-                  <>
-                    <Separator orientation="vertical" className="h-4" />
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{restaurant.phone}</span>
+                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg flex-1 min-w-0 max-w-xs">
+                    <Phone className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">Contato</p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {restaurant.phone}
+                      </p>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
-              
-              {/* Pedido Mínimo e Taxa */}
-              <div className="flex flex-wrap justify-center gap-4">
-                <Badge variant="outline" className="text-base px-4 py-2">
-                  Pedido mínimo: {formatPrice(restaurant.minimumOrder)}
-                </Badge>
+
+              {/* Informações Financeiras - Flexbox Responsivo */}
+              <div className="flex flex-wrap gap-4 justify-center">
+                {restaurant.minimumOrder && (
+                  <div className="p-4 bg-muted/20 rounded-lg text-center flex-1 min-w-0 max-w-xs">
+                    <p className="text-sm font-medium">Pedido mínimo</p>
+                    <p className="text-lg font-bold text-primary">
+                      R$ {restaurant.minimumOrder.toFixed(2).replace('.', ',')}
+                    </p>
+                  </div>
+                )}
                 
-                {deliveryConfig.isDeliveryEnabled && (
-                  <Badge variant="outline" className="text-base px-4 py-2">
-                    Taxa de entrega: {formatPrice(restaurant.deliveryFee)}
-                  </Badge>
+                {restaurant.deliveryFee && (
+                  <div className="p-4 bg-muted/20 rounded-lg text-center flex-1 min-w-0 max-w-xs">
+                    <p className="text-sm font-medium">Taxa de entrega</p>
+                    <p className="text-lg font-bold text-primary">
+                      R$ {restaurant.deliveryFee.toFixed(2).replace('.', ',')}
+                    </p>
+                  </div>
                 )}
               </div>
 
-              {/* Informações adicionais quando fechado */}
-              {!isOpen && operationalStatus.closesAt && (
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">
-                    {operationalStatus.currentStatus === 'open' 
-                      ? `Fecha às ${operationalStatus.closesAt}` 
-                      : operationalStatus.statusMessage
-                    }
-                  </p>
-                </div>
-              )}
-
-              {/* Call to Action */}
-              <div className="text-center pt-4">
+              {/* Botão de Ação */}
+              <div className="flex justify-center pt-4">
                 <Button 
-                  size="lg" 
                   onClick={onScrollToMenu}
-                  disabled={!isOpen}
-                  className="px-8 py-3 text-lg"
-                  variant={isOpen ? "default" : "secondary"}
+                  size="lg"
+                  className="gap-2"
                 >
-                  {isOpen ? 'Ver Cardápio' : 'Restaurante Fechado'}
+                  Ver Cardápio
+                  <ChevronDown className="h-4 w-4" />
                 </Button>
-                
-                {!isOpen && operationalStatus.nextOpenTime && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Voltamos às {operationalStatus.nextOpenTime}
-                  </p>
-                )}
               </div>
             </CardContent>
           </Card>
