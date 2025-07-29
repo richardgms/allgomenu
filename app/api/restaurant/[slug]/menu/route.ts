@@ -49,10 +49,7 @@ export async function GET(
     // Filtrar apenas categorias que têm produtos
     const categoriesWithProducts = categories.filter(category => category.products.length > 0);
 
-    return NextResponse.json({
-      success: true,
-      data: categoriesWithProducts
-    });
+    return NextResponse.json(categoriesWithProducts);
 
   } catch (error) {
     return handleApiError(error);

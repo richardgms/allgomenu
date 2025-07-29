@@ -50,10 +50,7 @@ export async function GET(
       }
     });
 
-    return NextResponse.json({
-      success: true,
-      data: featuredProducts
-    });
+    return NextResponse.json(featuredProducts);
 
   } catch (error) {
     return handleApiError(error);
