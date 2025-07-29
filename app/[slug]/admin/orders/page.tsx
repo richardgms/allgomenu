@@ -1,30 +1,28 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import React, { useState } from 'react'
+import { RefreshCw, Bell, Search, Filter, AlertCircle, ChefHat, CheckCircle, Truck, DollarSign, MoreHorizontal, Eye, MessageSquare, Kanban, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { StatusBadge } from '@/components/StatusBadge'
-import { 
-  Search, 
-  Filter, 
-  Bell, 
-  Phone, 
-  MessageCircle, 
-  Clock, 
-  MapPin,
-  DollarSign,
-  User,
-  ChefHat,
-  Truck,
-  CheckCircle,
-  AlertCircle,
-  RefreshCw
-} from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { OrderKanban } from '@/components/orders/OrderKanban'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Phone, MessageCircle, MapPin, Clock } from 'lucide-react'
 
 interface Order {
   id: string
@@ -123,6 +121,7 @@ export default function OrdersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban')
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
@@ -146,6 +145,35 @@ export default function OrdersPage() {
         order.id === orderId ? { ...order, status: newStatus } : order
       )
     )
+  }
+
+  // Converter orders para formato do Kanban
+  const convertToKanbanFormat = (orders: Order[]) => {
+    return orders.map(order => ({
+      id: order.id,
+      code: order.id,
+      customerName: order.customer.name,
+      customerPhone: order.customer.phone,
+      status: order.status.toUpperCase() as 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'DELIVERED' | 'CANCELLED',
+      total: order.total,
+      items: order.items.map(item => ({
+        id: item.id,
+        productName: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        subtotal: item.price * item.quantity
+      })),
+      createdAt: new Date(order.createdAt),
+      deliveryAddress: order.customer.address
+    }))
+  }
+
+  const handleViewOrder = (order: any) => {
+    // Converter de volta para o formato original
+    const originalOrder = orders.find(o => o.id === order.id)
+    if (originalOrder) {
+      setSelectedOrder(originalOrder)
+    }
   }
 
   const handleRefresh = () => {
@@ -187,6 +215,24 @@ export default function OrdersPage() {
             <Bell className="h-4 w-4 mr-2" />
             Notificações
           </Button>
+          <div className="flex border rounded-lg p-1">
+            <Button
+              variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('kanban')}
+            >
+              <Kanban className="h-4 w-4 mr-2" />
+              Kanban
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="h-4 w-4 mr-2" />
+              Lista
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -249,145 +295,157 @@ export default function OrdersPage() {
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Buscar por ID ou nome do cliente..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="pending">Pendente</SelectItem>
-                <SelectItem value="confirmed">Confirmado</SelectItem>
-                <SelectItem value="preparing">Preparando</SelectItem>
-                <SelectItem value="ready">Pronto</SelectItem>
-                <SelectItem value="out_for_delivery">Saiu para entrega</SelectItem>
-                <SelectItem value="delivered">Entregue</SelectItem>
-                <SelectItem value="cancelled">Cancelado</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Orders List */}
-      <div className="space-y-4">
-        {filteredOrders.map((order) => {
-          const statusInfo = statusConfig[order.status]
-          const Icon = statusInfo.icon
-          
-          return (
-            <Card key={order.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedOrder(order)}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3">
-                      <Icon className="h-5 w-5" />
-                      <div>
-                        <h3 className="font-semibold text-lg">{order.id}</h3>
-                        <p className="text-sm text-gray-600">{order.customer.name}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={statusInfo.color}>
-                        {statusInfo.label}
-                      </Badge>
-                      <Badge variant="outline">
-                        {order.deliveryType === 'delivery' ? 'Entrega' : 'Retirada'}
-                      </Badge>
-                      <Badge variant={order.paymentStatus === 'paid' ? 'default' : 'secondary'}>
-                        {order.paymentStatus === 'paid' ? 'Pago' : 'Pendente'}
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="font-bold text-lg">R$ {order.total.toFixed(2)}</p>
-                      <p className="text-sm text-gray-500">{getTimeAgo(order.createdAt)}</p>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation() }}>
-                        <Phone className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation() }}>
-                        <MessageCircle className="h-4 w-4" />
-                      </Button>
-                      
-                      <Select 
-                        value={order.status} 
-                        onValueChange={(value) => updateOrderStatus(order.id, value as Order['status'])}
-                      >
-                        <SelectTrigger className="w-40" onClick={(e) => e.stopPropagation()}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pendente</SelectItem>
-                          <SelectItem value="confirmed">Confirmado</SelectItem>
-                          <SelectItem value="preparing">Preparando</SelectItem>
-                          <SelectItem value="ready">Pronto</SelectItem>
-                          <SelectItem value="out_for_delivery">Saiu para entrega</SelectItem>
-                          <SelectItem value="delivered">Entregue</SelectItem>
-                          <SelectItem value="cancelled">Cancelado</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+      {/* Filters - apenas para modo lista */}
+      {viewMode === 'list' && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Buscar por ID ou nome do cliente..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
-                
-                {/* Order Items Preview */}
-                <div className="mt-4 pt-4 border-t">
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os status</SelectItem>
+                  <SelectItem value="pending">Pendente</SelectItem>
+                  <SelectItem value="confirmed">Confirmado</SelectItem>
+                  <SelectItem value="preparing">Preparando</SelectItem>
+                  <SelectItem value="ready">Pronto</SelectItem>
+                  <SelectItem value="out_for_delivery">Saiu para entrega</SelectItem>
+                  <SelectItem value="delivered">Entregue</SelectItem>
+                  <SelectItem value="cancelled">Cancelado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Content - Kanban ou Lista */}
+      {viewMode === 'kanban' ? (
+        <OrderKanban
+          orders={convertToKanbanFormat(orders)}
+          onUpdateOrderStatus={(orderId, status) => 
+            updateOrderStatus(orderId, status.toLowerCase() as Order['status'])
+          }
+          onViewOrder={handleViewOrder}
+        />
+      ) : (
+        <div className="space-y-4">
+          {filteredOrders.map((order) => {
+            const statusInfo = statusConfig[order.status]
+            const Icon = statusInfo.icon
+            
+            return (
+              <Card key={order.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedOrder(order)}>
+                <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="text-sm text-gray-600">
-                        {order.items.map((item, index) => (
-                          <span key={item.id}>
-                            {item.quantity}x {item.name}
-                            {index < order.items.length - 1 && ', '}
-                          </span>
-                        ))}
+                      <div className="flex items-center gap-3">
+                        <Icon className="h-5 w-5" />
+                        <div>
+                          <h3 className="font-semibold text-lg">{order.id}</h3>
+                          <p className="text-sm text-gray-600">{order.customer.name}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={statusInfo.color}>
+                          {statusInfo.label}
+                        </Badge>
+                        <Badge variant="outline">
+                          {order.deliveryType === 'delivery' ? 'Entrega' : 'Retirada'}
+                        </Badge>
+                        <Badge variant={order.paymentStatus === 'paid' ? 'default' : 'secondary'}>
+                          {order.paymentStatus === 'paid' ? 'Pago' : 'Pendente'}
+                        </Badge>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      {order.deliveryType === 'delivery' && (
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          <span>Entrega</span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        <span>{order.estimatedTime ? `${order.estimatedTime} min` : 'Aguardando'}</span>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="font-bold text-lg">R$ {order.total.toFixed(2)}</p>
+                        <p className="text-sm text-gray-500">{getTimeAgo(order.createdAt)}</p>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation() }}>
+                          <Phone className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation() }}>
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                        
+                        <Select 
+                          value={order.status} 
+                          onValueChange={(value) => updateOrderStatus(order.id, value as Order['status'])}
+                        >
+                          <SelectTrigger className="w-40" onClick={(e) => e.stopPropagation()}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pendente</SelectItem>
+                            <SelectItem value="confirmed">Confirmado</SelectItem>
+                            <SelectItem value="preparing">Preparando</SelectItem>
+                            <SelectItem value="ready">Pronto</SelectItem>
+                            <SelectItem value="out_for_delivery">Saiu para entrega</SelectItem>
+                            <SelectItem value="delivered">Entregue</SelectItem>
+                            <SelectItem value="cancelled">Cancelado</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
                   
-                  {order.notes && (
-                    <div className="mt-2 p-2 bg-yellow-50 rounded text-sm">
-                      <strong>Observações:</strong> {order.notes}
+                  {/* Order Items Preview */}
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="text-sm text-gray-600">
+                          {order.items.map((item, index) => (
+                            <span key={item.id}>
+                              {item.quantity}x {item.name}
+                              {index < order.items.length - 1 && ', '}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        {order.deliveryType === 'delivery' && (
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4" />
+                            <span>Entrega</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          <span>{order.estimatedTime ? `${order.estimatedTime} min` : 'Aguardando'}</span>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
+                    
+                    {order.notes && (
+                      <div className="mt-2 p-2 bg-yellow-50 rounded text-sm">
+                        <strong>Observações:</strong> {order.notes}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      )}
 
       {/* Order Detail Modal */}
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>

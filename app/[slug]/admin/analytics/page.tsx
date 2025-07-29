@@ -81,6 +81,55 @@ export default function AnalyticsPage() {
     refetchPerformance()
   }
 
+  // Função para exportar dados
+  const exportData = async () => {
+    if (!overview || !salesData || !productData || !customerData || !performanceData) {
+      alert('Aguarde o carregamento dos dados para exportar')
+      return
+    }
+
+    const exportData = {
+      restaurante: restaurantSlug,
+      periodo: dateRange,
+      geradoEm: new Date().toISOString(),
+      dados: {
+        resumo: overview,
+        vendas: salesData,
+        produtos: productData,
+        clientes: customerData,
+        performance: performanceData
+      }
+    }
+
+    // Converter para CSV
+    const csvContent = [
+      // Header
+      'Tipo,Metrica,Valor,Data',
+      // Overview
+      `Resumo,Receita Total,${overview.totalRevenue},${new Date().toISOString().split('T')[0]}`,
+      `Resumo,Total Pedidos,${overview.totalOrders},${new Date().toISOString().split('T')[0]}`,
+      `Resumo,Total Clientes,${overview.totalCustomers},${new Date().toISOString().split('T')[0]}`,
+      `Resumo,Ticket Medio,${overview.averageOrderValue},${new Date().toISOString().split('T')[0]}`,
+      // Sales data
+      ...salesData.map(day => `Vendas,Receita,${day.revenue},${day.date}`),
+      // Top products
+      ...productData.slice(0, 10).map(product => `Produto,${product.name},${product.sales},${new Date().toISOString().split('T')[0]}`),
+    ].join('\n')
+
+    // Download CSV
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', `analytics-${restaurantSlug}-${dateRange}-${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -107,7 +156,7 @@ export default function AnalyticsPage() {
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={exportData} disabled={isLoading}>
             <Download className="h-4 w-4 mr-2" />
             Exportar
           </Button>

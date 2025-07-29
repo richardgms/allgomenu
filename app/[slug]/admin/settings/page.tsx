@@ -109,7 +109,11 @@ const settingsCategories = [
   }
 ]
 
-export default function SettingsPage() {
+interface SettingsPageProps {
+  params: { slug: string }
+}
+
+export default function SettingsPage({ params }: SettingsPageProps) {
   const getStatusColor = (status?: string) => {
     switch (status) {
       case 'active':
@@ -150,7 +154,7 @@ export default function SettingsPage() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Button variant="outline" className="h-auto p-4 justify-start" asChild>
-              <Link href="/admin/settings/hours">
+              <Link href={`/${params.slug}/admin/settings/hours`}>
                 <Clock className="h-5 w-5 mr-2" />
                 <div>
                   <div className="font-medium">Horários</div>
@@ -159,7 +163,7 @@ export default function SettingsPage() {
               </Link>
             </Button>
             <Button variant="outline" className="h-auto p-4 justify-start" asChild>
-              <Link href="/admin/settings/delivery">
+              <Link href={`/${params.slug}/admin/settings/delivery`}>
                 <MapPin className="h-5 w-5 mr-2" />
                 <div>
                   <div className="font-medium">Entrega</div>
@@ -168,7 +172,7 @@ export default function SettingsPage() {
               </Link>
             </Button>
             <Button variant="outline" className="h-auto p-4 justify-start" asChild>
-              <Link href="/admin/settings/payments">
+              <Link href={`/${params.slug}/admin/settings/payments`}>
                 <CreditCard className="h-5 w-5 mr-2" />
                 <div>
                   <div className="font-medium">Pagamentos</div>
@@ -177,7 +181,7 @@ export default function SettingsPage() {
               </Link>
             </Button>
             <Button variant="outline" className="h-auto p-4 justify-start" asChild>
-              <Link href="/admin/settings/notifications">
+              <Link href={`/${params.slug}/admin/settings/notifications`}>
                 <Bell className="h-5 w-5 mr-2" />
                 <div>
                   <div className="font-medium">Notificações</div>
@@ -202,7 +206,7 @@ export default function SettingsPage() {
                 {category.items.map((item) => {
                   const Icon = item.icon
                   return (
-                    <Link key={item.title} href={`/admin${item.href}`}>
+                    <Link key={item.title} href={`/${params.slug}/admin${item.href}`}>
                       <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                         <div className="flex items-center gap-4">
                           <div className="p-2 bg-gray-100 rounded-lg">

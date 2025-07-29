@@ -1,14 +1,28 @@
 'use client'
 
-import { useState } from 'react'
-import * as React from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Menu, Bell, Settings, LogOut, Power, PowerOff, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Switch } from '@/components/ui/switch'
-import { Bell, User, LogOut, Settings, Power, PowerOff, Menu } from 'lucide-react'
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
+import { OrderNotifications } from '@/components/orders/OrderNotifications'
 import { useAuth } from '@/hooks/useAuth'
 import { useIsMobile } from '@/hooks/use-mobile'
 
@@ -19,7 +33,7 @@ interface AdminHeaderProps {
 
 export const AdminHeader = React.memo(function AdminHeader({ slug, onMenuToggle }: AdminHeaderProps) {
   const [isRestaurantOpen, setIsRestaurantOpen] = useState(true)
-  const [notifications] = useState(3) // Mock notification count
+  // Removido mock notification - usando componente real
   const router = useRouter()
   const { user, restaurant, logout } = useAuth()
   const isMobile = useIsMobile()
@@ -89,6 +103,9 @@ export const AdminHeader = React.memo(function AdminHeader({ slug, onMenuToggle 
 
         {/* Right side actions */}
         <div className="flex items-center gap-2 lg:gap-4">
+          {/* Notificações de pedidos */}
+          <OrderNotifications restaurantSlug={slug} />
+          
           {/* Restaurant Status Toggle - simplificado em mobile */}
           <div className="flex items-center gap-2 lg:gap-3">
             {!isMobile && (
@@ -114,15 +131,6 @@ export const AdminHeader = React.memo(function AdminHeader({ slug, onMenuToggle 
             )}
           </div>
 
-          {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            {notifications > 0 && (
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                {notifications}
-              </Badge>
-            )}
-          </Button>
 
           {/* User Menu */}
           <DropdownMenu>
