@@ -91,10 +91,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    console.log(`[Theme API] Updating theme for ${restaurant}:`, {
-      primary: body.primaryColor,
-      secondary: body.secondaryColor
-    })
+
 
     // Verificar se o restaurante existe
     const restaurantData = await db.restaurant.findUnique({
@@ -146,7 +143,7 @@ export async function PUT(request: NextRequest) {
       }
     })
 
-    console.log(`[Theme API] Theme updated successfully for ${restaurant}`)
+
 
     // Retornar configurações atualizadas simplificadas
     const responseSettings: SimpleThemeConfig = {
@@ -186,7 +183,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`[Theme API] Resetting theme to default for ${restaurant}`)
+
 
     // Verificar se o restaurante existe
     const restaurantData = await db.restaurant.findUnique({
@@ -221,7 +218,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    console.log(`[Theme API] Theme reset successfully for ${restaurant}`)
+
 
     const responseSettings: SimpleThemeConfig = {
       primaryColor: defaultThemeConfig.primaryColor,

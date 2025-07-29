@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react'
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { buildThemeTokens, type ThemeInput, type BuildThemeResult } from '@/lib/color/theme-builder'
 import { RestaurantStatus } from '@/types/restaurant'
 
@@ -35,6 +35,9 @@ export function RestaurantThemeProvider({
   const [lastAppliedConfig, setLastAppliedConfig] = useState<string | null>(null)
   const isApplyingTheme = useRef(false)
   const themeDebounceTimer = useRef<NodeJS.Timeout | null>(null)
+  const initialConfigRef = useRef(initialThemeConfig)
+  const hasInitialized = useRef(false)
+  const isMounted = useRef(false)
 
   // ID do style tag específico do restaurante
   const styleId = `restaurant-theme-${restaurantSlug}`
@@ -263,10 +266,9 @@ export function RestaurantThemeProvider({
   }
 
   // Aplicar tema com debounce e controle de estado
-  const applyTheme = async (input: ThemeInput) => {
+  const applyTheme = useCallback(async (input: ThemeInput) => {
     // Evitar múltiplas aplicações simultâneas
     if (isApplyingTheme.current) {
-// Theme application in progress, skipping
       return
     }
 
@@ -280,7 +282,6 @@ export function RestaurantThemeProvider({
       try {
         isApplyingTheme.current = true
         setError(null)
-// Applying theme silently
 
         const themeResult = buildThemeTokens(input)
         
@@ -288,7 +289,6 @@ export function RestaurantThemeProvider({
         injectCSS(themeResult.css)
         
         setCurrentTheme(themeResult)
-// Theme applied successfully
         
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Erro ao aplicar tema'
@@ -298,17 +298,18 @@ export function RestaurantThemeProvider({
         isApplyingTheme.current = false
       }
     }, 300)
-  }
+  }, [restaurantSlug])
 
   // Reset para tema padrão
-  const resetTheme = () => {
+  const resetTheme = useCallback(() => {
+    console.log(`[Theme ${restaurantSlug}] Resetting theme to default`)
     const defaultTheme: ThemeInput = {
       primaryHex: '#3b82f6',
       secondaryHex: '#10b981',
       name: 'Tema Padrão AllGoMenu'
     }
     applyTheme(defaultTheme)
-  }
+  }, [applyTheme, restaurantSlug])
 
   // Função para calcular cor de contraste
   const getContrastColor = (hex: string): string => {
@@ -326,6 +327,23 @@ export function RestaurantThemeProvider({
 
   // Buscar dados do restaurante e aplicar tema (otimizado para evitar reaplicações)
   useEffect(() => {
+    // Marcar como montado
+    isMounted.current = true
+
+    // Se já foi inicializado, não fazer nada
+    if (hasInitialized.current) {
+      return
+    }
+
+    // Se temos dados iniciais e já aplicamos o tema, não fazer nada
+    if (initialThemeConfig && lastAppliedConfig) {
+      hasInitialized.current = true
+      return
+    }
+
+    // Resetar flag de inicialização quando o slug mudar
+    hasInitialized.current = false
+
     let isCancelled = false
 
     const fetchAndApplyTheme = async () => {
@@ -340,7 +358,6 @@ export function RestaurantThemeProvider({
           
           // Evitar reaplicação se a configuração não mudou
           if (lastAppliedConfig === configKey) {
-  // Configuration unchanged, skipping reapplication
             setIsLoading(false)
             return
           }
@@ -356,10 +373,12 @@ export function RestaurantThemeProvider({
             setLastAppliedConfig(configKey)
             setIsLoading(false)
           }
+          
+          // Se temos dados iniciais, não buscar da API
           return
         }
 
-        // Buscar da API se não tiver dados iniciais
+        // Buscar da API apenas se não tiver dados iniciais
         const response = await fetch(`/api/restaurant/${restaurantSlug}/status`)
         
         if (!response.ok) {
@@ -368,7 +387,7 @@ export function RestaurantThemeProvider({
 
         const statusData: RestaurantStatus = await response.json()
         
-        if (isCancelled) return
+        if (isCancelled || !isMounted.current) return
 
         setRestaurantStatus(statusData)
 
@@ -378,7 +397,6 @@ export function RestaurantThemeProvider({
         
         // Evitar reaplicação se a configuração não mudou
         if (lastAppliedConfig === configKey) {
-// Configuration unchanged, skipping reapplication
           setIsLoading(false)
           return
         }
@@ -397,13 +415,14 @@ export function RestaurantThemeProvider({
         
         const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar tema'
         setError(errorMessage)
-        console.error('Restaurant theme loading error:', err)
+        console.error(`[Theme ${restaurantSlug}] Error loading theme:`, err)
         
         // Aplicar tema fallback
         resetTheme()
       } finally {
-        if (!isCancelled) {
+        if (!isCancelled && isMounted.current) {
           setIsLoading(false)
+          hasInitialized.current = true
         }
       }
     }
@@ -412,6 +431,7 @@ export function RestaurantThemeProvider({
 
     return () => {
       isCancelled = true
+      isMounted.current = false
       // Limpar timer de debounce
       if (themeDebounceTimer.current) {
         clearTimeout(themeDebounceTimer.current)
@@ -439,14 +459,14 @@ export function RestaurantThemeProvider({
     }
   }, [styleId])
 
-  const contextValue: RestaurantThemeContextValue = {
+  const contextValue: RestaurantThemeContextValue = useMemo(() => ({
     currentTheme,
     restaurantStatus,
     applyTheme,
     resetTheme,
     isLoading,
     error
-  }
+  }), [currentTheme, restaurantStatus, applyTheme, resetTheme, isLoading, error])
 
   return (
     <RestaurantThemeContext.Provider value={contextValue}>
@@ -479,6 +499,7 @@ export function useRestaurantThemeData(restaurantData?: {
 
   useEffect(() => {
     if (restaurantData?.themeConfig) {
+      console.log(`[Theme] Applying theme from restaurant data:`, restaurantData.themeConfig)
       applyTheme({
         primaryHex: restaurantData.themeConfig.primaryColor,
         secondaryHex: restaurantData.themeConfig.secondaryColor,

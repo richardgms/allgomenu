@@ -62,7 +62,7 @@ button:not([data-variant]):hover {
 button[data-variant="secondary"], 
 .btn-secondary, 
 .bg-secondary {
-  background-color: var(--secondary) !important;
+  background-color: var(--sidebar-bg) !important;
   color: var(--secondary-foreground) !important;
   border-color: var(--secondary) !important;
 }
@@ -180,7 +180,7 @@ button[data-variant="ghost"]:hover,
 }
 
 .btn-secondary {
-  background-color: var(--secondary) !important;
+  background-color: var(--sidebar-bg) !important;
   color: var(--secondary-foreground) !important;
 }
 

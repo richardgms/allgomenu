@@ -1,24 +1,32 @@
 import { db } from '@/lib/db';
 import { RestaurantThemeProvider } from '@/components/theme/RestaurantThemeProvider';
+import { unstable_cache } from 'next/cache';
 
-async function getRestaurantBySlug(slug: string) {
-  try {
-    const restaurant = await db.restaurant.findUnique({
-      where: { slug },
-      select: {
-        id: true,
-        name: true,
-        themeConfig: true,
-        isActive: true
-      }
-    });
-    
-    return restaurant;
-  } catch (error) {
-    // Erro ao buscar restaurante
-    return null;
+const getRestaurantBySlug = unstable_cache(
+  async (slug: string) => {
+    try {
+      const restaurant = await db.restaurant.findUnique({
+        where: { slug },
+        select: {
+          id: true,
+          name: true,
+          themeConfig: true,
+          isActive: true
+        }
+      });
+      
+      return restaurant;
+    } catch (error) {
+      // Erro ao buscar restaurante
+      return null;
+    }
+  },
+  ['restaurant-by-slug'],
+  {
+    revalidate: 60, // Cache por 1 minuto
+    tags: ['restaurant']
   }
-}
+);
 
 export default async function PublicLayout({ 
   children, 
@@ -27,6 +35,7 @@ export default async function PublicLayout({
   children: React.ReactNode;
   params: { slug: string };
 }) {
+  // Cache para evitar consultas desnecessárias
   const restaurant = await getRestaurantBySlug(params.slug);
   
   // Verificar se o restaurante existe e está ativo

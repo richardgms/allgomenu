@@ -244,9 +244,9 @@ export function buildThemeTokens(input: ThemeInput): BuildThemeResult {
         info: { bg: '#0ea5e9', text: '#ffffff' }
       },
       sidebar: {
-        bg: '#f5f5f4',
+        bg: lightenColor(primaryHex, 0.95),
         itemColor: '#1a1a1a',
-        itemActiveBg: lightenColor(primaryHex, 0.9),
+        itemActiveBg: lightenColor(primaryHex, 0.8),
         itemActiveIndicator: primaryHex
       },
       chip: {
@@ -323,11 +323,11 @@ export function buildThemeTokens(input: ThemeInput): BuildThemeResult {
 --modal-foreground: #111111;
 
 /* Sidebar e navegação - CONTRASTE MELHORADO */
---sidebar-bg: #ffffff;
+--sidebar-bg: ${lightenColor(primaryHex, 0.95)};
 --sidebar-foreground: #374151;
 --sidebar-border: ${lightenColor(primaryHex, 0.85)};
---sidebar-active: ${primaryHex};
---sidebar-active-foreground: ${primaryTextColor};
+--sidebar-active: ${lightenColor(primaryHex, 0.8)};
+--sidebar-active-foreground: ${getContrastColor(lightenColor(primaryHex, 0.8))};
 
 /* Tabelas */
 --table-bg: #ffffff;

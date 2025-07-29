@@ -248,7 +248,7 @@ export async function GET(
     )
 
     // Processar zonas de entrega
-    const deliveryZones = (restaurant.deliveryZones as DeliveryZone[]) || []
+    const deliveryZones = (restaurant.deliveryZones as unknown as DeliveryZone[]) || []
     const minimumOrderByZone = deliveryZones.reduce((acc, zone) => {
       acc[zone.name] = zone.minimumOrder || Number(restaurant.minimumOrder)
       return acc

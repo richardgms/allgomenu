@@ -25,16 +25,23 @@ export function useRestaurantPage(slug: string) {
   } = useQuery({
     queryKey: ['restaurant-menu', slug],
     queryFn: async (): Promise<ProcessedCategory[]> => {
+      console.log(`[Menu] Fetching menu for restaurant: ${slug}`)
       const response = await fetch(`/api/restaurant/${slug}/menu`)
       if (!response.ok) {
+        console.error(`[Menu] Error fetching menu for ${slug}:`, response.status, response.statusText)
         throw new Error(`Erro ao carregar menu: ${response.status}`)
       }
-      return response.json()
+      const data = await response.json()
+      console.log(`[Menu] Menu data received for ${slug}:`, data.length, 'categories')
+      return data
     },
     enabled: !!slug,
     staleTime: 5 * 60 * 1000, // 5 minutos
-    cacheTime: 10 * 60 * 1000, // 10 minutos
-    retry: 2
+    gcTime: 10 * 60 * 1000, // 10 minutos
+    retry: 2,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false
   })
 
   // Estados derivados
@@ -53,10 +60,10 @@ export function useRestaurantPage(slug: string) {
 
   // Estatísticas do menu
   const menuStats = {
-    totalCategories: categories.length,
-    totalProducts: categories.reduce((sum, cat) => sum + cat.productCount, 0),
-    availableProducts: categories.reduce((sum, cat) => sum + cat.availableCount, 0),
-    featuredProducts: categories.reduce((sum, cat) => sum + cat.featuredCount, 0)
+    totalCategories: categories?.length || 0,
+    totalProducts: categories?.reduce((sum: number, cat: any) => sum + (cat.productCount || 0), 0) || 0,
+    availableProducts: categories?.reduce((sum: number, cat: any) => sum + (cat.availableCount || 0), 0) || 0,
+    featuredProducts: categories?.reduce((sum: number, cat: any) => sum + (cat.featuredCount || 0), 0) || 0
   }
 
   // Métodos úteis

@@ -87,12 +87,16 @@ export function useCategories() {
   } = useQuery({
     queryKey: ['admin-categories', params.slug],
     queryFn: async (): Promise<Category[]> => {
+      console.log(`[Categories] Fetching categories for: ${params.slug}`)
       const response = await fetch(`/api/admin/categories?restaurant=${params.slug}`)
       if (!response.ok) {
         const error = await response.json()
+        console.error(`[Categories] Error fetching categories for ${params.slug}:`, error)
         throw new Error(error.error || 'Failed to fetch categories')
       }
-      return response.json()
+      const data = await response.json()
+      console.log(`[Categories] Categories received for ${params.slug}:`, data.length, 'categories')
+      return data
     },
     enabled: !!params.slug,
     staleTime: 5 * 60 * 1000, // 5 minutos
@@ -195,15 +199,19 @@ export function useProducts(categoryId?: string) {
   } = useQuery({
     queryKey: ['admin-products', params.slug, categoryId],
     queryFn: async (): Promise<Product[]> => {
+      console.log(`[Products] Fetching products for: ${params.slug}${categoryId ? `, category: ${categoryId}` : ''}`)
       const queryParams = new URLSearchParams({ restaurant: params.slug })
       if (categoryId) queryParams.append('categoryId', categoryId)
       
       const response = await fetch(`/api/admin/products?${queryParams}`)
       if (!response.ok) {
         const error = await response.json()
+        console.error(`[Products] Error fetching products for ${params.slug}:`, error)
         throw new Error(error.error || 'Failed to fetch products')
       }
-      return response.json()
+      const data = await response.json()
+      console.log(`[Products] Products received for ${params.slug}:`, data.length, 'products')
+      return data
     },
     enabled: !!params.slug,
     staleTime: 5 * 60 * 1000, // 5 minutos
@@ -336,12 +344,16 @@ export function useTheme() {
   } = useQuery({
     queryKey: ['admin-theme', params.slug],
     queryFn: async (): Promise<ThemeSettings> => {
+      console.log(`[Theme] Fetching theme settings for: ${params.slug}`)
       const response = await fetch(`/api/admin/restaurant/theme?restaurant=${params.slug}`)
       if (!response.ok) {
         const error = await response.json()
+        console.error(`[Theme] Error fetching theme settings for ${params.slug}:`, error)
         throw new Error(error.error || 'Failed to fetch theme settings')
       }
-      return response.json()
+      const data = await response.json()
+      console.log(`[Theme] Theme settings received for ${params.slug}:`, data.primaryColor, data.secondaryColor)
+      return data
     },
     enabled: !!params.slug,
     staleTime: 10 * 60 * 1000, // 10 minutos
@@ -365,9 +377,6 @@ export function useTheme() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-theme', params.slug] })
-      queryClient.invalidateQueries({ queryKey: ['restaurant-status', params.slug] })
-      // Invalidar cache do RestaurantThemeProvider para atualizar site público
-      queryClient.invalidateQueries({ queryKey: ['restaurant-theme', params.slug] })
     }
   })
 
@@ -387,9 +396,6 @@ export function useTheme() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-theme', params.slug] })
-      queryClient.invalidateQueries({ queryKey: ['restaurant-status', params.slug] })
-      // Invalidar cache do RestaurantThemeProvider para atualizar site público
-      queryClient.invalidateQueries({ queryKey: ['restaurant-theme', params.slug] })
     }
   })
 
@@ -410,12 +416,20 @@ export function useRestaurantInfo() {
   return useQuery({
     queryKey: ['restaurant-info', params.slug],
     queryFn: async () => {
+      console.log(`[Restaurant] Fetching info for: ${params.slug}`)
       const response = await fetch(`/api/restaurant/${params.slug}/status`)
-      if (!response.ok) throw new Error('Failed to fetch restaurant info')
+      if (!response.ok) {
+        console.error(`[Restaurant] Error fetching info for ${params.slug}:`, response.status, response.statusText)
+        throw new Error('Failed to fetch restaurant info')
+      }
       const data = await response.json()
+      console.log(`[Restaurant] Info received for ${params.slug}:`, data.restaurant?.name)
       return data.restaurant
     },
     enabled: !!params.slug,
     staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false
   })
 }
