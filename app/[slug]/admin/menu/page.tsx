@@ -12,7 +12,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Skeleton } from '@/components/ui/skeleton'
 import { ImageUpload } from '@/components/ImageUpload'
+import { useCategories, useProducts } from '@/hooks/useAdminApi'
+import { formatPrice } from '@/lib/utils'
 import {
   Plus,
   Search,
@@ -25,130 +29,134 @@ import {
   GripVertical,
   Filter,
   Download,
-  Upload
+  Upload,
+  AlertCircle
 } from 'lucide-react'
-
-interface Category {
-  id: string
-  name: string
-  description: string
-  order: number
-  active: boolean
-  productsCount: number
-}
-
-interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
-  image: string
-  category: string
-  active: boolean
-  featured: boolean
-  variations?: Array<{
-    name: string
-    price: number
-  }>
-}
 
 export default function MenuManagementPage() {
   const [activeTab, setActiveTab] = useState('products')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingItem, setEditingItem] = useState<Product | Category | null>(null)
+  const [isProductDialogOpen, setIsProductDialogOpen] = useState(false)
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<any>(null)
+  const [editingCategory, setEditingCategory] = useState<any>(null)
 
-  // Mock data
-  const categories: Category[] = [
-    {
-      id: '1',
-      name: 'Pizzas',
-      description: 'Pizzas tradicionais e especiais',
-      order: 1,
-      active: true,
-      productsCount: 12
-    },
-    {
-      id: '2',
-      name: 'Hambúrguers',
-      description: 'Hambúrguers artesanais',
-      order: 2,
-      active: true,
-      productsCount: 8
-    },
-    {
-      id: '3',
-      name: 'Bebidas',
-      description: 'Refrigerantes, sucos e águas',
-      order: 3,
-      active: true,
-      productsCount: 15
-    }
-  ]
+  // Use hooks das APIs
+  const { 
+    categories, 
+    isLoading: categoriesLoading, 
+    error: categoriesError,
+    createCategory,
+    updateCategory,
+    deleteCategory
+  } = useCategories()
 
-  const products: Product[] = [
-    {
-      id: '1',
-      name: 'Pizza Margherita',
-      description: 'Molho de tomate, mussarela, manjericão e azeite',
-      price: 35.90,
-      image: '/placeholder-pizza.jpg',
-      category: 'Pizzas',
-      active: true,
-      featured: true,
-      variations: [
-        { name: 'Pequena', price: 25.90 },
-        { name: 'Média', price: 35.90 },
-        { name: 'Grande', price: 45.90 }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Hambúrguer Clássico',
-      description: 'Pão brioche, hambúrguer 180g, queijo, alface, tomate',
-      price: 28.90,
-      image: '/placeholder-burger.jpg',
-      category: 'Hambúrguers',
-      active: true,
-      featured: false
-    },
-    {
-      id: '3',
-      name: 'Coca-Cola 350ml',
-      description: 'Refrigerante gelado',
-      price: 5.90,
-      image: '/placeholder-drink.jpg',
-      category: 'Bebidas',
-      active: true,
-      featured: false
-    }
-  ]
+  const { 
+    products, 
+    isLoading: productsLoading, 
+    error: productsError,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    duplicateProduct
+  } = useProducts()
 
+  // Filtrar produtos
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory
+    const matchesCategory = selectedCategory === 'all' || product.category.id === selectedCategory
     return matchesSearch && matchesCategory
   })
 
-  const handleEditProduct = (product: Product) => {
-    setEditingItem(product)
-    setIsDialogOpen(true)
+  // Handlers para produtos
+  const handleEditProduct = (product: any) => {
+    setEditingProduct(product)
+    setIsProductDialogOpen(true)
   }
 
-  const handleEditCategory = (category: Category) => {
-    setEditingItem(category)
-    setIsDialogOpen(true)
+  const handleCreateProduct = () => {
+    setEditingProduct(null)
+    setIsProductDialogOpen(true)
   }
 
-  const toggleProductStatus = (productId: string) => {
-    // Handle toggle product active status
-    console.log('Toggle product status:', productId)
+  const handleDuplicateProduct = async (product: any) => {
+    try {
+      await duplicateProduct.mutateAsync(product)
+      alert('Produto duplicado com sucesso!')
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Erro ao duplicar produto')
+    }
   }
 
-  const toggleCategoryStatus = (categoryId: string) => {
-    // Handle toggle category active status
-    console.log('Toggle category status:', categoryId)
+  const handleToggleProductStatus = async (product: any) => {
+    try {
+      await updateProduct.mutateAsync({
+        id: product.id,
+        isActive: !product.isActive
+      })
+      alert(`Produto ${product.isActive ? 'desativado' : 'ativado'} com sucesso!`)
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Erro ao alterar status do produto')
+    }
+  }
+
+  const handleDeleteProduct = async (product: any) => {
+    if (!confirm(`Tem certeza que deseja excluir "${product.name}"?`)) return
+    
+    try {
+      await deleteProduct.mutateAsync(product.id)
+      alert('Produto excluído com sucesso!')
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Erro ao excluir produto')
+    }
+  }
+
+  // Handlers para categorias
+  const handleEditCategory = (category: any) => {
+    setEditingCategory(category)
+    setIsCategoryDialogOpen(true)
+  }
+
+  const handleCreateCategory = () => {
+    setEditingCategory(null)
+    setIsCategoryDialogOpen(true)
+  }
+
+  const handleToggleCategoryStatus = async (category: any) => {
+    try {
+      await updateCategory.mutateAsync({
+        id: category.id,
+        isActive: !category.isActive
+      })
+      alert(`Categoria ${category.isActive ? 'desativada' : 'ativada'} com sucesso!`)
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Erro ao alterar status da categoria')
+    }
+  }
+
+  const handleDeleteCategory = async (category: any) => {
+    if (!confirm(`Tem certeza que deseja excluir "${category.name}"?`)) return
+    
+    try {
+      await deleteCategory.mutateAsync(category.id)
+      alert('Categoria excluída com sucesso!')
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Erro ao excluir categoria')
+    }
+  }
+
+  if (categoriesError || productsError) {
+    return (
+      <div className="space-y-6">
+        <Alert className="border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Erro ao carregar dados: {categoriesError?.message || productsError?.message}
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
   }
 
   return (
@@ -162,11 +170,11 @@ export default function MenuManagementPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline">
+          <Button variant="outline" disabled>
             <Upload className="h-4 w-4 mr-2" />
             Importar
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" disabled>
             <Download className="h-4 w-4 mr-2" />
             Exportar
           </Button>
@@ -203,115 +211,155 @@ export default function MenuManagementPage() {
                   <SelectContent>
                     <SelectItem value="all">Todas as categorias</SelectItem>
                     {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.name}>
+                      <SelectItem key={category.id} value={category.id}>
                         {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Novo Produto
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Adicionar Produto</DialogTitle>
-                      <DialogDescription>
-                        Preencha as informações do novo produto
-                      </DialogDescription>
-                    </DialogHeader>
-                    <ProductForm />
-                  </DialogContent>
-                </Dialog>
+                <Button onClick={handleCreateProduct}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Produto
+                </Button>
               </div>
             </CardContent>
           </Card>
 
           {/* Products Grid */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredProducts.map((product) => (
-              <Card key={product.id} className="overflow-hidden">
-                <div className="aspect-video bg-gray-100 relative">
-                  {product.image && (
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                  <div className="absolute top-2 right-2 flex gap-2">
-                    {product.featured && (
-                      <Badge className="bg-yellow-100 text-yellow-800">
-                        Destaque
-                      </Badge>
-                    )}
-                    <Badge variant={product.active ? 'default' : 'secondary'}>
-                      {product.active ? 'Ativo' : 'Inativo'}
-                    </Badge>
-                  </div>
-                  <div className="absolute top-2 left-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="secondary" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => handleEditProduct(product)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Copy className="h-4 w-4 mr-2" />
-                          Duplicar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toggleProductStatus(product.id)}>
-                          {product.active ? (
-                            <>
-                              <EyeOff className="h-4 w-4 mr-2" />
-                              Desativar
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="h-4 w-4 mr-2" />
-                              Ativar
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Excluir
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-                <CardContent className="p-4">
-                  <div className="space-y-2">
-                    <div className="flex items-start justify-between">
-                      <h3 className="font-semibold text-lg">{product.name}</h3>
-                      <span className="font-bold text-lg text-green-600">
-                        R$ {product.price.toFixed(2)}
-                      </span>
+            {productsLoading ? (
+              // Loading skeletons
+              [...Array(6)].map((_, i) => (
+                <Card key={i} className="overflow-hidden">
+                  <Skeleton className="aspect-video w-full" />
+                  <CardContent className="p-4">
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between">
+                        <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-6 w-16" />
+                      </div>
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-5 w-20" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {product.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline">{product.category}</Badge>
-                      {product.variations && (
-                        <span className="text-xs text-gray-500">
-                          {product.variations.length} variações
-                        </span>
+                  </CardContent>
+                </Card>
+              ))
+            ) : filteredProducts.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500">Nenhum produto encontrado.</p>
+              </div>
+            ) : (
+              filteredProducts.map((product) => (
+                <Card key={product.id} className="overflow-hidden">
+                  <div className="aspect-video bg-gray-100 relative">
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-gray-400">Sem imagem</span>
+                      </div>
+                    )}
+                    <div className="absolute top-2 right-2 flex flex-col gap-2">
+                      {product.isFeatured && (
+                        <Badge className="bg-yellow-100 text-yellow-800 text-xs">
+                          Destaque
+                        </Badge>
+                      )}
+                      {product.hasPromotion && (
+                        <Badge variant="destructive" className="text-xs">
+                          -{product.discountPercentage}%
+                        </Badge>
+                      )}
+                      <Badge variant={product.isActive ? 'default' : 'secondary'} className="text-xs">
+                        {product.isActive ? 'Ativo' : 'Inativo'}
+                      </Badge>
+                      {!product.isAvailable && (
+                        <Badge variant="outline" className="text-xs">
+                          Esgotado
+                        </Badge>
                       )}
                     </div>
+                    <div className="absolute top-2 left-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="secondary" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => handleEditProduct(product)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDuplicateProduct(product)}>
+                            <Copy className="h-4 w-4 mr-2" />
+                            Duplicar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleToggleProductStatus(product)}>
+                            {product.isActive ? (
+                              <>
+                                <EyeOff className="h-4 w-4 mr-2" />
+                                Desativar
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-4 w-4 mr-2" />
+                                Ativar
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={() => handleDeleteProduct(product)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <CardContent className="p-4">
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between">
+                        <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
+                        <div className="text-right">
+                          <span className="font-bold text-lg text-green-600">
+                            {formatPrice(product.effectivePrice)}
+                          </span>
+                          {product.hasPromotion && (
+                            <div className="text-xs text-gray-500 line-through">
+                              {formatPrice(product.price)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {product.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                          {product.description}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline">{product.category?.name}</Badge>
+                        {product.options && Object.keys(product.options).length > 0 && (
+                          <span className="text-xs text-gray-500">
+                            Tem opções
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
 
@@ -329,107 +377,220 @@ export default function MenuManagementPage() {
                     />
                   </div>
                 </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Nova Categoria
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Adicionar Categoria</DialogTitle>
-                      <DialogDescription>
-                        Crie uma nova categoria para organizar seus produtos
-                      </DialogDescription>
-                    </DialogHeader>
-                    <CategoryForm />
-                  </DialogContent>
-                </Dialog>
+                <Button onClick={handleCreateCategory}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Categoria
+                </Button>
               </div>
             </CardContent>
           </Card>
 
           {/* Categories List */}
           <div className="space-y-4">
-            {categories.map((category) => (
-              <Card key={category.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <GripVertical className="h-5 w-5 text-gray-400 cursor-move" />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-lg font-semibold">{category.name}</h3>
-                          <Badge variant="outline">
-                            {category.productsCount} produtos
-                          </Badge>
-                          <Badge variant={category.active ? 'default' : 'secondary'}>
-                            {category.active ? 'Ativa' : 'Inativa'}
-                          </Badge>
+            {categoriesLoading ? (
+              // Loading skeletons
+              [...Array(3)].map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 flex-1">
+                        <Skeleton className="h-5 w-5" />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <Skeleton className="h-6 w-32" />
+                            <Skeleton className="h-5 w-20" />
+                            <Skeleton className="h-5 w-16" />
+                          </div>
+                          <Skeleton className="h-4 w-3/4" />
                         </div>
-                        <p className="text-gray-600 mt-1">{category.description}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-6 w-10" />
+                        <Skeleton className="h-8 w-8" />
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={category.active}
-                        onCheckedChange={() => toggleCategoryStatus(category.id)}
-                      />
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => handleEditCategory(category)}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Copy className="h-4 w-4 mr-2" />
-                            Duplicar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                  </CardContent>
+                </Card>
+              ))
+            ) : categories.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500">Nenhuma categoria encontrada.</p>
+              </div>
+            ) : (
+              categories.map((category) => (
+                <Card key={category.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <GripVertical className="h-5 w-5 text-gray-400 cursor-move" />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-lg font-semibold">{category.name}</h3>
+                            <Badge variant="outline">
+                              {category.productsCount} produtos
+                            </Badge>
+                            <Badge variant={category.isActive ? 'default' : 'secondary'}>
+                              {category.isActive ? 'Ativa' : 'Inativa'}
+                            </Badge>
+                          </div>
+                          {category.description && (
+                            <p className="text-gray-600 mt-1">{category.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={category.isActive}
+                          onCheckedChange={() => handleToggleCategoryStatus(category)}
+                        />
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => handleEditCategory(category)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => handleDeleteCategory(category)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Dialog para criar/editar produto */}
+      <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {editingProduct ? 'Editar Produto' : 'Novo Produto'}
+            </DialogTitle>
+            <DialogDescription>
+              {editingProduct 
+                ? 'Atualize as informações do produto' 
+                : 'Preencha as informações do novo produto'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <ProductForm 
+            product={editingProduct} 
+            categories={categories}
+            onSuccess={() => setIsProductDialogOpen(false)}
+            onCancel={() => setIsProductDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para criar/editar categoria */}
+      <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingCategory ? 'Editar Categoria' : 'Nova Categoria'}
+            </DialogTitle>
+            <DialogDescription>
+              {editingCategory 
+                ? 'Atualize as informações da categoria' 
+                : 'Crie uma nova categoria para organizar seus produtos'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <CategoryForm 
+            category={editingCategory}
+            onSuccess={() => setIsCategoryDialogOpen(false)}
+            onCancel={() => setIsCategoryDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
 
-function ProductForm() {
+interface ProductFormProps {
+  product?: any
+  categories: any[]
+  onSuccess: () => void
+  onCancel: () => void
+}
+
+function ProductForm({ product, categories, onSuccess, onCancel }: ProductFormProps) {
+  const { createProduct, updateProduct } = useProducts()
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    category: '',
-    image: '',
-    active: true,
-    featured: false
+    name: product?.name || '',
+    description: product?.description || '',
+    price: product?.price?.toString() || '',
+    promotionalPrice: product?.promotionalPrice?.toString() || '',
+    categoryId: product?.categoryId || '',
+    imageUrl: product?.imageUrl || '',
+    isActive: product?.isActive ?? true,
+    isFeatured: product?.isFeatured ?? false,
+    isAvailable: product?.isAvailable ?? true
   })
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!formData.name || !formData.price || !formData.categoryId) {
+      alert('Preencha os campos obrigatórios')
+      return
+    }
+
+    try {
+      const productData = {
+        name: formData.name,
+        description: formData.description || undefined,
+        price: parseFloat(formData.price),
+        promotionalPrice: formData.promotionalPrice && formData.promotionalPrice.trim() !== '' ? parseFloat(formData.promotionalPrice) : undefined,
+        categoryId: formData.categoryId,
+        imageUrl: formData.imageUrl || undefined,
+        isActive: formData.isActive,
+        isFeatured: formData.isFeatured,
+        isAvailable: formData.isAvailable
+      }
+      
+      // Debug: Log dos dados do formulário
+      console.log('Dados do formulário:', JSON.stringify(productData, null, 2))
+
+      if (product) {
+        await updateProduct.mutateAsync({ id: product.id, ...productData })
+        alert('Produto atualizado com sucesso!')
+      } else {
+        await createProduct.mutateAsync(productData)
+        alert('Produto criado com sucesso!')
+      }
+      
+      onSuccess()
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Erro ao salvar produto')
+    }
+  }
+
   return (
-    <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid gap-4">
         <div className="space-y-2">
-          <Label htmlFor="name">Nome do Produto</Label>
+          <Label htmlFor="name">Nome do Produto *</Label>
           <Input
             id="name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="Ex: Pizza Margherita"
+            required
           />
         </div>
         
@@ -446,46 +607,63 @@ function ProductForm() {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="price">Preço</Label>
+            <Label htmlFor="price">Preço *</Label>
             <Input
               id="price"
               type="number"
               step="0.01"
+              min="0"
               value={formData.price}
               onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-              placeholder="0,00"
+              placeholder="0.00"
+              required
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="category">Categoria</Label>
-            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione uma categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pizzas">Pizzas</SelectItem>
-                <SelectItem value="hamburguers">Hambúrguers</SelectItem>
-                <SelectItem value="bebidas">Bebidas</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="promotionalPrice">Preço Promocional</Label>
+            <Input
+              id="promotionalPrice"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.promotionalPrice}
+              onChange={(e) => setFormData({ ...formData, promotionalPrice: e.target.value })}
+              placeholder="0.00"
+            />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="category">Categoria *</Label>
+          <Select value={formData.categoryId} onValueChange={(value) => setFormData({ ...formData, categoryId: value })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione uma categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">
           <Label>Imagem do Produto</Label>
           <ImageUpload
-            value={formData.image}
-            onChange={(url) => setFormData({ ...formData, image: url })}
+            value={formData.imageUrl}
+            onChange={(url) => setFormData({ ...formData, imageUrl: url })}
           />
         </div>
 
-        <div className="flex items-center space-x-6">
+        <div className="grid grid-cols-3 gap-6">
           <div className="flex items-center space-x-2">
             <Switch
               id="active"
-              checked={formData.active}
-              onCheckedChange={(checked) => setFormData({ ...formData, active: checked })}
+              checked={formData.isActive}
+              onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
             />
             <Label htmlFor="active">Produto ativo</Label>
           </div>
@@ -493,39 +671,95 @@ function ProductForm() {
           <div className="flex items-center space-x-2">
             <Switch
               id="featured"
-              checked={formData.featured}
-              onCheckedChange={(checked) => setFormData({ ...formData, featured: checked })}
+              checked={formData.isFeatured}
+              onCheckedChange={(checked) => setFormData({ ...formData, isFeatured: checked })}
             />
             <Label htmlFor="featured">Produto em destaque</Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="available"
+              checked={formData.isAvailable}
+              onCheckedChange={(checked) => setFormData({ ...formData, isAvailable: checked })}
+            />
+            <Label htmlFor="available">Disponível</Label>
           </div>
         </div>
       </div>
 
       <div className="flex justify-end gap-2">
-        <Button variant="outline">Cancelar</Button>
-        <Button>Salvar Produto</Button>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button 
+          type="submit" 
+          disabled={createProduct.isPending || updateProduct.isPending}
+        >
+          {createProduct.isPending || updateProduct.isPending 
+            ? 'Salvando...' 
+            : product ? 'Atualizar Produto' : 'Criar Produto'
+          }
+        </Button>
       </div>
-    </div>
+    </form>
   )
 }
 
-function CategoryForm() {
+interface CategoryFormProps {
+  category?: any
+  onSuccess: () => void
+  onCancel: () => void
+}
+
+function CategoryForm({ category, onSuccess, onCancel }: CategoryFormProps) {
+  const { createCategory, updateCategory } = useCategories()
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    active: true
+    name: category?.name || '',
+    description: category?.description || '',
+    isActive: category?.isActive ?? true
   })
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!formData.name) {
+      alert('Nome da categoria é obrigatório')
+      return
+    }
+
+    try {
+      const categoryData = {
+        name: formData.name,
+        description: formData.description || undefined,
+        isActive: formData.isActive
+      }
+
+      if (category) {
+        await updateCategory.mutateAsync({ id: category.id, ...categoryData })
+        alert('Categoria atualizada com sucesso!')
+      } else {
+        await createCategory.mutateAsync(categoryData)
+        alert('Categoria criada com sucesso!')
+      }
+      
+      onSuccess()
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Erro ao salvar categoria')
+    }
+  }
+
   return (
-    <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="categoryName">Nome da Categoria</Label>
+          <Label htmlFor="categoryName">Nome da Categoria *</Label>
           <Input
             id="categoryName"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="Ex: Pizzas"
+            required
           />
         </div>
         
@@ -543,17 +777,27 @@ function CategoryForm() {
         <div className="flex items-center space-x-2">
           <Switch
             id="categoryActive"
-            checked={formData.active}
-            onCheckedChange={(checked) => setFormData({ ...formData, active: checked })}
+            checked={formData.isActive}
+            onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
           />
           <Label htmlFor="categoryActive">Categoria ativa</Label>
         </div>
       </div>
 
       <div className="flex justify-end gap-2">
-        <Button variant="outline">Cancelar</Button>
-        <Button>Salvar Categoria</Button>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button 
+          type="submit" 
+          disabled={createCategory.isPending || updateCategory.isPending}
+        >
+          {createCategory.isPending || updateCategory.isPending 
+            ? 'Salvando...' 
+            : category ? 'Atualizar Categoria' : 'Criar Categoria'
+          }
+        </Button>
       </div>
-    </div>
+    </form>
   )
 }

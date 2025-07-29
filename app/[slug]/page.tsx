@@ -1,10 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { formatPrice } from '@/lib/utils'
-import { buildThemeTokens } from '@/lib/color'
 import { TabsContent } from '@/components/ui/tabs'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { AlertCircle, RefreshCw } from 'lucide-react'
 
 // Componentes refatorados
 import { PublicHeader } from '@/components/public/PublicHeader'
@@ -15,67 +18,11 @@ import { ProductGrid } from '@/components/public/ProductGrid'
 import { CartSheet } from '@/components/public/CartSheet'
 import { CheckoutFlow } from '@/components/public/CheckoutFlow'
 
-// Interfaces
-interface CartItem {
-  id: string
-  name: string
-  price: number
-  quantity: number
-  imageUrl: string
-  observation?: string
-}
+// Hooks integrados
+import { useRestaurantPage, useRestaurantCart } from '@/hooks/useRestaurantPage'
+import { ProcessedProduct, CartItem } from '@/types/restaurant'
 
-interface Restaurant {
-  id: string
-  name: string
-  description: string
-  phone: string
-  address: string
-  deliveryFee: number
-  minimumOrder: number
-  deliveryTime: number
-  isCurrentlyOpen: boolean
-  themeConfig: {
-    primaryColor: string
-    secondaryColor: string
-    logo?: string
-    colorPalette?: {
-      primaryLight: string
-      primaryBase: string
-      primaryDark: string
-      secondaryLight: string
-      secondaryBase: string
-      secondaryDark: string
-    }
-  }
-  deliveryEnabled: boolean
-  whatsapp: string
-  deliveryZones?: {
-    name: string
-    price: number
-    radius: number
-  }[]
-  whatsappTemplate?: string
-}
-
-interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
-  imageUrl: string
-  isFeatured: boolean
-  options: any
-  promotionalPrice?: number
-  isAvailable?: boolean
-}
-
-interface Category {
-  id: string
-  name: string
-  products: Product[]
-}
-
+// Interfaces para checkout (temporárias - será movido para tipos compartilhados na Fase 4)
 interface SavedAddress {
   id: string
   name: string
@@ -103,21 +50,33 @@ interface CheckoutData {
 type CheckoutStep = 'customer' | 'address' | 'payment' | 'confirmation'
 
 export default function RestaurantPage() {
-  const { slug } = useParams()
+  const { slug } = useParams() as { slug: string }
+  const menuRef = useRef<HTMLDivElement>(null)
   
-  // Estados principais
-  const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
-  const [menu, setMenu] = useState<Category[]>([])
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
-  const [cart, setCart] = useState<CartItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  
+  // Hooks integrados
+  const {
+    isLoading,
+    hasError,
+    error,
+    restaurant,
+    operationalStatus,
+    deliveryConfig,
+    paymentMethods,
+    isOpen,
+    categories,
+    menuStats,
+    restaurantStatus,
+    refreshData
+  } = useRestaurantPage(slug)
+
   // Estados da UI
   const [showCart, setShowCart] = useState(false)
   const [showCheckout, setShowCheckout] = useState(false)
   const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>('customer')
   const [activeCategory, setActiveCategory] = useState<string>('')
+  
+  // Estados temporários do carrinho (será refatorado na Fase 4)
+  const [cart, setCart] = useState<CartItem[]>([])
   
   // Estados do checkout
   const [checkoutData, setCheckoutData] = useState<CheckoutData>({
@@ -129,81 +88,15 @@ export default function RestaurantPage() {
   })
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
 
-  // Carregar dados do restaurante e menu
+  // Definir categoria ativa inicial quando o menu carrega
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        
-        // Buscar dados do restaurante
-        const restaurantResponse = await fetch(`/api/restaurant/${slug}`)
-        if (!restaurantResponse.ok) {
-          throw new Error('Restaurante não encontrado')
-        }
-        const restaurantData = await restaurantResponse.json()
-        setRestaurant(restaurantData)
-
-        // Aplicar tema
-        if (restaurantData.themeConfig?.colorPalette) {
-          const tokens = buildThemeTokens(restaurantData.themeConfig.colorPalette)
-          Object.entries(tokens).forEach(([key, value]) => {
-            document.documentElement.style.setProperty(key, value)
-          })
-        }
-
-        // Buscar menu
-        const menuResponse = await fetch(`/api/restaurant/${slug}/menu`)
-        if (menuResponse.ok) {
-          const menuData = await menuResponse.json()
-          setMenu(menuData)
-          
-          // Definir categoria ativa inicial
-          if (menuData.length > 0) {
-            setActiveCategory(menuData[0].id)
-          }
-        }
-
-        // Buscar produtos em destaque
-        const featuredResponse = await fetch(`/api/restaurant/${slug}/featured`)
-        if (featuredResponse.ok) {
-          const featuredData = await featuredResponse.json()
-          setFeaturedProducts(featuredData)
-        }
-
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro ao carregar dados')
-      } finally {
-        setLoading(false)
-      }
+    if (categories.length > 0 && !activeCategory) {
+      setActiveCategory(categories[0].id)
     }
+  }, [categories, activeCategory])
 
-    if (slug) {
-      fetchData()
-    }
-  }, [slug])
-
-  // Carregar carrinho do localStorage
-  useEffect(() => {
-    const savedCart = localStorage.getItem(`cart-${slug}`)
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart))
-      } catch (error) {
-        console.error('Erro ao carregar carrinho:', error)
-      }
-    }
-  }, [slug])
-
-  // Salvar carrinho no localStorage
-  useEffect(() => {
-    if (slug) {
-      localStorage.setItem(`cart-${slug}`, JSON.stringify(cart))
-    }
-  }, [cart, slug])
-
-  // Funções do carrinho
-  const addToCart = (product: Product, quantity: number, observation?: string) => {
-    const currentPrice = product.promotionalPrice || product.price
+  // Funções do carrinho (temporárias - será refatorado na Fase 4)
+  const addToCart = (product: ProcessedProduct, quantity: number, observation?: string) => {
     const existingItemIndex = cart.findIndex(
       item => item.id === product.id && item.observation === observation
     )
@@ -216,7 +109,7 @@ export default function RestaurantPage() {
       const newItem: CartItem = {
         id: product.id,
         name: product.name,
-        price: currentPrice,
+        price: product.effectivePrice,
         quantity,
         imageUrl: product.imageUrl,
         observation
@@ -247,6 +140,11 @@ export default function RestaurantPage() {
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0)
   const cartSubtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0)
 
+  // Scroll para seção do menu
+  const scrollToMenu = () => {
+    menuRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   // Funções do checkout
   const handleCheckout = () => {
     setShowCart(false)
@@ -275,7 +173,7 @@ export default function RestaurantPage() {
         ? `💰 Dinheiro${checkoutData.changeFor ? ` (troco para ${formatPrice(checkoutData.changeFor)})` : ''}`
         : checkoutData.paymentMethod === 'card' ? '💳 Cartão na entrega' : '📱 PIX'
 
-      const total = cartSubtotal + restaurant.deliveryFee
+      const total = cartSubtotal + (restaurant.deliveryFee || 0)
 
       const message = `🍽️ *Novo Pedido - ${restaurant.name}*
 
@@ -287,7 +185,7 @@ ${orderItems}
 
 💰 *Resumo:*
 Subtotal: ${formatPrice(cartSubtotal)}
-Taxa de entrega: ${formatPrice(restaurant.deliveryFee)}
+Taxa de entrega: ${formatPrice(restaurant.deliveryFee || 0)}
 *Total: ${formatPrice(total)}*
 
 ${deliveryInfo}
@@ -299,7 +197,7 @@ ${checkoutData.observations ? `📝 *Observações:* ${checkoutData.observations
 _Pedido realizado através do site ${restaurant.name}_`
 
       // Gerar URL do WhatsApp
-      const whatsappUrl = `https://wa.me/${restaurant.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`
+      const whatsappUrl = `https://wa.me/${(restaurant.whatsapp || '').replace(/\D/g, '')}?text=${encodeURIComponent(message)}`
       
       // Abrir WhatsApp
       window.open(whatsappUrl, '_blank')
@@ -317,26 +215,54 @@ _Pedido realizado através do site ${restaurant.name}_`
     }
   }
 
+  // Get featured products from all categories
+  const featuredProducts = categories.flatMap(category => 
+    category.products.filter(product => product.isFeatured)
+  )
+
   // Renderização de loading
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Carregando restaurante...</p>
+        <div className="text-center space-y-4">
+          <LoadingSpinner size="lg" />
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Carregando restaurante...</h3>
+            <p className="text-muted-foreground text-sm">
+              Preparando cardápio e configurações
+            </p>
+          </div>
         </div>
       </div>
     )
   }
 
   // Renderização de erro
-  if (error || !restaurant) {
+  if (hasError || !restaurant) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">😔</h1>
-          <h2 className="text-2xl font-bold mb-2">Restaurante não encontrado</h2>
-          <p className="text-muted-foreground">{error || 'O restaurante solicitado não existe.'}</p>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <Alert className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {error || 'Não foi possível carregar os dados do restaurante.'}
+            </AlertDescription>
+          </Alert>
+          
+          <div className="space-y-4">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">😔</h1>
+              <h2 className="text-2xl font-bold mb-2">Ops! Algo deu errado</h2>
+              <p className="text-muted-foreground">
+                {error || 'O restaurante solicitado não pôde ser carregado.'}
+              </p>
+            </div>
+            
+            <Button onClick={refreshData} variant="outline" className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Tentar novamente
+            </Button>
+          </div>
         </div>
       </div>
     )
@@ -346,40 +272,47 @@ _Pedido realizado através do site ${restaurant.name}_`
     <div className="min-h-screen">
       {/* Header Fixo */}
       <PublicHeader 
-        restaurant={restaurant}
+        restaurantStatus={restaurantStatus}
         cartItemCount={cartItemCount}
         onCartClick={() => setShowCart(true)}
+        loading={isLoading}
       />
 
       {/* Seção Hero */}
-      <HeroSection restaurant={restaurant} />
+      <HeroSection 
+        restaurantStatus={restaurantStatus}
+        onScrollToMenu={scrollToMenu}
+        loading={isLoading}
+      />
 
       {/* Produtos em Destaque */}
       {featuredProducts.length > 0 && (
         <FeaturedProducts 
           products={featuredProducts}
-          loading={false}
+          loading={isLoading}
           onProductClick={(product) => addToCart(product, 1)}
         />
       )}
 
       {/* Menu Completo */}
-      {menu.length > 0 && (
+      <div ref={menuRef}>
         <CategoryNavigation
-          categories={menu}
+          categories={categories}
           selectedCategory={activeCategory}
           onCategorySelect={setActiveCategory}
+          loading={isLoading}
         >
-          {menu.map((category) => (
+          {categories.map((category) => (
             <TabsContent key={category.id} value={category.id} className="mt-0">
               <ProductGrid 
                 products={category.products}
                 onAddToCart={addToCart}
+                loading={isLoading}
               />
             </TabsContent>
           ))}
         </CategoryNavigation>
-      )}
+      </div>
 
       {/* Carrinho Lateral */}
       <CartSheet
@@ -389,8 +322,8 @@ _Pedido realizado através do site ${restaurant.name}_`
         onUpdateQuantity={updateCartItemQuantity}
         onRemoveItem={removeFromCart}
         onCheckout={handleCheckout}
-        deliveryFee={restaurant.deliveryFee}
-        minimumOrder={restaurant.minimumOrder}
+        deliveryFee={restaurant?.deliveryFee || 0}
+        minimumOrder={restaurant?.minimumOrder || 0}
       />
 
       {/* Fluxo de Checkout */}
@@ -402,7 +335,7 @@ _Pedido realizado através do site ${restaurant.name}_`
         checkoutData={checkoutData}
         onDataChange={handleCheckoutDataChange}
         cart={cart}
-        deliveryFee={restaurant.deliveryFee}
+        deliveryFee={restaurant?.deliveryFee || 0}
         savedAddresses={savedAddresses}
         onConfirmOrder={handleConfirmOrder}
       />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { ImageUpload } from '@/components/ImageUpload'
+import { useTheme } from '@/hooks/useAdminApi'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AlertCircle } from 'lucide-react'
 import { 
   Palette, 
   Type, 
@@ -82,6 +86,17 @@ const themePresets = {
 
 export default function CustomizationPage() {
   const [previewMode, setPreviewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
+  
+  // Use o hook da API
+  const {
+    themeSettings,
+    isLoading,
+    error,
+    updateTheme,
+    resetTheme
+  } = useTheme()
+
+  // Estado local para edição
   const [settings, setSettings] = useState<ThemeSettings>({
     primaryColor: '#3b82f6',
     secondaryColor: '#10b981',
@@ -96,6 +111,14 @@ export default function CustomizationPage() {
   })
 
   const [hasChanges, setHasChanges] = useState(false)
+
+  // Sincronizar com dados da API quando carregados
+  useEffect(() => {
+    if (themeSettings) {
+      setSettings(themeSettings)
+      setHasChanges(false)
+    }
+  }, [themeSettings])
 
   const updateSetting = (key: keyof ThemeSettings, value: string) => {
     setSettings(prev => ({ ...prev, [key]: value }))
@@ -117,15 +140,60 @@ export default function CustomizationPage() {
     }
   }
 
-  const handleSave = () => {
-    // Here you would save the settings to the backend
-    console.log('Saving settings:', settings)
-    setHasChanges(false)
+  const handleSave = async () => {
+    try {
+      await updateTheme.mutateAsync(settings)
+      alert('Configurações salvas com sucesso!')
+      setHasChanges(false)
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Erro ao salvar configurações')
+    }
   }
 
-  const handleReset = () => {
-    // Reset to default or last saved settings
-    setHasChanges(false)
+  const handleReset = async () => {
+    if (!confirm('Tem certeza que deseja resetar para o tema padrão?')) return
+    
+    try {
+      await resetTheme.mutateAsync()
+      alert('Tema resetado com sucesso!')
+      setHasChanges(false)
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Erro ao resetar tema')
+    }
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Alert className="border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Erro ao carregar configurações: {error.message}
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Skeleton className="h-96 w-full" />
+          <Skeleton className="h-96 w-full" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -142,13 +210,20 @@ export default function CustomizationPage() {
           {hasChanges && (
             <Badge variant="secondary">Alterações não salvas</Badge>
           )}
-          <Button variant="outline" onClick={handleReset} disabled={!hasChanges}>
+          <Button 
+            variant="outline" 
+            onClick={handleReset} 
+            disabled={!hasChanges || resetTheme.isPending}
+          >
             <RotateCcw className="h-4 w-4 mr-2" />
-            Reverter
+            {resetTheme.isPending ? 'Resetando...' : 'Resetar'}
           </Button>
-          <Button onClick={handleSave} disabled={!hasChanges}>
+          <Button 
+            onClick={handleSave} 
+            disabled={!hasChanges || updateTheme.isPending}
+          >
             <Save className="h-4 w-4 mr-2" />
-            Salvar Alterações
+            {updateTheme.isPending ? 'Salvando...' : 'Salvar Alterações'}
           </Button>
         </div>
       </div>

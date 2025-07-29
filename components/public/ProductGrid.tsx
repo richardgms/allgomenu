@@ -8,42 +8,64 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Minus, Plus } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Minus, Plus, Star, Heart, Clock } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
-
-interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
-  imageUrl: string
-  isFeatured: boolean
-  options: any
-  promotionalPrice?: number
-  isAvailable?: boolean
-}
+import { ProcessedProduct } from '@/types/restaurant'
 
 interface ProductGridProps {
-  products: Product[]
-  onAddToCart: (product: Product, quantity: number, observation?: string) => void
+  products: ProcessedProduct[]
+  onAddToCart: (product: ProcessedProduct, quantity: number, observation?: string) => void
+  loading?: boolean
 }
 
 interface ProductCardProps {
-  product: Product
-  onAddToCart: (product: Product, quantity: number, observation?: string) => void
+  product: ProcessedProduct
+  onAddToCart: (product: ProcessedProduct, quantity: number, observation?: string) => void
 }
 
-export function ProductGrid({ products, onAddToCart }: ProductGridProps) {
+export function ProductGrid({ products, onAddToCart, loading = false }: ProductGridProps) {
+  if (loading) {
+    return (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {[...Array(8)].map((_, i) => (
+          <Card key={i} className="overflow-hidden">
+            <Skeleton className="h-40 w-full" />
+            <CardHeader className="pb-2">
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-5 w-16" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
   if (!products.length) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">Nenhum produto encontrado nesta categoria.</p>
+      <div className="text-center py-16">
+        <div className="mx-auto max-w-md">
+          <div className="rounded-full bg-muted/50 p-6 mx-auto w-fit mb-4">
+            <Clock className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">Nenhum produto encontrado</h3>
+          <p className="text-muted-foreground text-sm">
+            Esta categoria não possui produtos disponíveis no momento.
+          </p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {products.map((product) => (
         <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
       ))}
@@ -63,88 +85,144 @@ function ProductCard({ product, onAddToCart }: ProductCardProps) {
     setObservation('')
   }
 
-  const currentPrice = product.promotionalPrice || product.price
-  const totalPrice = currentPrice * quantity
+  const totalPrice = product.effectivePrice * quantity
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Card className="group cursor-pointer transition-all hover:shadow-md">
-          <div className="relative overflow-hidden rounded-t-lg">
+        <Card className="group cursor-pointer transition-all hover:shadow-lg border-0 shadow-sm overflow-hidden">
+          <div className="relative overflow-hidden">
             <img
               src={product.imageUrl || '/placeholder-food.jpg'}
               alt={product.name}
-              className="h-40 w-full object-cover transition-transform group-hover:scale-105"
+              className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
-            {product.promotionalPrice && (
-              <Badge className="absolute top-2 left-2" variant="destructive">
-                Promoção
-              </Badge>
-            )}
-            {product.isAvailable === false && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <Badge variant="destructive">Indisponível</Badge>
+            
+            {/* Badges de status */}
+            <div className="absolute top-3 left-3 flex flex-col gap-2">
+              {product.isFeatured && (
+                <Badge className="flex items-center gap-1 shadow-lg" variant="default">
+                  <Star className="h-3 w-3 fill-current" />
+                  Destaque
+                </Badge>
+              )}
+              {product.hasPromotion && product.discountPercentage && (
+                <Badge className="shadow-lg" variant="destructive">
+                  -{product.discountPercentage}%
+                </Badge>
+              )}
+            </div>
+
+            {/* Overlay quando indisponível */}
+            {!product.isAvailable && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                <Badge className="text-base px-4 py-2" variant="secondary">
+                  Indisponível
+                </Badge>
               </div>
             )}
           </div>
           
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg line-clamp-1">{product.name}</CardTitle>
-            <CardDescription className="line-clamp-2 text-sm">
-              {product.description}
-            </CardDescription>
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="text-lg leading-tight line-clamp-2 flex-1">
+                {product.name}
+              </CardTitle>
+              {product.isFeatured && (
+                <Star className="h-4 w-4 text-yellow-500 fill-current flex-shrink-0 mt-1" />
+              )}
+            </div>
+            {product.description && (
+              <CardDescription className="line-clamp-2 text-sm leading-relaxed">
+                {product.description}
+              </CardDescription>
+            )}
           </CardHeader>
           
-          <CardContent>
+          <CardContent className="pt-0">
             <div className="flex items-center justify-between">
-              {product.promotionalPrice ? (
-                <div className="space-y-1">
-                  <span className="text-lg font-bold text-primary">
-                    {formatPrice(product.promotionalPrice)}
-                  </span>
-                  <br />
+              <div className="flex flex-col">
+                <span className="text-xl font-bold text-primary">
+                  {formatPrice(product.effectivePrice)}
+                </span>
+                {product.hasPromotion && (
                   <span className="text-sm text-muted-foreground line-through">
                     {formatPrice(product.price)}
                   </span>
-                </div>
-              ) : (
-                <span className="text-lg font-bold">
-                  {formatPrice(product.price)}
-                </span>
-              )}
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2">
+                {!product.isAvailable && (
+                  <Badge variant="outline" className="text-xs">
+                    Esgotado
+                  </Badge>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{product.name}</DialogTitle>
-          <DialogDescription>{product.description}</DialogDescription>
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <DialogTitle className="text-xl leading-tight">
+                {product.name}
+              </DialogTitle>
+              {product.description && (
+                <DialogDescription className="mt-2 text-sm leading-relaxed">
+                  {product.description}
+                </DialogDescription>
+              )}
+            </div>
+            {product.isFeatured && (
+              <Star className="h-5 w-5 text-yellow-500 fill-current flex-shrink-0" />
+            )}
+          </div>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="relative">
             <img
               src={product.imageUrl || '/placeholder-food.jpg'}
               alt={product.name}
-              className="h-48 w-full object-cover rounded-lg"
+              className="h-56 w-full object-cover rounded-lg"
             />
-            {product.promotionalPrice && (
-              <Badge className="absolute top-2 left-2" variant="destructive">
-                Promoção
-              </Badge>
-            )}
+            
+            {/* Badges overlay */}
+            <div className="absolute top-3 left-3 flex flex-col gap-2">
+              {product.isFeatured && (
+                <Badge className="flex items-center gap-1" variant="default">
+                  <Star className="h-3 w-3 fill-current" />
+                  Destaque
+                </Badge>
+              )}
+              {product.hasPromotion && product.discountPercentage && (
+                <Badge variant="destructive">
+                  -{product.discountPercentage}% OFF
+                </Badge>
+              )}
+            </div>
           </div>
           
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold">
-              {formatPrice(currentPrice)}
-            </span>
-            {product.promotionalPrice && (
-              <span className="text-lg text-muted-foreground line-through">
-                {formatPrice(product.price)}
+          <div className="space-y-2">
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl font-bold text-primary">
+                {formatPrice(product.effectivePrice)}
               </span>
+              {product.hasPromotion && (
+                <span className="text-lg text-muted-foreground line-through">
+                  {formatPrice(product.price)}
+                </span>
+              )}
+            </div>
+            
+            {product.hasPromotion && product.discountPercentage && (
+              <p className="text-sm text-green-600 font-medium">
+                Você economiza {formatPrice(product.price - product.effectivePrice)} ({product.discountPercentage}%)
+              </p>
             )}
           </div>
 
@@ -189,14 +267,22 @@ function ProductCard({ product, onAddToCart }: ProductCardProps) {
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="gap-3">
+          {!product.isAvailable && (
+            <div className="w-full text-center py-2 px-4 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground font-medium">
+                Este produto está temporariamente indisponível
+              </p>
+            </div>
+          )}
+          
           <Button
             onClick={handleAddToCart}
             className="w-full"
             size="lg"
-            disabled={product.isAvailable === false}
+            disabled={!product.isAvailable}
           >
-            {product.isAvailable === false 
+            {!product.isAvailable 
               ? 'Produto Indisponível' 
               : `Adicionar ao Carrinho - ${formatPrice(totalPrice)}`
             }

@@ -1,5 +1,5 @@
-import { ThemeStyle } from '@/components/ThemeInjector';
 import { db } from '@/lib/db';
+import { RestaurantThemeProvider } from '@/components/theme/RestaurantThemeProvider';
 
 async function getRestaurantBySlug(slug: string) {
   try {
@@ -52,13 +52,13 @@ export default async function PublicLayout({
     );
   }
 
-  const themeConfig = restaurant.themeConfig as any;
-  const palette = themeConfig?.palette;
-
   return (
-    <div suppressHydrationWarning>
-      {palette && <ThemeStyle palette={palette} />}
+    <RestaurantThemeProvider 
+      restaurantSlug={params.slug}
+      initialThemeConfig={restaurant.themeConfig}
+      suppressHydrationWarning
+    >
       {children}
-    </div>
+    </RestaurantThemeProvider>
   );
 } 
