@@ -3,23 +3,23 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { formatPrice } from '@/lib/utils'
-import { TabsContent } from '@/components/ui/tabs'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { AlertCircle, RefreshCw } from 'lucide-react'
+import { AlertCircle, RefreshCw, Clock } from 'lucide-react'
 
 // Componentes refatorados
 import { PublicHeader } from '@/components/public/PublicHeader'
 import { HeroSection } from '@/components/public/HeroSection'
 import { FeaturedProducts } from '@/components/public/FeaturedProducts'
 import { CategoryNavigation } from '@/components/public/CategoryNavigation'
-import { ProductGrid } from '@/components/public/ProductGrid'
+import { CategorySection } from '@/components/public/CategorySection'
 import { CartSheet } from '@/components/public/CartSheet'
 import { CheckoutFlow } from '@/components/public/CheckoutFlow'
 
 // Hooks integrados
 import { useRestaurantPage, useRestaurantCart } from '@/hooks/useRestaurantPage'
+import { useScrollSpy } from '@/hooks/useScrollSpy'
 import { ProcessedProduct, CartItem } from '@/types/restaurant'
 
 // Interfaces para checkout (temporárias - será movido para tipos compartilhados na Fase 4)
@@ -69,11 +69,17 @@ export default function RestaurantPage() {
     refreshData
   } = useRestaurantPage(slug)
 
+  // Hook para navegação com scroll spy
+  const scrollSpy = useScrollSpy({
+    rootMargin: '-20% 0px -60% 0px',
+    threshold: 0.1,
+    offset: 100
+  })
+
   // Estados da UI
   const [showCart, setShowCart] = useState(false)
   const [showCheckout, setShowCheckout] = useState(false)
   const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>('customer')
-  const [activeCategory, setActiveCategory] = useState<string>('')
   
   // Estados temporários do carrinho (será refatorado na Fase 4)
   const [cart, setCart] = useState<CartItem[]>([])
@@ -88,12 +94,12 @@ export default function RestaurantPage() {
   })
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
 
-  // Definir categoria ativa inicial quando o menu carrega
-  useEffect(() => {
-    if (categories.length > 0 && !activeCategory) {
-      setActiveCategory(categories[0].id)
+  // Scroll para seção do menu
+  const scrollToMenu = () => {
+    if (categories.length > 0) {
+      scrollSpy.scrollToSection(`category-${categories[0].id}`)
     }
-  }, [categories, activeCategory])
+  }
 
   // Funções do carrinho (temporárias - será refatorado na Fase 4)
   const addToCart = (product: ProcessedProduct, quantity: number, observation?: string) => {
@@ -139,11 +145,6 @@ export default function RestaurantPage() {
 
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0)
   const cartSubtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0)
-
-  // Scroll para seção do menu
-  const scrollToMenu = () => {
-    menuRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
 
   // Funções do checkout
   const handleCheckout = () => {
@@ -294,25 +295,60 @@ _Pedido realizado através do site ${restaurant.name}_`
         />
       )}
 
-      {/* Menu Completo */}
-      <div ref={menuRef}>
+      {/* Header do Menu */}
+      {categories.length > 0 && (
+        <section className="py-12 bg-muted/20" ref={menuRef}>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-3xl font-bold tracking-tight mb-2">
+                Nosso Cardápio
+              </h2>
+              <p className="text-muted-foreground text-lg">
+                Explore todas as categorias dos nossos produtos
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Navegação Fixa */}
+      {categories.length > 0 && (
         <CategoryNavigation
           categories={categories}
-          selectedCategory={activeCategory}
-          onCategorySelect={setActiveCategory}
+          activeSection={scrollSpy.activeSection}
+          onNavigate={scrollSpy.scrollToSection}
           loading={isLoading}
-        >
+        />
+      )}
+
+      {/* Menu com Scroll Contínuo */}
+      {categories.length > 0 ? (
+        <div className="space-y-16 py-8">
           {categories.map((category) => (
-            <TabsContent key={category.id} value={category.id} className="mt-0">
-              <ProductGrid 
-                products={category.products}
-                onAddToCart={addToCart}
-                loading={isLoading}
-              />
-            </TabsContent>
+            <CategorySection
+              key={category.id}
+              category={category}
+              onAddToCart={addToCart}
+              loading={isLoading}
+              scrollSpy={scrollSpy}
+            />
           ))}
-        </CategoryNavigation>
-      </div>
+        </div>
+      ) : !isLoading && (
+        <section className="py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto text-center">
+              <div className="rounded-full bg-muted/50 p-6 mx-auto w-fit mb-4">
+                <Clock className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Cardápio em Breve</h3>
+              <p className="text-muted-foreground text-sm">
+                Estamos preparando nosso cardápio. Volte em breve!
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Carrinho Lateral */}
       <CartSheet

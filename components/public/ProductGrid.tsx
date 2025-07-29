@@ -28,22 +28,26 @@ export function ProductGrid({ products, onAddToCart, loading = false }: ProductG
   if (loading) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[...Array(8)].map((_, i) => (
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col gap-4 sm:gap-6">
+            {[...Array(6)].map((_, i) => (
               <Card key={i} className="overflow-hidden">
-                <Skeleton className="h-40 w-full" />
-                <CardHeader className="pb-2">
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-2/3" />
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <Skeleton className="h-6 w-20" />
-                    <Skeleton className="h-5 w-16" />
+                <div className="flex flex-col sm:flex-row">
+                  <div className="flex-1 p-6">
+                    <div className="space-y-3">
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-6 w-20" />
+                        <Skeleton className="h-5 w-16" />
+                      </div>
+                    </div>
                   </div>
-                </CardContent>
+                  <div className="w-full sm:w-40 h-32 sm:h-40">
+                    <Skeleton className="h-full w-full" />
+                  </div>
+                </div>
               </Card>
             ))}
           </div>
@@ -55,7 +59,7 @@ export function ProductGrid({ products, onAddToCart, loading = false }: ProductG
   if (!products.length) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className="text-center py-16">
             <div className="mx-auto max-w-md">
               <div className="rounded-full bg-muted/50 p-6 mx-auto w-fit mb-4">
@@ -74,8 +78,8 @@ export function ProductGrid({ products, onAddToCart, loading = false }: ProductG
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex flex-col gap-4 sm:gap-6">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
           ))}
@@ -103,76 +107,87 @@ function ProductCard({ product, onAddToCart }: ProductCardProps) {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Card className="group cursor-pointer transition-all hover:shadow-lg border-0 shadow-sm overflow-hidden">
-          <div className="relative overflow-hidden">
-            <img
-              src={product.imageUrl || '/placeholder-food.jpg'}
-              alt={product.name}
-              className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-            
-            {/* Badges de status */}
-            <div className="absolute top-3 left-3 flex flex-col gap-2">
-              {product.isFeatured && (
-                <Badge className="flex items-center gap-1 shadow-lg" variant="default">
-                  <Star className="h-3 w-3 fill-current" />
-                  Destaque
-                </Badge>
-              )}
-              {product.hasPromotion && product.discountPercentage && (
-                <Badge className="shadow-lg" variant="destructive">
-                  -{product.discountPercentage}%
-                </Badge>
-              )}
-            </div>
+          <div className="flex flex-col sm:flex-row">
+            {/* Conteúdo do produto - Lado esquerdo */}
+            <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
+              <div className="space-y-3">
+                {/* Título e badges */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CardTitle className="text-lg sm:text-xl font-bold leading-tight line-clamp-2">
+                        {product.name}
+                      </CardTitle>
+                      {product.isFeatured && (
+                        <Star className="h-4 w-4 text-yellow-500 fill-current flex-shrink-0" />
+                      )}
+                    </div>
+                    
+                    {/* Badges de status */}
+                    <div className="flex items-center gap-2 mb-3">
+                      {product.isFeatured && (
+                        <Badge className="flex items-center gap-1 text-xs" variant="default">
+                          <Star className="h-3 w-3 fill-current" />
+                          Destaque
+                        </Badge>
+                      )}
+                      {product.hasPromotion && product.discountPercentage && (
+                        <Badge className="text-xs" variant="destructive">
+                          -{product.discountPercentage}%
+                        </Badge>
+                      )}
+                      {!product.isAvailable && (
+                        <Badge variant="outline" className="text-xs">
+                          Esgotado
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-            {/* Overlay quando indisponível */}
-            {!product.isAvailable && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <Badge className="text-base px-4 py-2" variant="secondary">
-                  Indisponível
-                </Badge>
-              </div>
-            )}
-          </div>
-          
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between gap-2">
-              <CardTitle className="text-lg leading-tight line-clamp-2 flex-1">
-                {product.name}
-              </CardTitle>
-              {product.isFeatured && (
-                <Star className="h-4 w-4 text-yellow-500 fill-current flex-shrink-0 mt-1" />
-              )}
-            </div>
-            {product.description && (
-              <CardDescription className="line-clamp-2 text-sm leading-relaxed">
-                {product.description}
-              </CardDescription>
-            )}
-          </CardHeader>
-          
-          <CardContent className="pt-0">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="text-xl font-bold text-primary">
-                  {formatPrice(product.effectivePrice)}
-                </span>
-                {product.hasPromotion && (
-                  <span className="text-sm text-muted-foreground line-through">
-                    {formatPrice(product.price)}
-                  </span>
+                {/* Descrição */}
+                {product.description && (
+                  <CardDescription className="line-clamp-2 text-sm leading-relaxed">
+                    {product.description}
+                  </CardDescription>
                 )}
               </div>
               
-              <div className="flex items-center gap-2">
-                {!product.isAvailable && (
-                  <Badge variant="outline" className="text-xs">
-                    Esgotado
-                  </Badge>
-                )}
+              {/* Preço - Parte inferior */}
+              <div className="mt-4 pt-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-xl sm:text-2xl font-bold text-primary">
+                      {formatPrice(product.effectivePrice)}
+                    </span>
+                    {product.hasPromotion && (
+                      <span className="text-sm text-muted-foreground line-through">
+                        {formatPrice(product.price)}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          </CardContent>
+
+            {/* Imagem do produto - Lado direito */}
+            <div className="relative w-full sm:w-40 lg:w-48 h-32 sm:h-40 lg:h-44 overflow-hidden">
+              <img
+                src={product.imageUrl || '/placeholder-food.jpg'}
+                alt={product.name}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              
+              {/* Overlay quando indisponível */}
+              {!product.isAvailable && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                  <Badge className="text-sm px-3 py-1" variant="secondary">
+                    Indisponível
+                  </Badge>
+                </div>
+              )}
+            </div>
+          </div>
         </Card>
       </DialogTrigger>
 
