@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export function handleApiError(error: unknown): NextResponse {
-  console.error('Erro na API:', error);
+  // Erro na API
   
   if (error instanceof Error) {
     return NextResponse.json(

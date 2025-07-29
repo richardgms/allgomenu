@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
-import { formatPrice, generateColorPalette, applyIntelligentTheme, generateSixColorPalette } from '@/lib/utils'
+import { formatPrice } from '@/lib/utils'
+import { buildThemeTokens } from '@/lib/color'
 // A interface CartItem será definida localmente para adicionar o campo 'observation'
 // import { CartItem } from '@/types'
 
@@ -29,7 +30,14 @@ interface Restaurant {
     primaryColor: string
     secondaryColor: string
     logo?: string
-    font: string
+    colorPalette?: {
+      primaryLight: string
+      primaryBase: string
+      primaryDark: string
+      secondaryLight: string
+      secondaryBase: string
+      secondaryDark: string
+    }
   }
   deliveryEnabled: boolean
   whatsapp: string
@@ -242,7 +250,7 @@ export default function RestaurantPage() {
       try {
         setCart(JSON.parse(savedCart))
       } catch (error) {
-        console.error('Erro ao carregar carrinho:', error)
+        // Erro ao carregar carrinho
       }
     }
 
@@ -251,7 +259,7 @@ export default function RestaurantPage() {
         const customerData = JSON.parse(savedCustomerData)
         setCheckoutData(prev => ({ ...prev, ...customerData }))
       } catch (error) {
-        console.error('Erro ao carregar dados do cliente:', error)
+        // Erro ao carregar dados do cliente
       }
     }
 
@@ -259,7 +267,7 @@ export default function RestaurantPage() {
       try {
         setSavedAddresses(JSON.parse(savedAddressesData))
       } catch (error) {
-        console.error('Erro ao carregar endereços:', error)
+        // Erro ao carregar endereços
       }
     }
   }, [slug])
@@ -297,44 +305,23 @@ export default function RestaurantPage() {
   // Aplicar tema dinamicamente
   useEffect(() => {
     if (restaurant?.themeConfig) {
-      const { primaryColor, secondaryColor, font, colorPalette } = restaurant.themeConfig;
-      
-      // Aplicar tema inteligente baseado na claridade da cor primária
-      const intelligentTheme = applyIntelligentTheme(primaryColor || '#DC2626', secondaryColor || '#059669');
-      
-      // Usar paleta de 6 cores se disponível, senão gerar automaticamente
-      const palette = colorPalette || generateSixColorPalette(primaryColor || '#DC2626', secondaryColor || '#059669');
-      
-      // Aplicar cores principais
-      document.documentElement.style.setProperty('--primary-color', primaryColor || '#DC2626');
-      document.documentElement.style.setProperty('--secondary-color', secondaryColor || '#059669');
-      document.documentElement.style.setProperty('--font-family', font || 'Inter');
-      
-      // Aplicar paleta de 6 cores
-      document.documentElement.style.setProperty('--primary-light', palette.primaryLight);
-      document.documentElement.style.setProperty('--primary-base', palette.primaryBase);
-      document.documentElement.style.setProperty('--primary-dark', palette.primaryDark);
-      document.documentElement.style.setProperty('--secondary-light', palette.secondaryLight);
-      document.documentElement.style.setProperty('--secondary-base', palette.secondaryBase);
-      document.documentElement.style.setProperty('--secondary-dark', palette.secondaryDark);
-      
-      // Aplicar background inteligente usando as cores da paleta
-      document.documentElement.style.setProperty('--page-background', intelligentTheme.backgroundColor);
-      document.documentElement.style.setProperty('--button-color', intelligentTheme.buttonColor);
-      document.documentElement.style.setProperty('--button-color-hover', intelligentTheme.buttonColorHover);
-      document.documentElement.style.setProperty('--accent-color', intelligentTheme.accentColor);
-      document.documentElement.style.setProperty('--border-color', intelligentTheme.borderColor);
-      document.documentElement.style.setProperty('--use-secondary-for-buttons', intelligentTheme.useSecondaryForButtons ? 'true' : 'false');
-      
-      // Aplicar fonte
-      if (font && font !== 'Inter') {
-        const link = document.createElement('link');
-        link.href = `https://fonts.googleapis.com/css2?family=${font.replace(' ', '+')}:wght@300;400;500;600;700;800;900&display=swap`;
-        link.rel = 'stylesheet';
-        document.head.appendChild(link);
-        
-        // Aplicar fonte ao body
-        document.body.style.fontFamily = font;
+      const { primaryColor, secondaryColor } = restaurant.themeConfig;
+      // Gerar tema usando o sistema novo
+      const themeResult = buildThemeTokens({
+        primaryHex: primaryColor || '#DC2626',
+        secondaryHex: secondaryColor || '#059669',
+        name: 'Tema do Restaurante'
+      });
+      // Aplicar CSS no document
+      if (typeof document !== 'undefined') {
+        const styleId = 'restaurant-theme-style';
+        let style = document.getElementById(styleId) as HTMLStyleElement;
+        if (!style) {
+          style = document.createElement('style');
+          style.id = styleId;
+          document.head.appendChild(style);
+        }
+        style.textContent = themeResult.css;
       }
     }
   }, [restaurant])
@@ -382,10 +369,10 @@ export default function RestaurantPage() {
       if (data.success) {
         setFeaturedProducts(data.data)
       } else {
-        console.error('Erro ao carregar produtos em destaque:', data.error)
+        // Erro ao carregar produtos em destaque
       }
     } catch (err) {
-      console.error('Erro ao carregar produtos em destaque:', err)
+              // Erro ao carregar produtos em destaque
     }
   }
 
@@ -673,23 +660,15 @@ export default function RestaurantPage() {
   const getButtonColor = () => {
     if (!restaurant?.themeConfig) return '#DC2626';
     
-    const { primaryColor, secondaryColor, colorPalette } = restaurant.themeConfig;
-    const intelligentTheme = applyIntelligentTheme(primaryColor || '#DC2626', secondaryColor || '#059669');
-    
-    return intelligentTheme.buttonColor;
+    const { primaryColor } = restaurant.themeConfig;
+    return primaryColor || '#DC2626';
   };
 
   const getColorPalette = () => {
-    if (!restaurant?.themeConfig) return generateSixColorPalette('#DC2626', '#059669');
+    if (!restaurant?.themeConfig) return null;
     
-    const { primaryColor, secondaryColor, colorPalette } = restaurant.themeConfig;
-    return colorPalette || generateSixColorPalette(primaryColor || '#DC2626', secondaryColor || '#059669');
-  };
-
-  // Função para obter a paleta de cores do botão
-  const getButtonColorPalette = () => {
-    const buttonColor = getButtonColor();
-    return generateColorPalette(buttonColor);
+    const { colorPalette } = restaurant.themeConfig;
+    return colorPalette;
   };
 
   if (loading) {
@@ -724,7 +703,7 @@ export default function RestaurantPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ fontFamily: 'var(--font-family, Inter)', backgroundColor: 'var(--page-background, #f9fafb)' }}>
+    <div className="min-h-screen">
       {/* Header Fixo Mobile-First */}
       <header className="sticky top-0 z-50 bg-white shadow-lg border-b-2" style={{ borderColor: 'var(--primary-color)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -740,11 +719,10 @@ export default function RestaurantPage() {
               <div className="min-w-0 flex-1">
                 <h1 className="text-lg md:text-xl font-bold text-gray-900 truncate">{restaurant.name}</h1>
                 <div className="flex items-center space-x-2 text-xs md:text-sm text-gray-600">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    restaurant.isCurrentlyOpen 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium`} style={{
+                    backgroundColor: restaurant.isCurrentlyOpen ? 'var(--cor-sucesso)' : 'var(--cor-perigo)',
+                    color: 'white'
+                  }}>
                     {restaurant.isCurrentlyOpen ? '● Aberto' : '● Fechado'}
                   </span>
                   <span className="hidden sm:inline">•</span>
@@ -779,9 +757,9 @@ export default function RestaurantPage() {
                   {cartItemCount > 0 && (
                     <span
                       className="absolute -top-2 -right-2 grid h-5 w-5 place-items-center rounded-full text-xs font-bold text-white"
-                      style={{ 
-                        backgroundColor: getButtonColorPalette().primaryDarker
-                      }}
+                                        style={{ 
+                    backgroundColor: getButtonColor()
+                  }}
                     >
                       {cartItemCount}
                     </span>
@@ -882,7 +860,7 @@ export default function RestaurantPage() {
                     <div className="flex gap-2 p-1">
                       {menu.map((category) => {
                         const isActive = activeCategory === category.id;
-                        const colorPalette = getButtonColorPalette();
+                        const colorPalette = getColorPalette();
                         
                         return (
                           <button
@@ -894,7 +872,7 @@ export default function RestaurantPage() {
                                 : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                             }`}
                             style={isActive ? { 
-                              backgroundColor: colorPalette.primary
+                              backgroundColor: colorPalette?.primary || '#DC2626'
                             } : {}}
                           >
                             {category.name}
@@ -912,7 +890,7 @@ export default function RestaurantPage() {
                     >
                       {menu.map((category) => {
                         const isActive = activeCategory === category.id;
-                        const colorPalette = getButtonColorPalette();
+                        const colorPalette = getColorPalette();
                         
                         return (
                           <button
@@ -925,7 +903,7 @@ export default function RestaurantPage() {
                                 : 'text-gray-700 hover:text-gray-900 border border-gray-200 bg-white hover:shadow-md'
                             }`}
                             style={isActive ? { 
-                              backgroundColor: colorPalette.primary
+                              backgroundColor: colorPalette?.primary || '#DC2626'
                             } : {}}
                           >
                             {category.name}
@@ -956,7 +934,7 @@ export default function RestaurantPage() {
                     <div className="relative">
                       <div className="flex justify-start md:justify-center overflow-x-auto space-x-6 pb-6 scrollbar-hide px-4 md:px-0">
                         {featuredProducts.map(product => {
-                          const colorPalette = getButtonColorPalette();
+                          const colorPalette = getColorPalette();
                           const isAvailable = product.isAvailable !== false;
                           const hasPromo = product.promotionalPrice && product.promotionalPrice < product.price;
 
@@ -1046,7 +1024,7 @@ export default function RestaurantPage() {
                     
                     <div className="space-y-3">
                       {category.products.map((product) => {
-                        const colorPalette = getButtonColorPalette();
+                        const colorPalette = getColorPalette();
                         
                         return (
                           <button
@@ -1065,7 +1043,7 @@ export default function RestaurantPage() {
                                 <p 
                                   className="font-bold text-lg"
                                   style={{ 
-                                    color: colorPalette.primary
+                                    color: colorPalette?.primary || '#DC2626'
                                   }}
                                 >
                                   {formatPrice(product.price)}
@@ -1074,7 +1052,7 @@ export default function RestaurantPage() {
                                   <span 
                                     className="ml-2 px-2 py-1 text-xs font-bold rounded-full text-white"
                                     style={{ 
-                                      backgroundColor: colorPalette.primaryDark
+                                      backgroundColor: colorPalette?.primary || '#DC2626'
                                     }}
                                   >
                                     ⭐ Destaque
@@ -1148,7 +1126,7 @@ export default function RestaurantPage() {
                   <button 
                     onClick={() => setProductQuantity(q => Math.max(1, q - 1))} 
                     className="px-4 py-2 text-lg font-bold bg-white hover:bg-gray-50 transition-colors disabled:text-gray-400 disabled:cursor-not-allowed"
-                    style={{ color: getButtonColorPalette().primary }}
+                    style={{ color: getColorPalette()?.primary || '#DC2626' }}
                     disabled={productQuantity <= 1}
                   >
                     -
@@ -1157,7 +1135,7 @@ export default function RestaurantPage() {
                   <button 
                     onClick={() => setProductQuantity(q => q + 1)} 
                     className="px-4 py-2 text-lg font-bold bg-white hover:bg-gray-50 transition-colors"
-                    style={{ color: getButtonColorPalette().primary }}
+                    style={{ color: getColorPalette()?.primary || '#DC2626' }}
                   >
                     +
                   </button>
@@ -1168,15 +1146,15 @@ export default function RestaurantPage() {
                   onClick={handleAddToCartFromModal}
                   className="flex-1 text-white rounded-xl px-4 py-3 font-bold transition-all duration-300 transform hover:scale-105"
                   style={{
-                    backgroundColor: getButtonColorPalette().primary
+                    backgroundColor: getColorPalette()?.primary || '#DC2626'
                   }}
                   onMouseEnter={(e) => {
-                    const colorPalette = getButtonColorPalette();
-                    e.currentTarget.style.backgroundColor = colorPalette.primaryDark;
+                    const colorPalette = getColorPalette();
+                    e.currentTarget.style.backgroundColor = colorPalette?.primaryDark || '#DC2626';
                   }}
                   onMouseLeave={(e) => {
-                    const colorPalette = getButtonColorPalette();
-                    e.currentTarget.style.backgroundColor = colorPalette.primary;
+                    const colorPalette = getColorPalette();
+                    e.currentTarget.style.backgroundColor = colorPalette?.primary || '#DC2626';
                   }}
                 >
                   Adicionar {formatPrice(selectedProduct.price * productQuantity)}
@@ -1213,7 +1191,7 @@ export default function RestaurantPage() {
                     onClick={() => setShowCart(false)}
                     className="text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
                     style={{ 
-                      backgroundColor: getButtonColorPalette().primary
+                      backgroundColor: getColorPalette()?.primary || '#DC2626'
                     }}
                   >
                     Ver Cardápio
@@ -1267,7 +1245,7 @@ export default function RestaurantPage() {
                         <span 
                           className="text-lg font-bold"
                           style={{ 
-                            color: getButtonColorPalette().primary
+                            color: getColorPalette()?.primary || '#DC2626'
                           }}
                         >
                           {formatPrice(finalTotal)}
@@ -1290,7 +1268,11 @@ export default function RestaurantPage() {
                         setShowCheckout(true)
                       }}
                       disabled={!restaurant.isCurrentlyOpen}
-                      className="flex-1 py-3 px-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 py-3 px-4 text-white rounded-xl transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      backgroundColor: getButtonColor(),
+                      '--tw-bg-opacity': '1'
+                    } as any}
                     >
                       {restaurant.isCurrentlyOpen ? 'Finalizar Pedido' : 'Restaurante Fechado'}
                     </button>
@@ -1325,18 +1307,23 @@ export default function RestaurantPage() {
                 {['review', 'customer', 'address', 'payment', 'confirmation'].map((step, index) => (
                   <div key={step} className="flex items-center">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                      getStepNumber() > index + 1 ? 'bg-green-500' :
+                      getStepNumber() > index + 1 ? '' :
                       getStepNumber() === index + 1 ? 'bg-white' :
                       'bg-white/30'
                     }`}
-                    style={getStepNumber() === index + 1 ? { color: getButtonColorPalette().primary } : {}}
+                    style={getStepNumber() > index + 1 ? { 
+                      backgroundColor: getButtonColor(),
+                      color: 'white'
+                    } : getStepNumber() === index + 1 ? { 
+                      color: getButtonColor() 
+                    } : {}}
                     >
                       {getStepNumber() > index + 1 ? '✓' : index + 1}
                     </div>
                     {index < 4 && (
-                      <div className={`w-12 h-1 mx-2 ${
-                        getStepNumber() > index + 1 ? 'bg-green-500' : 'bg-white/30'
-                      }`} />
+                      <div className={`w-12 h-1 mx-2`} style={{
+                        backgroundColor: getStepNumber() > index + 1 ? getButtonColor() : 'rgba(255, 255, 255, 0.3)'
+                      }} />
                     )}
                   </div>
                 ))}
@@ -1483,9 +1470,9 @@ export default function RestaurantPage() {
                               : 'border-gray-200 hover:border-gray-300'
                         }`}
                         style={checkoutData.deliveryType === 'delivery' ? {
-                          borderColor: getColorPalette().primaryBase,
-                          backgroundColor: getColorPalette().primaryLight + '80', // 50% de opacidade
-                          color: getColorPalette().primaryDark
+                          borderColor: getColorPalette()?.primaryBase || '#DC2626',
+                          backgroundColor: getColorPalette()?.primaryLight || '#FECACA' + '80', // 50% de opacidade
+                          color: getColorPalette()?.primaryDark || '#991B1B'
                         } : {}}
                       >
                           <div className="text-2xl mb-2">🚚</div>
@@ -1503,9 +1490,9 @@ export default function RestaurantPage() {
                               : 'border-gray-200 hover:border-gray-300'
                         }`}
                         style={checkoutData.deliveryType === 'pickup' ? {
-                          borderColor: getColorPalette().primaryBase,
-                          backgroundColor: getColorPalette().primaryLight + '80', // 50% de opacidade
-                          color: getColorPalette().primaryDark
+                          borderColor: getColorPalette()?.primaryBase || '#DC2626',
+                          backgroundColor: getColorPalette()?.primaryLight || '#FECACA' + '80', // 50% de opacidade
+                          color: getColorPalette()?.primaryDark || '#991B1B'
                         } : {}}
                       >
                           <div className="text-2xl mb-2">🏪</div>
@@ -1625,9 +1612,9 @@ export default function RestaurantPage() {
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                       style={checkoutData.paymentMethod === 'money' ? {
-                        borderColor: getColorPalette().primaryBase,
-                        backgroundColor: getColorPalette().primaryLight + '80',
-                        color: getColorPalette().primaryDark
+                        borderColor: getColorPalette()?.primaryBase || '#DC2626',
+                        backgroundColor: getColorPalette()?.primaryLight || '#FECACA' + '80',
+                        color: getColorPalette()?.primaryDark || '#991B1B'
                       } : {}}
                     >
                       <div className="text-2xl mb-2">💵</div>
@@ -1644,9 +1631,9 @@ export default function RestaurantPage() {
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                       style={checkoutData.paymentMethod === 'card' ? {
-                        borderColor: getColorPalette().primaryBase,
-                        backgroundColor: getColorPalette().primaryLight + '80',
-                        color: getColorPalette().primaryDark
+                        borderColor: getColorPalette()?.primaryBase || '#DC2626',
+                        backgroundColor: getColorPalette()?.primaryLight || '#FECACA' + '80',
+                        color: getColorPalette()?.primaryDark || '#991B1B'
                       } : {}}
                     >
                       <div className="text-2xl mb-2">💳</div>
@@ -1663,9 +1650,9 @@ export default function RestaurantPage() {
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                       style={checkoutData.paymentMethod === 'pix' ? {
-                        borderColor: getColorPalette().primaryBase,
-                        backgroundColor: getColorPalette().primaryLight + '80',
-                        color: getColorPalette().primaryDark
+                        borderColor: getColorPalette()?.primaryBase || '#DC2626',
+                        backgroundColor: getColorPalette()?.primaryLight || '#FECACA' + '80',
+                        color: getColorPalette()?.primaryDark || '#991B1B'
                       } : {}}
                     >
                       <div className="text-2xl mb-2">📱</div>
@@ -1789,7 +1776,11 @@ export default function RestaurantPage() {
                 {checkoutStep === 'confirmation' ? (
                 <button
                   onClick={handleCheckout}
-                    className="px-8 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium flex items-center space-x-2"
+                    className="px-8 py-3 text-white rounded-xl transition-colors font-medium flex items-center space-x-2"
+                    style={{
+                      backgroundColor: getButtonColor(),
+                      '--tw-bg-opacity': '1'
+                    } as any}
                 >
                     <span>📱</span>
                     <span>Enviar para WhatsApp</span>

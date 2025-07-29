@@ -10,8 +10,11 @@ const nextConfig = {
       },
     ],
   },
-  experimental: {
-    serverActions: true,
+
+  // Suprimir avisos de hidratação causados por extensões do navegador
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
   },
 }
 

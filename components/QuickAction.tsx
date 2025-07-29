@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { DashboardIcon } from '@/components/ui/Icon';
+import { Badge } from '@/components/ui/badge';
 
 interface QuickActionProps {
   title: string;
@@ -6,23 +8,37 @@ interface QuickActionProps {
   href: string;
   badge?: string;
   disabled?: boolean;
+  icon?: 'orders' | 'products' | 'categories' | 'reports' | 'settings';
 }
 
-export default function QuickAction({ title, description, href, badge, disabled }: QuickActionProps) {
+export default function QuickAction({ title, description, href, badge, disabled, icon }: QuickActionProps) {
   if (disabled) {
     return (
-      <div className="block p-4 sm:p-6 bg-white border border-gray-100 rounded-lg opacity-50 cursor-not-allowed">
-        <div className="space-y-1 sm:space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm sm:text-base font-semibold text-gray-900">{title}</h3>
+      <div className="bg-primaria-200 border border-primaria-200 rounded-xl shadow-sm p-4 sm:p-6 opacity-60 cursor-not-allowed">
+        <div className="space-y-4">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              {icon && (
+                <div className="p-3 rounded-xl bg-primaria-100">
+                  <DashboardIcon type={icon} size="md" className="text-primaria-700" />
+                </div>
+              )}
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-primaria-900">{title}</h3>
+                <p className="text-xs sm:text-sm text-primaria-700 mt-1">{description}</p>
+              </div>
+            </div>
             {badge && (
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+              <Badge variant="secondary" size="sm" outline>
                 {badge}
-              </span>
+              </Badge>
             )}
           </div>
-          <p className="text-xs sm:text-sm text-gray-500">{description}</p>
-          <span className="text-xs text-gray-400 italic">Em breve</span>
+          <div className="pt-2">
+            <Badge variant="warning" size="sm" outline>
+              Em breve
+            </Badge>
+          </div>
         </div>
       </div>
     );
@@ -31,18 +47,39 @@ export default function QuickAction({ title, description, href, badge, disabled 
   return (
     <Link 
       href={href}
-      className="block p-4 sm:p-6 bg-white border border-gray-100 rounded-lg transition-all duration-200 hover:border-gray-200 hover:shadow-sm"
+      className="bg-gradient-to-br from-white via-primaria-50 to-white border border-primaria-200 rounded-xl shadow-sm hover:shadow-md p-4 sm:p-6 block transition-all duration-200 hover:scale-[1.02] group"
     >
-      <div className="space-y-1 sm:space-y-2">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm sm:text-base font-semibold text-gray-900">{title}</h3>
+      <div className="space-y-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            {icon && (
+              <div className="p-3 rounded-xl transition-all duration-200 group-hover:scale-110 bg-gradient-to-br from-primaria-100 to-primaria-50">
+                <DashboardIcon type={icon} size="md" className="text-primaria-700" />
+              </div>
+            )}
+            <div>
+              <h3 className="text-sm sm:text-base font-bold transition-colors text-primaria-900">
+                {title}
+              </h3>
+              <p className="text-xs sm:text-sm mt-1 text-primaria-700">
+                {description}
+              </p>
+            </div>
+          </div>
           {badge && (
-            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+            <Badge variant="primary" size="sm" outline>
               {badge}
-            </span>
+            </Badge>
           )}
         </div>
-        <p className="text-xs sm:text-sm text-gray-500">{description}</p>
+        
+        {/* Indicador de ação */}
+        <div className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-all duration-200">
+          <div className="flex items-center space-x-1 text-xs text-primaria-700">
+            <span>Acessar</span>
+            <DashboardIcon type="chevronRight" size="xs" />
+          </div>
+        </div>
       </div>
     </Link>
   );

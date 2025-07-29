@@ -8,7 +8,7 @@ interface LoadingSpinnerProps {
   variant?: 'spinner' | 'dots' | 'pulse'
 }
 
-export default function LoadingSpinner({ 
+export function LoadingSpinner({ 
   size = 'md', 
   color = 'primary',
   text,
@@ -169,4 +169,7 @@ export function SimpleLoading({ text = 'Carregando...', size = 'md' }: SimpleLoa
       )}
     </div>
   )
-} 
+}
+
+// Export default para compatibilidade
+export default LoadingSpinner

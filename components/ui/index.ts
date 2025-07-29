@@ -1,0 +1,20 @@
+// Exportação centralizada dos componentes UI
+export { Button } from './button'
+export { Input } from './input'
+export { default as Modal, ConfirmModal } from './Modal'
+export { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from './card'
+export { Badge } from './badge'
+export { default as Icon, DashboardIcon } from './Icon'
+
+// Re-exportar outros componentes shadcn
+export { Label } from './label'
+export { Textarea } from './textarea'
+export { Switch } from './switch'
+export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
+export { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './dialog'
+export { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu'
+export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
+export { Progress } from './progress'
+export { Skeleton } from './skeleton'
+export { ScrollArea } from './scroll-area'
+export { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from './breadcrumb'

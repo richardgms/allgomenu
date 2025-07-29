@@ -1,0 +1,133 @@
+/**
+ * Tokens Semânticos do Sistema OKLCH
+ * Gerados automaticamente pelo theme-builder.ts
+ * 
+ * Estrutura:
+ * 1. Tokens semânticos (novos)
+ * 2. Aliases de compatibilidade (manter por 1 release)
+ * 3. Mobile contrast boost
+ */
+
+:root {
+  /* === TOKENS SEMÂNTICOS (OKLCH) === */
+  
+  /* Marca (gerados dinamicamente) */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-300: #93c5fd;
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-900: #1e3a8a;
+  
+  --secondary-300: #86efac;
+  --secondary-600: #16a34a;
+  --secondary-700: #15803d;
+  --secondary-900: #14532d;
+  
+  /* Neutros warm (baseados na marca) */
+  --neutral-0: #ffffff;
+  --neutral-50: #fafaf9;
+  --neutral-100: #f5f5f4;
+  --neutral-200: #e7e5e4;
+  --neutral-300: #d6d3d1;
+  --neutral-700: #44403c;
+  --neutral-900: #1c1917;
+  --neutral-950: #0c0a09;
+  
+  /* Texto (hierarquia semântica) */
+  --text-strong: #111111;
+  --text-body: #1a1a1a;
+  --text-muted: #667085;
+  --text-inverse: #ffffff;
+  
+  /* Superfícies (contextuais) */
+  --surface-0: var(--neutral-0);
+  --surface-1: var(--neutral-50);
+  --surface-2: var(--neutral-100);
+  --surface-3: var(--primary-50); /* Com tint brand */
+  
+  /* Botões (contraste garantido) */
+  --btn-primary-bg: var(--primary-600);
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover: var(--primary-700);
+  --btn-primary-active: var(--primary-900);
+  --btn-primary-focus: var(--primary-600);
+  
+  --btn-secondary-bg: var(--secondary-600);
+  --btn-secondary-text: #ffffff;
+  --btn-secondary-hover: var(--secondary-700);
+  --btn-secondary-active: var(--secondary-900);
+  --btn-secondary-focus: var(--secondary-600);
+  
+  /* Badges (semânticas fixas com contraste AA) */
+  --badge-success-bg: #16a34a;
+  --badge-success-text: #ffffff;
+  --badge-warning-bg: #f59e0b;
+  --badge-warning-text: #111111;
+  --badge-danger-bg: #ef4444;
+  --badge-danger-text: #ffffff;
+  --badge-info-bg: #0ea5e9;
+  --badge-info-text: #ffffff;
+  
+  /* Sidebar (neutros + accents) */
+  --sidebar-bg: var(--neutral-100);
+  --sidebar-item-color: var(--text-body);
+  --sidebar-item-active-bg: var(--primary-100);
+  --sidebar-item-active-indicator: var(--primary-700);
+  
+  /* Chips informativos (público) */
+  --chip-bg: var(--neutral-0);
+  --chip-text: var(--text-strong);
+  --chip-shadow: rgba(0, 0, 0, 0.06);
+  
+  /* Gradiente de marca */
+  --gradient-brand: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-300) 50%, var(--secondary-700) 100%);
+  
+  /* Estados de foco (acessibilidade) */
+  --focus-ring: 0 0 0 2px var(--primary-600);
+  --focus-ring-alpha: rgba(37, 99, 235, 0.6);
+  
+  /* === ALIASES DE COMPATIBILIDADE (manter por 1 release) === */
+  
+  /* Sistema antigo → novo */
+  --cor-primaria-100: var(--primary-100);
+  --cor-primaria-300: var(--primary-300);
+  --cor-primaria-500: var(--primary-600);
+  --cor-primaria-700: var(--primary-700);
+  --cor-primaria-900: var(--primary-900);
+  
+  --cor-secundaria-300: var(--secondary-300);
+  --cor-secundaria-500: var(--secondary-600);
+  --cor-secundaria-700: var(--secondary-700);
+  --cor-secundaria-900: var(--secondary-900);
+  
+  --cor-neutra-100: var(--neutral-100);
+  --cor-neutra-200: var(--neutral-200);
+  --cor-neutra-700: var(--neutral-700);
+  --cor-neutra-900: var(--neutral-900);
+  
+  --cor-sucesso: var(--badge-success-bg);
+  --cor-aviso: var(--badge-warning-bg);
+  --cor-perigo: var(--badge-danger-bg);
+  
+  /* Aliases antigos (sistema HSL) */
+  --primary-color: var(--primary-600);
+  --secondary-color: var(--secondary-600);
+  --primary-light: var(--primary-300);
+  --primary-base: var(--primary-600);
+  --primary-dark: var(--primary-700);
+  --secondary-light: var(--secondary-300);
+  --secondary-base: var(--secondary-600);
+  --secondary-dark: var(--secondary-700);
+}
+
+/* === MOBILE CONTRAST BOOST === */
+@media (max-width: 480px) {
+  :root {
+    /* Aumentar contraste em dispositivos móveis */
+    --btn-primary-text: #ffffff;
+    --btn-secondary-text: #ffffff;
+    --chip-text: #111111;
+    --text-muted: #4a5568; /* Mais escuro que desktop */
+  }
+}

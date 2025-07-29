@@ -27,7 +27,10 @@ export default function TruncatedText({ text, maxLength, className = '' }: Trunc
   return (
     <span className={className}>
       {isExpanded ? text : `${text.substring(0, maxLength)}...`}
-      <button onClick={toggleExpanded} className="text-blue-600 hover:text-blue-800 ml-1 font-semibold focus:outline-none">
+      <button 
+        onClick={toggleExpanded} 
+        className="text-[var(--cor-primaria-500)] hover:text-[var(--cor-primaria-700)] ml-1 font-semibold focus:outline-none transition-colors duration-200"
+      >
         {isExpanded ? 'ver menos' : 'ver mais'}
       </button>
     </span>

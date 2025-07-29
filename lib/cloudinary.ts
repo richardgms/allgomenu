@@ -36,7 +36,7 @@ export async function uploadImage(
       height: result.height,
     };
   } catch (error) {
-    console.error('Erro ao fazer upload da imagem:', error);
+    // Erro ao fazer upload da imagem
     throw new Error('Falha no upload da imagem');
   }
 }
@@ -45,7 +45,7 @@ export async function deleteImage(publicId: string): Promise<void> {
   try {
     await cloudinary.uploader.destroy(publicId);
   } catch (error) {
-    console.error('Erro ao deletar imagem:', error);
+    // Erro ao deletar imagem
     throw new Error('Falha ao deletar imagem');
   }
 }
@@ -61,7 +61,7 @@ export async function getImageInfo(publicId: string) {
       bytes: result.bytes,
     };
   } catch (error) {
-    console.error('Erro ao obter informações da imagem:', error);
+    // Erro ao obter informações da imagem
     throw new Error('Falha ao obter informações da imagem');
   }
 }
@@ -123,7 +123,7 @@ export function extractPublicIdFromUrl(url: string): string | null {
     
     return publicId;
   } catch (error) {
-    console.error('Erro ao extrair publicId da URL:', error);
+    // Erro ao extrair publicId da URL
     return null;
   }
 }

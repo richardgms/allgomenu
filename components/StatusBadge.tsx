@@ -1,36 +1,42 @@
+'use client'
+
+import { Badge } from '@/components/ui/badge'
+
 interface StatusBadgeProps {
-  status: 'open' | 'closed' | 'pending' | 'active';
-  text: string;
-  size?: 'sm' | 'md';
+  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'out_for_delivery' | 'delivered' | 'cancelled' | string
+  className?: string
 }
 
-export default function StatusBadge({ status, text, size = 'sm' }: StatusBadgeProps) {
-  const getStatusStyles = () => {
+export function StatusBadge({ status, className }: StatusBadgeProps) {
+  const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'open':
-        return 'bg-green-50 text-green-700 border-green-200';
-      case 'closed':
-        return 'bg-gray-50 text-gray-700 border-gray-200';
       case 'pending':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'active':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return { label: 'Pendente', variant: 'outline' as const }
+      case 'confirmed':
+        return { label: 'Confirmado', variant: 'default' as const }
+      case 'preparing':
+        return { label: 'Preparando', variant: 'secondary' as const }
+      case 'ready':
+        return { label: 'Pronto', variant: 'default' as const }
+      case 'out_for_delivery':
+        return { label: 'Em entrega', variant: 'default' as const }
+      case 'delivered':
+        return { label: 'Entregue', variant: 'outline' as const }
+      case 'cancelled':
+        return { label: 'Cancelado', variant: 'destructive' as const }
       default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
+        return { label: status, variant: 'outline' as const }
     }
-  };
+  }
 
-  const sizeClasses = size === 'md' ? 'px-3 py-1.5 text-sm' : 'px-2 py-1 text-xs';
+  const config = getStatusConfig(status)
 
   return (
-    <span className={`inline-flex items-center font-medium border rounded-full ${getStatusStyles()} ${sizeClasses}`}>
-      <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-        status === 'open' ? 'bg-green-500' :
-        status === 'closed' ? 'bg-gray-400' :
-        status === 'pending' ? 'bg-amber-500' :
-        'bg-blue-500'
-      }`} />
-      {text}
-    </span>
-  );
+    <Badge variant={config.variant} className={className}>
+      {config.label}
+    </Badge>
+  )
 }
+
+// Default export for backwards compatibility
+export default StatusBadge

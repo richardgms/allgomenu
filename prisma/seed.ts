@@ -51,34 +51,35 @@ async function main() {
     console.log(` Restaurante "${restaurantSlug}" já existe.`);
   }
 
-  // 2. Verificar e criar o usuário administrador
-  const adminUser = await prisma.profile.findUnique({
-    where: { email: adminEmail },
+  // 2. Criar usuário admin para WJ Tapiocaria
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
+  const existingProfile = await prisma.profile.findUnique({
+    where: { email: adminEmail }
   });
 
-  if (!adminUser) {
-    console.log(` Usuário admin "${adminEmail}" não encontrado. Criando...`);
-    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+  if (!existingProfile) {
+    console.log(` Criando usuário admin para WJ Tapiocaria...`);
     await prisma.profile.create({
       data: {
-        id: 'auth0|admin-user-placeholder', // ID de placeholder, ajuste se usar Supabase Auth
+        id: `wj-admin-${Date.now()}`,
         email: adminEmail,
         password: hashedPassword,
-        fullName: 'Administrador',
+        fullName: 'Administrador WJ Tapiocaria',
         role: 'ADMIN',
         restaurantId: restaurant.id,
-      },
+        isActive: true
+      }
     });
-    console.log(' Usuário admin criado.');
+    console.log(` Usuário admin criado: ${adminEmail}`);
   } else {
-    console.log(` Usuário admin "${adminEmail}" já existe.`);
+    console.log(` Usuário admin já existe: ${adminEmail}`);
   }
 
   // ---- Início: Novo restaurante e usuário para Delícias da Karine ----
 
   const karineRestaurantSlug = 'delicias-da-karine';
   const karineAdminEmail = 'deliciasdakarine@admin.com';
-  const karineAdminPassword = 'deliciasdakarine123';
+  const karineAdminPassword = '123456';
 
   // 1. Verificar e criar o restaurante Delícias da Karine
   let karineRestaurant = await prisma.restaurant.findUnique({
@@ -119,27 +120,28 @@ async function main() {
     console.log(`\n Restaurante "${karineRestaurantSlug}" já existe.`);
   }
 
-  // 2. Verificar e criar o usuário administrador para Delícias da Karine
-  const karineAdminUser = await prisma.profile.findUnique({
-    where: { email: karineAdminEmail },
+  // 3. Criar usuário admin para Delícias da Karine
+  const karineHashedPassword = await bcrypt.hash(karineAdminPassword, 10);
+  const existingKarineProfile = await prisma.profile.findUnique({
+    where: { email: karineAdminEmail }
   });
 
-  if (!karineAdminUser) {
-    console.log(` Usuário admin "${karineAdminEmail}" não encontrado. Criando...`);
-    const hashedPassword = await bcrypt.hash(karineAdminPassword, 10);
+  if (!existingKarineProfile) {
+    console.log(` Criando usuário admin para Delícias da Karine...`);
     await prisma.profile.create({
       data: {
-        id: `auth0|admin-karine-${new Date().getTime()}`, // ID de placeholder único
+        id: `karine-admin-${Date.now()}`,
         email: karineAdminEmail,
-        password: hashedPassword,
-        fullName: 'Delícias da Karine Admin',
+        password: karineHashedPassword,
+        fullName: 'Administrador Delícias da Karine',
         role: 'ADMIN',
         restaurantId: karineRestaurant.id,
-      },
+        isActive: true
+      }
     });
-    console.log(' Usuário admin criado.');
+    console.log(` Usuário admin criado: ${karineAdminEmail}`);
   } else {
-    console.log(` Usuário admin "${karineAdminEmail}" já existe.`);
+    console.log(` Usuário admin já existe: ${karineAdminEmail}`);
   }
 
   // ---- Fim: Novo restaurante e usuário ----

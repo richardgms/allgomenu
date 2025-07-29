@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { Edit3, X, Check, AlertCircle } from 'lucide-react';
 
 interface EditableFieldProps {
   label: string;
@@ -120,35 +121,22 @@ export default function EditableField({
   const isEmpty = !displayValue.trim();
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`editable-field ${className}`}>
       {/* Label */}
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium admin-text-primary">
+        <label className="editable-field-label">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="editable-field-required">*</span>}
         </label>
         
         {/* Edit Button */}
         {!isEditing && !disabled && (
           <button
             onClick={handleEdit}
-            className="admin-btn-ghost p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+            className="editable-field-edit-btn"
             title="Editar"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
+            <Edit3 className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -158,16 +146,16 @@ export default function EditableField({
         {!isEditing ? (
           // Display Mode
           <div
-            className={`admin-input min-h-[44px] flex items-center cursor-pointer ${
-              isEmpty ? 'admin-text-muted italic' : 'admin-text-primary'
-            } ${disabled ? 'opacity-50' : 'hover:admin-border-hover'}`}
+            className={`editable-field-display ${
+              isEmpty ? 'editable-field-display-empty' : 'editable-field-display-filled'
+            } ${disabled ? 'opacity-50 cursor-not-allowed' : 'editable-field-display-hover'}`}
             onClick={handleEdit}
           >
             {isEmpty ? (placeholder || 'Clique para adicionar...') : displayValue}
           </div>
         ) : (
           // Edit Mode
-          <div className="space-y-2">
+          <div className="space-y-3">
             {type === 'textarea' ? (
               <textarea
                 ref={inputRef as React.RefObject<HTMLTextAreaElement>}
@@ -177,8 +165,8 @@ export default function EditableField({
                 placeholder={placeholder}
                 rows={rows}
                 maxLength={maxLength}
-                className={`admin-input w-full resize-none ${
-                  error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                className={`editable-field-input resize-none ${
+                  error ? 'editable-field-input-error' : 'editable-field-input-normal'
                 }`}
               />
             ) : (
@@ -190,83 +178,44 @@ export default function EditableField({
                 onKeyDown={handleKeyDown}
                 placeholder={placeholder}
                 maxLength={maxLength}
-                className={`admin-input w-full ${
-                  error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                className={`editable-field-input ${
+                  error ? 'editable-field-input-error' : 'editable-field-input-normal'
                 }`}
               />
             )}
             
             {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-2">
+            <div className="editable-field-actions">
               <button
                 onClick={handleCancel}
-                className="admin-btn-ghost px-3 py-1.5 text-red-600 hover:bg-red-50"
+                className="editable-field-btn-cancel"
                 title="Cancelar (Esc)"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="m18 6-12 12"/>
-                  <path d="m6 6 12 12"/>
-                </svg>
+                <X className="w-4 h-4" />
                 Cancelar
               </button>
               
               <button
                 onClick={handleConfirm}
-                className="admin-btn-primary px-3 py-1.5"
+                className="editable-field-btn-confirm"
                 title="Confirmar (Enter)"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20,6 9,17 4,12"/>
-                </svg>
+                <Check className="w-4 h-4" />
                 Confirmar
               </button>
             </div>
             
             {/* Error Message */}
             {error && (
-              <div className="text-sm text-red-600 flex items-center gap-1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="15" y1="9" x2="9" y2="15"/>
-                  <line x1="9" y1="9" x2="15" y2="15"/>
-                </svg>
+              <div className="editable-field-error">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 {error}
               </div>
             )}
             
             {/* Character Counter */}
             {maxLength && (
-              <div className="text-xs admin-text-muted text-right">
+              <div className="text-xs text-neutra-500 text-right">
                 {editValue.length}/{maxLength}
               </div>
             )}
@@ -276,7 +225,7 @@ export default function EditableField({
 
       {/* Description */}
       {description && (
-        <p className="text-xs admin-text-muted">{description}</p>
+        <p className="editable-field-description">{description}</p>
       )}
     </div>
   );

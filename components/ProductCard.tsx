@@ -35,7 +35,7 @@ export default function ProductCard({ product, onAddToCart, isRestaurantOpen }: 
   }
 
   return (
-    <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary/20 select-none">
+    <div className="group bg-primary-light rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-primary-base/20 hover:border-primary-base/30 select-none">
       {/* Image Section */}
       <div className="relative h-48 overflow-hidden bg-white flex items-center justify-center p-4">
         {product.imageUrl && !imageError ? (
@@ -75,11 +75,11 @@ export default function ProductCard({ product, onAddToCart, isRestaurantOpen }: 
       {/* Content Section */}
       <div className="p-6">
         <div className="mb-4">
-          <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+          <h3 className="text-xl font-bold text-primary-dark mb-2 line-clamp-2">
             {product.name}
           </h3>
           {product.description && (
-            <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+            <p className="text-primary-dark/70 text-sm leading-relaxed line-clamp-3">
               {product.description}
             </p>
           )}
@@ -95,11 +95,10 @@ export default function ProductCard({ product, onAddToCart, isRestaurantOpen }: 
             disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
             select-none
             ${isRestaurantOpen 
-              ? 'bg-primary text-white hover:bg-primary-dark' 
+              ? 'bg-primary-base text-white hover:bg-primary-dark' 
               : 'bg-gray-300 text-gray-500'
             }
           `}
-          style={isRestaurantOpen ? { backgroundColor: 'var(--primary-color)' } : {}}
         >
           {isLoading ? (
             <div className="flex items-center justify-center">

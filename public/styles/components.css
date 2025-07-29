@@ -1,0 +1,326 @@
+/**
+ * Mapeamento de Componentes para Tokens Semânticos
+ * Aplica os tokens OKLCH aos elementos da interface
+ * 
+ * Seções:
+ * 1. Botões e ações
+ * 2. Badges e chips
+ * 3. Sidebar e navegação
+ * 4. Cards e superfícies
+ * 5. Estados de interação
+ */
+
+/* === 1. BOTÕES E AÇÕES === */
+
+/* Botão primário (CTA principal) */
+.btn-primary,
+.admin-btn-primary {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover,
+.admin-btn-primary:hover {
+  background-color: var(--btn-primary-hover);
+}
+
+.btn-primary:active,
+.admin-btn-primary:active {
+  background-color: var(--btn-primary-active);
+}
+
+.btn-primary:focus-visible,
+.admin-btn-primary:focus-visible {
+  outline: 2px solid var(--btn-primary-focus);
+  outline-offset: 2px;
+  box-shadow: var(--focus-ring);
+}
+
+/* Botão secundário */
+.btn-secondary,
+.admin-btn-secondary {
+  background-color: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-secondary:hover,
+.admin-btn-secondary:hover {
+  background-color: var(--btn-secondary-hover);
+}
+
+.btn-secondary:active,
+.admin-btn-secondary:active {
+  background-color: var(--btn-secondary-active);
+}
+
+.btn-secondary:focus-visible,
+.admin-btn-secondary:focus-visible {
+  outline: 2px solid var(--btn-secondary-focus);
+  outline-offset: 2px;
+}
+
+/* Botão ghost/outline */
+.btn-ghost {
+  background-color: transparent;
+  color: var(--btn-primary-bg);
+  border: 1px solid var(--btn-primary-bg);
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-ghost:hover {
+  background-color: var(--primary-100);
+  border-color: var(--btn-primary-hover);
+}
+
+.btn-ghost:focus-visible {
+  outline: 2px solid var(--btn-primary-focus);
+  outline-offset: 2px;
+}
+
+/* === 2. BADGES E CHIPS === */
+
+/* Badge Success */
+.badge-success,
+.status-success {
+  background-color: var(--badge-success-bg);
+  color: var(--badge-success-text);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Badge Warning */
+.badge-warning,
+.status-warning {
+  background-color: var(--badge-warning-bg);
+  color: var(--badge-warning-text);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Badge Danger */
+.badge-danger,
+.status-danger {
+  background-color: var(--badge-danger-bg);
+  color: var(--badge-danger-text);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Badge Info */
+.badge-info,
+.status-info {
+  background-color: var(--badge-info-bg);
+  color: var(--badge-info-text);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Chips informativos (público) */
+.chip,
+.info-chip {
+  background-color: var(--chip-bg);
+  color: var(--chip-text);
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: 0 1px 3px var(--chip-shadow);
+  border: 1px solid var(--neutral-200);
+}
+
+/* === 3. SIDEBAR E NAVEGAÇÃO === */
+
+/* Sidebar container */
+.admin-sidebar {
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--neutral-200);
+}
+
+/* Item de navegação padrão */
+.sidebar-item {
+  color: var(--sidebar-item-color);
+  padding: 0.75rem 1rem;
+  transition: all 0.15s ease-in-out;
+  border-radius: 0.5rem;
+  margin: 0.125rem 0.5rem;
+  position: relative;
+}
+
+.sidebar-item:hover {
+  background-color: var(--neutral-100);
+}
+
+/* Item de navegação ativo */
+.sidebar-item.active,
+.sidebar-item[aria-current="page"] {
+  background-color: var(--sidebar-item-active-bg);
+  color: var(--text-strong);
+}
+
+.sidebar-item.active::before,
+.sidebar-item[aria-current="page"]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.25rem;
+  bottom: 0.25rem;
+  width: 2px;
+  background-color: var(--sidebar-item-active-indicator);
+  border-radius: 0 1px 1px 0;
+}
+
+.sidebar-item:focus-visible {
+  outline: 2px solid var(--focus-ring-alpha);
+  outline-offset: -1px;
+}
+
+/* === 4. CARDS E SUPERFÍCIES === */
+
+/* Card padrão */
+.card,
+.admin-card {
+  background-color: var(--surface-1);
+  border: 1px solid var(--neutral-200);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Card com destaque (KPI, estatísticas) */
+.card-featured,
+.card-highlight {
+  background-color: var(--primary-50);
+  border: 1px solid var(--primary-200);
+}
+
+/* Surface principal (página) */
+.page-surface {
+  background-color: var(--surface-0);
+  min-height: 100vh;
+}
+
+/* Surface secundária (seções) */
+.section-surface {
+  background-color: var(--surface-1);
+}
+
+/* Surface com tint brand */
+.surface-brand {
+  background-color: var(--surface-3);
+}
+
+/* === 5. ESTADOS DE INTERAÇÃO === */
+
+/* Estados de foco globais */
+*:focus-visible {
+  outline: 2px solid var(--focus-ring-alpha);
+  outline-offset: 2px;
+}
+
+/* Inputs e formulários */
+.form-input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  background-color: var(--surface-0);
+  border: 1px solid var(--neutral-300);
+  color: var(--text-body);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.15s ease-in-out;
+}
+
+.form-input::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.form-input:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--btn-primary-bg);
+  box-shadow: 0 0 0 1px var(--btn-primary-bg);
+  outline: none;
+}
+
+/* Links */
+a {
+  color: var(--primary-700);
+  transition: color 0.15s ease-in-out;
+}
+
+a:hover {
+  color: var(--primary-900);
+}
+
+/* Estados disabled */
+.disabled,
+[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* === 6. TIPOGRAFIA SEMÂNTICA === */
+
+.text-strong {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.text-body {
+  color: var(--text-body);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-inverse {
+  color: var(--text-inverse);
+}
+
+/* === 7. GRADIENTES === */
+
+.gradient-brand {
+  background: var(--gradient-brand);
+}
+
+/* === 8. MOBILE RESPONSIVO === */
+
+@media (max-width: 480px) {
+  /* Aumentar área de toque em móveis */
+  .btn-primary,
+  .btn-secondary,
+  .sidebar-item {
+    min-height: 44px; /* Apple HIG */
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+  
+  /* Contrastes melhorados */
+  .text-muted {
+    color: #4a5568; /* Mais escuro em mobile */
+  }
+  
+  /* Focus rings maiores */
+  *:focus-visible {
+    outline-width: 3px;
+  }
+}

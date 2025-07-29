@@ -59,6 +59,7 @@ export async function GET(
     });
 
   } catch (error) {
+    console.error('Erro na API do restaurante:', error);
     return handleApiError(error);
   }
 } 

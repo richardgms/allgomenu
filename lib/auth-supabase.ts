@@ -101,7 +101,7 @@ export async function getAuthUser(request: NextRequest): Promise<{
     }
 
   } catch (error) {
-    console.error('Erro na autenticação:', error)
+    // Erro na autenticação
     return {
       success: false,
       response: NextResponse.json(
@@ -128,7 +128,7 @@ export async function validateRestaurantAccess(
 
     return true
   } catch (error) {
-    console.error('Erro ao validar acesso ao restaurante:', error)
+    // Erro ao validar acesso ao restaurante
     return false
   }
 } 

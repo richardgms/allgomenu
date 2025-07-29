@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsx:*)",
+      "Bash(mkdir:*)",
+      "Bash(npx tsc:*)",
+      "Bash(rm:*)",
+      "mcp__serena__list_dir",
+      "mcp__shadcn-ui__list_components",
+      "mcp__shadcn-ui__get_component",
+      "mcp__serena__insert_after_symbol",
+      "mcp__serena__find_symbol",
+      "mcp__serena__replace_regex",
+      "Bash(npx shadcn:*)",
+      "mcp__serena__get_symbols_overview",
+      "mcp__serena__search_for_pattern",
+      "mcp__serena__find_file"
+    ],
+    "deny": []
+  }
+}
