@@ -17,7 +17,6 @@ import {
   ShoppingBag, 
   Users, 
   Clock, 
-  Star,
   RefreshCw,
   AlertTriangle
 } from 'lucide-react'
@@ -244,7 +243,7 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5" />
+              <TrendingUp className="h-5 w-5" />
               Top 5 Produtos
             </CardTitle>
             <CardDescription>

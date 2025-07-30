@@ -58,6 +58,7 @@ export default function RestaurantPage() {
     isLoading,
     hasError,
     error,
+    errorDetails,
     restaurant,
     operationalStatus,
     deliveryConfig,
@@ -240,29 +241,97 @@ _Pedido realizado através do site ${restaurant.name}_`
 
   // Renderização de erro
   if (hasError || !restaurant) {
+    const getErrorTitle = () => {
+      if (error?.includes('não encontrado') || error?.includes('not found')) {
+        return 'Restaurante não encontrado'
+      }
+      if (error?.includes('servidor') || error?.includes('server')) {
+        return 'Erro do servidor'
+      }
+      if (error?.includes('rede') || error?.includes('network')) {
+        return 'Erro de conexão'
+      }
+      return 'Ops! Algo deu errado'
+    }
+
+    const getErrorEmoji = () => {
+      if (error?.includes('não encontrado') || error?.includes('not found')) {
+        return '🔍'
+      }
+      if (error?.includes('servidor') || error?.includes('server')) {
+        return '🔧'
+      }
+      if (error?.includes('rede') || error?.includes('network')) {
+        return '📡'
+      }
+      return '😔'
+    }
+
+    const getHelpText = () => {
+      if (error?.includes('não encontrado') || error?.includes('not found')) {
+        return 'Verifique se o endereço está correto ou se o restaurante ainda está ativo.'
+      }
+      if (error?.includes('servidor') || error?.includes('server')) {
+        return 'Nossos servidores estão com problemas temporários. Tente novamente em alguns minutos.'
+      }
+      if (error?.includes('rede') || error?.includes('network')) {
+        return 'Verifique sua conexão com a internet e tente novamente.'
+      }
+      return 'Ocorreu um erro inesperado. Tente recarregar a página.'
+    }
+
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <Alert className="mb-6">
+        <div className="text-center max-w-lg">
+          <Alert className="mb-6" variant={error?.includes('não encontrado') ? 'destructive' : 'default'}>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               {error || 'Não foi possível carregar os dados do restaurante.'}
             </AlertDescription>
           </Alert>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <h1 className="text-4xl font-bold mb-2">😔</h1>
-              <h2 className="text-2xl font-bold mb-2">Ops! Algo deu errado</h2>
-              <p className="text-muted-foreground">
-                {error || 'O restaurante solicitado não pôde ser carregado.'}
+              <h1 className="text-5xl font-bold mb-3">{getErrorEmoji()}</h1>
+              <h2 className="text-2xl font-bold mb-3">{getErrorTitle()}</h2>
+              <p className="text-muted-foreground text-base leading-relaxed">
+                {getHelpText()}
               </p>
             </div>
+
+            {/* Detalhes técnicos para debug (apenas em desenvolvimento) */}
+            {process.env.NODE_ENV === 'development' && errorDetails && (
+              <details className="text-left bg-muted/50 p-4 rounded-lg text-sm">
+                <summary className="cursor-pointer font-medium mb-2">Detalhes do erro (desenvolvimento)</summary>
+                <pre className="text-xs overflow-auto">
+                  {JSON.stringify({
+                    slug,
+                    hasThemeError: errorDetails.hasThemeError,
+                    hasMenuError: errorDetails.hasMenuError,
+                    themeError: errorDetails.themeError,
+                    menuError: errorDetails.menuError,
+                    canRetry: errorDetails.canRetry
+                  }, null, 2)}
+                </pre>
+              </details>
+            )}
             
-            <Button onClick={refreshData} variant="outline" className="gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Tentar novamente
-            </Button>
+            <div className="flex gap-3 justify-center">
+              {errorDetails?.canRetry !== false && (
+                <Button onClick={refreshData} variant="outline" className="gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  Tentar novamente
+                </Button>
+              )}
+              
+              <Button 
+                onClick={() => window.location.href = '/'}
+                variant="default"
+                className="gap-2"
+              >
+                Voltar ao início
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -291,7 +360,7 @@ _Pedido realizado através do site ${restaurant.name}_`
         <FeaturedProducts 
           products={featuredProducts}
           loading={isLoading}
-          onProductClick={(product) => addToCart(product, 1)}
+          onAddToCart={addToCart}
         />
       )}
 

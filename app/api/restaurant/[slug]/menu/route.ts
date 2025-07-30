@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { handleApiError } from '@/lib/api-utils';
+import { requestCache, createCacheKey } from '@/lib/request-cache';
 
 interface ProcessedProduct {
   id: string
@@ -39,45 +40,61 @@ export async function GET(
   try {
     const { slug } = params;
 
-    // Verificar se o restaurante existe e está ativo
-    const restaurant = await db.restaurant.findUnique({
-      where: { slug },
-      select: {
-        id: true,
-        isActive: true,
-        isOpen: true
-      }
-    });
+    // Cache completo da consulta do menu para evitar múltiplas consultas
+    const cacheKey = createCacheKey('restaurant-menu', slug)
+    
+    const { restaurant, categories } = await requestCache.deduplicate(
+      cacheKey,
+      async () => {
+        // Verificar se o restaurante existe e está ativo
+        const restaurant = await db.restaurant.findUnique({
+          where: { slug },
+          select: {
+            id: true,
+            isActive: true,
+            isOpen: true
+          }
+        });
 
-    if (!restaurant || !restaurant.isActive) {
+        if (!restaurant || !restaurant.isActive) {
+          throw new Error('RESTAURANT_NOT_FOUND');
+        }
+
+        // Buscar categorias com produtos
+        const categories = await db.category.findMany({
+          where: {
+            restaurantId: restaurant.id,
+            isActive: true
+          },
+          include: {
+            products: {
+              where: {
+                isActive: true
+              },
+              orderBy: [
+                { isFeatured: 'desc' },
+                { order: 'asc' },
+                { name: 'asc' }
+              ]
+            }
+          },
+          orderBy: {
+            order: 'asc'
+          }
+        });
+
+        return { restaurant, categories };
+      },
+      15000 // Cache por 15 segundos para menu
+    );
+
+    // Tratar erro específico de restaurante não encontrado
+    if (!restaurant) {
       return NextResponse.json(
         { error: 'Restaurante não encontrado' },
         { status: 404 }
       );
     }
-
-    // Buscar categorias com produtos
-    const categories = await db.category.findMany({
-      where: {
-        restaurantId: restaurant.id,
-        isActive: true
-      },
-      include: {
-        products: {
-          where: {
-            isActive: true
-          },
-          orderBy: [
-            { isFeatured: 'desc' },
-            { order: 'asc' },
-            { name: 'asc' }
-          ]
-        }
-      },
-      orderBy: {
-        order: 'asc'
-      }
-    });
 
     // Processar categorias e produtos com dados enriquecidos
     const processedCategories: ProcessedCategory[] = categories
@@ -129,7 +146,16 @@ export async function GET(
     return response
 
   } catch (error) {
-    console.error('Error fetching menu:', error)
+    console.error('Error fetching menu:', error);
+    
+    // Tratar erro específico de restaurante não encontrado
+    if (error instanceof Error && error.message === 'RESTAURANT_NOT_FOUND') {
+      return NextResponse.json(
+        { error: 'Restaurante não encontrado' },
+        { status: 404 }
+      );
+    }
+    
     return handleApiError(error);
   }
 } 

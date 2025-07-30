@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Minus, Plus, Star, Heart, Clock } from 'lucide-react'
+import { Minus, Plus, Clock } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 import { ProcessedProduct } from '@/types/restaurant'
 
@@ -118,16 +118,12 @@ function ProductCard({ product, onAddToCart }: ProductCardProps) {
                       <CardTitle className="text-lg sm:text-xl font-bold leading-tight line-clamp-2">
                         {product.name}
                       </CardTitle>
-                      {product.isFeatured && (
-                        <Star className="h-4 w-4 text-yellow-500 fill-current flex-shrink-0" />
-                      )}
                     </div>
                     
                     {/* Badges de status */}
                     <div className="flex items-center gap-2 mb-3">
                       {product.isFeatured && (
                         <Badge className="flex items-center gap-1 text-xs" variant="default">
-                          <Star className="h-3 w-3 fill-current" />
                           Destaque
                         </Badge>
                       )}
@@ -191,11 +187,11 @@ function ProductCard({ product, onAddToCart }: ProductCardProps) {
         </Card>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-start gap-3">
             <div className="flex-1">
-              <DialogTitle className="text-xl leading-tight">
+              <DialogTitle className="text-lg leading-tight">
                 {product.name}
               </DialogTitle>
               {product.description && (
@@ -204,25 +200,21 @@ function ProductCard({ product, onAddToCart }: ProductCardProps) {
                 </DialogDescription>
               )}
             </div>
-            {product.isFeatured && (
-              <Star className="h-5 w-5 text-yellow-500 fill-current flex-shrink-0" />
-            )}
           </div>
         </DialogHeader>
         
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="relative">
             <img
               src={product.imageUrl || '/placeholder-food.jpg'}
               alt={product.name}
-              className="h-56 w-full object-cover rounded-lg"
+              className="aspect-square w-full object-cover rounded-lg"
             />
             
             {/* Badges overlay */}
-            <div className="absolute top-3 left-3 flex flex-col gap-2">
+            <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
               {product.isFeatured && (
                 <Badge className="flex items-center gap-1" variant="default">
-                  <Star className="h-3 w-3 fill-current" />
                   Destaque
                 </Badge>
               )}
@@ -236,11 +228,11 @@ function ProductCard({ product, onAddToCart }: ProductCardProps) {
           
           <div className="space-y-2">
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-primary">
+              <span className="text-2xl font-bold text-primary">
                 {formatPrice(product.effectivePrice)}
               </span>
               {product.hasPromotion && (
-                <span className="text-lg text-muted-foreground line-through">
+                <span className="text-base text-muted-foreground line-through">
                   {formatPrice(product.price)}
                 </span>
               )}
@@ -290,6 +282,7 @@ function ProductCard({ product, onAddToCart }: ProductCardProps) {
               value={observation}
               onChange={(e) => setObservation(e.target.value)}
               rows={3}
+              className="resize-none"
             />
           </div>
         </div>

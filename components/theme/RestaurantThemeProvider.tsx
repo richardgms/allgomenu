@@ -267,8 +267,11 @@ export function RestaurantThemeProvider({
 
   // Aplicar tema com debounce e controle de estado
   const applyTheme = useCallback(async (input: ThemeInput) => {
+    console.log(`[Theme ${restaurantSlug}] applyTheme called with:`, input)
+    
     // Evitar múltiplas aplicações simultâneas
     if (isApplyingTheme.current) {
+      console.log(`[Theme ${restaurantSlug}] Already applying theme, skipping...`)
       return
     }
 
@@ -280,15 +283,19 @@ export function RestaurantThemeProvider({
     // Debounce de 300ms
     themeDebounceTimer.current = setTimeout(async () => {
       try {
+        console.log(`[Theme ${restaurantSlug}] Starting theme application...`)
         isApplyingTheme.current = true
         setError(null)
 
         const themeResult = buildThemeTokens(input)
+        console.log(`[Theme ${restaurantSlug}] Theme tokens built successfully`)
         
         // Injetar CSS no DOM
         injectCSS(themeResult.css)
+        console.log(`[Theme ${restaurantSlug}] CSS injected into DOM`)
         
         setCurrentTheme(themeResult)
+        console.log(`[Theme ${restaurantSlug}] Theme state updated`)
         
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Erro ao aplicar tema'
@@ -296,8 +303,9 @@ export function RestaurantThemeProvider({
         console.error(`[Theme ${restaurantSlug}] Theme application error:`, err)
       } finally {
         isApplyingTheme.current = false
+        console.log(`[Theme ${restaurantSlug}] Theme application finished`)
       }
-    }, 300)
+    }, 100) // Reduzir debounce para 100ms para debug
   }, [restaurantSlug])
 
   // Reset para tema padrão
@@ -325,70 +333,96 @@ export function RestaurantThemeProvider({
     }
   }
 
-  // Buscar dados do restaurante e aplicar tema (otimizado para evitar reaplicações)
+  // Buscar dados do restaurante e aplicar tema - versão simplificada para debug
   useEffect(() => {
     // Marcar como montado
     isMounted.current = true
 
-    // Se já foi inicializado, não fazer nada
-    if (hasInitialized.current) {
+    console.log(`[Theme ${restaurantSlug}] useEffect triggered:`, {
+      hasInitialized: hasInitialized.current,
+      hasInitialConfig: !!initialThemeConfig,
+      lastAppliedConfig,
+      currentTheme: !!currentTheme,
+      isLoading,
+      error
+    })
+
+    // Sempre tentar inicializar se não há tema atual
+    if (!currentTheme || error) {
+      console.log(`[Theme ${restaurantSlug}] No current theme or has error, proceeding with initialization...`)
+    } else if (hasInitialized.current) {
+      console.log(`[Theme ${restaurantSlug}] Already initialized with theme, skipping...`)
       return
     }
 
-    // Se temos dados iniciais e já aplicamos o tema, não fazer nada
-    if (initialThemeConfig && lastAppliedConfig) {
-      hasInitialized.current = true
-      return
-    }
-
-    // Resetar flag de inicialização quando o slug mudar
+    // Resetar flag de inicialização
     hasInitialized.current = false
 
     let isCancelled = false
 
     const fetchAndApplyTheme = async () => {
       try {
+        console.log(`[Theme ${restaurantSlug}] Starting fetchAndApplyTheme, hasInitialConfig:`, !!initialThemeConfig)
         setIsLoading(true)
         setError(null)
 
-        // Usar dados iniciais se disponíveis
-        if (initialThemeConfig) {
+        // Aplicar tema inicial se disponível, mas sempre buscar dados completos da API
+        if (initialThemeConfig && !currentTheme) {
+          console.log(`[Theme ${restaurantSlug}] Applying initial theme config while fetching full data:`, initialThemeConfig)
           const themeConfig = initialThemeConfig as any
           const configKey = `${restaurantSlug}-${themeConfig?.primaryColor || '#3b82f6'}-${themeConfig?.secondaryColor || '#10b981'}`
           
-          // Evitar reaplicação se a configuração não mudou
-          if (lastAppliedConfig === configKey) {
-            setIsLoading(false)
-            return
-          }
-          
-          const themeInput: ThemeInput = {
-            primaryHex: themeConfig?.primaryColor || '#3b82f6',
-            secondaryHex: themeConfig?.secondaryColor || '#10b981',
-            name: 'Tema do Restaurante'
-          }
+          // Aplicar tema inicial se não foi aplicado ainda
+          if (lastAppliedConfig !== configKey) {
+            const themeInput: ThemeInput = {
+              primaryHex: themeConfig?.primaryColor || '#3b82f6',
+              secondaryHex: themeConfig?.secondaryColor || '#10b981',
+              name: 'Tema do Restaurante'
+            }
 
-          if (!isCancelled) {
+            console.log(`[Theme ${restaurantSlug}] Applying initial theme...`)
             await applyTheme(themeInput)
             setLastAppliedConfig(configKey)
-            setIsLoading(false)
+            console.log(`[Theme ${restaurantSlug}] Initial theme applied, continuing to fetch full data...`)
           }
-          
-          // Se temos dados iniciais, não buscar da API
-          return
         }
 
         // Buscar da API apenas se não tiver dados iniciais
+        console.log(`[Theme ${restaurantSlug}] Fetching restaurant status from API...`)
         const response = await fetch(`/api/restaurant/${restaurantSlug}/status`)
         
+        console.log(`[Theme ${restaurantSlug}] API response status:`, response.status, response.statusText)
+        
         if (!response.ok) {
-          throw new Error(`Erro ao carregar dados: ${response.status}`)
+          let errorMessage = `Erro ao carregar dados do restaurante: ${response.status}`
+          
+          if (response.status === 404) {
+            errorMessage = 'Restaurante não encontrado. Verifique se o link está correto.'
+          } else if (response.status >= 500) {
+            errorMessage = 'Erro interno do servidor. Tente novamente em alguns minutos.'
+          } else if (response.status === 403) {
+            errorMessage = 'Acesso negado ao restaurante.'
+          }
+          
+          console.error(`[Theme ${restaurantSlug}] API error:`, errorMessage)
+          throw new Error(errorMessage)
         }
 
         const statusData: RestaurantStatus = await response.json()
+        console.log(`[Theme ${restaurantSlug}] API data received:`, statusData)
         
-        if (isCancelled || !isMounted.current) return
+        if (isCancelled || !isMounted.current) {
+          console.log(`[Theme ${restaurantSlug}] Component cancelled or unmounted, aborting...`)
+          return
+        }
 
+        // Validar se os dados essenciais estão presentes
+        if (!statusData || !statusData.restaurant) {
+          console.error(`[Theme ${restaurantSlug}] Invalid data structure:`, { statusData, hasRestaurant: !!statusData?.restaurant })
+          throw new Error('Dados do restaurante incompletos ou inválidos')
+        }
+
+        console.log(`[Theme ${restaurantSlug}] Setting restaurant status:`, statusData.restaurant.name)
         setRestaurantStatus(statusData)
 
         // Extrair cores do tema
@@ -413,12 +447,22 @@ export function RestaurantThemeProvider({
       } catch (err) {
         if (isCancelled) return
         
-        const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar tema'
+        const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido ao carregar tema'
         setError(errorMessage)
-        console.error(`[Theme ${restaurantSlug}] Error loading theme:`, err)
         
-        // Aplicar tema fallback
-        resetTheme()
+        // Log detalhado para debug
+        console.error(`[Theme ${restaurantSlug}] Error loading theme:`, {
+          error: err,
+          message: errorMessage,
+          slug: restaurantSlug,
+          timestamp: new Date().toISOString(),
+          hasInitialConfig: !!initialThemeConfig
+        })
+        
+        // Aplicar tema fallback apenas se não for um erro de restaurante não encontrado
+        if (!errorMessage.includes('não encontrado') && !errorMessage.includes('not found')) {
+          resetTheme()
+        }
       } finally {
         if (!isCancelled && isMounted.current) {
           setIsLoading(false)
@@ -470,7 +514,7 @@ export function RestaurantThemeProvider({
 
   return (
     <RestaurantThemeContext.Provider value={contextValue}>
-      <div suppressHydrationWarning={suppressHydrationWarning}>
+      <div suppressHydrationWarning={suppressHydrationWarning || process.env.NODE_ENV === 'development'}>
         {children}
       </div>
     </RestaurantThemeContext.Provider>

@@ -58,7 +58,6 @@ export default function ProductCard({ product, onAddToCart, isRestaurantOpen }: 
         {product.isFeatured && (
           <div className="absolute top-3 left-3">
             <div className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold flex items-center shadow-lg">
-              <span className="mr-1">⭐</span>
               Destaque
             </div>
           </div>

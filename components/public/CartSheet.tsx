@@ -123,8 +123,10 @@ export function CartSheet({
                               <Plus className="h-3 w-3" />
                             </Button>
                           </div>
-                          
-                          <span className="font-semibold">
+                        </div>
+                        
+                        <div className="flex justify-end">
+                          <span className="font-semibold text-primary">
                             {formatPrice(item.price * item.quantity)}
                           </span>
                         </div>
@@ -139,32 +141,40 @@ export function CartSheet({
 
         {cart.length > 0 && (
           <SheetFooter className="flex-col space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Subtotal</span>
-                <span>{formatPrice(subtotal)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Taxa de entrega</span>
-                <span>{formatPrice(deliveryFee)}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between font-semibold text-lg">
-                <span>Total</span>
-                <span>{formatPrice(finalTotal)}</span>
+            {/* Área do resumo com padding interno adequado */}
+            <div className="space-y-3 px-2">
+              {/* Linha Subtotal - Contêiner flexbox com justify-content: space-between */}
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Subtotal</span>
+                <span className="text-sm font-medium">{formatPrice(subtotal)}</span>
               </div>
               
-              {minimumOrder > 0 && !isMinimumOrderMet && (
-                <div className="text-center">
-                  <Badge variant="destructive" className="text-xs">
-                    Pedido mínimo: {formatPrice(minimumOrder)}
-                  </Badge>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Faltam {formatPrice(minimumOrder - subtotal)} para atingir o mínimo
-                  </p>
-                </div>
-              )}
+              {/* Linha Taxa de entrega - Contêiner flexbox com justify-content: space-between */}
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Taxa de entrega</span>
+                <span className="text-sm font-medium">{formatPrice(deliveryFee)}</span>
+              </div>
+              
+              {/* Separador visual com espaçamento adequado */}
+              <Separator className="my-3" />
+              
+              {/* Linha Total - Contêiner flexbox com destaque visual */}
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-base font-bold text-foreground">Total</span>
+                <span className="text-base font-bold text-primary">{formatPrice(finalTotal)}</span>
+              </div>
             </div>
+            
+            {minimumOrder > 0 && !isMinimumOrderMet && (
+              <div className="text-center">
+                <Badge variant="destructive" className="text-xs">
+                  Pedido mínimo: {formatPrice(minimumOrder)}
+                </Badge>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Faltam {formatPrice(minimumOrder - subtotal)} para atingir o mínimo
+                </p>
+              </div>
+            )}
             
             <Button 
               onClick={onCheckout} 

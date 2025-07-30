@@ -5,6 +5,7 @@ import { unstable_cache } from 'next/cache';
 const getRestaurantBySlug = unstable_cache(
   async (slug: string) => {
     try {
+      console.log(`[getRestaurantBySlug] Searching for slug: ${slug}`)
       const restaurant = await db.restaurant.findUnique({
         where: { slug },
         select: {
@@ -15,8 +16,10 @@ const getRestaurantBySlug = unstable_cache(
         }
       });
       
+      console.log(`[getRestaurantBySlug] Found restaurant:`, !!restaurant, restaurant?.name)
       return restaurant;
     } catch (error) {
+      console.error(`[getRestaurantBySlug] Error for slug ${slug}:`, error)
       // Erro ao buscar restaurante
       return null;
     }
@@ -37,6 +40,18 @@ export default async function PublicLayout({
 }) {
   // Cache para evitar consultas desnecessárias
   const restaurant = await getRestaurantBySlug(params.slug);
+  
+  // Filtrar slugs inválidos como favicon.ico, robots.txt, etc.
+  if (params.slug.includes('.') || params.slug.startsWith('_')) {
+    return <div>{children}</div>
+  }
+
+  console.log(`[Layout ${params.slug}] Restaurant data:`, { 
+    exists: !!restaurant, 
+    isActive: restaurant?.isActive,
+    hasThemeConfig: !!restaurant?.themeConfig,
+    themeConfig: restaurant?.themeConfig
+  });
   
   // Verificar se o restaurante existe e está ativo
   if (!restaurant) {

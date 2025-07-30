@@ -2,6 +2,7 @@ import './globals.css'
 import '/public/styles/theme-overrides.css'
 import { Inter, Nunito } from 'next/font/google'
 import { Providers } from '@/lib/providers'
+import '@/lib/console-filter' // Aplicar filtros de console
 
 const inter = Inter({ subsets: ['latin'] })
 const nunito = Nunito({ 
@@ -22,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${inter.className} ${nunito.variable}`}>
+      <body className={`${inter.className} ${nunito.variable}`} suppressHydrationWarning>
         <Providers>
           {children}
         </Providers>

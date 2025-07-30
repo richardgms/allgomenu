@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requestCache, createCacheKey } from '@/lib/request-cache'
 
 interface OperatingHour {
   open: string
@@ -211,26 +212,35 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const restaurant = await db.restaurant.findUnique({
-      where: { slug: params.slug },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        slug: true,
-        phone: true,
-        whatsapp: true,
-        themeConfig: true,
-        deliveryTime: true,
-        minimumOrder: true,
-        deliveryFee: true,
-        deliveryEnabled: true,
-        deliveryZones: true,
-        isActive: true,
-        isOpen: true,
-        openingHours: true
-      }
-    })
+    // Cache da consulta do restaurante para evitar hits desnecessários no DB
+    const cacheKey = createCacheKey('restaurant-status', params.slug)
+    
+    const restaurant = await requestCache.deduplicate(
+      cacheKey,
+      async () => {
+        return await db.restaurant.findUnique({
+          where: { slug: params.slug },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            slug: true,
+            phone: true,
+            whatsapp: true,
+            themeConfig: true,
+            deliveryTime: true,
+            minimumOrder: true,
+            deliveryFee: true,
+            deliveryEnabled: true,
+            deliveryZones: true,
+            isActive: true,
+            isOpen: true,
+            openingHours: true
+          }
+        })
+      },
+      10000 // Cache por 10 segundos para status do restaurante
+    )
 
     if (!restaurant) {
       return NextResponse.json(
