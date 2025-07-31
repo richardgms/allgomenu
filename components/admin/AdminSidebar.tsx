@@ -178,19 +178,48 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
                 return (
                   <Link key={item.href} href={`/${slug}/admin${item.href}`} onClick={handleItemClick}>
                     <Button
-                      variant={active ? "secondary" : "ghost"}
-                      className={cn(
-                        "w-full justify-start gap-3 h-auto py-2.5 px-3 rounded-lg transition-all duration-200",
-                        active 
-                          ? "bg-primary/10 text-primary border border-primary/20 shadow-sm" 
-                          : "hover:bg-accent hover:text-accent-foreground"
-                      )}
+                      variant="ghost"
+                      className="w-full justify-start gap-3 h-auto py-2.5 px-3 rounded-lg transition-all duration-200"
+                      style={{
+                        backgroundColor: active 
+                          ? 'var(--sidebar-item-active)' 
+                          : 'var(--sidebar-item-inactive)',
+                        color: active 
+                          ? 'var(--sidebar-text-active)' 
+                          : 'var(--sidebar-text-inactive)',
+                        border: active 
+                          ? '1px solid var(--sidebar-indicator)' 
+                          : '1px solid transparent'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!active) {
+                          e.currentTarget.style.backgroundColor = 'var(--sidebar-item-hover)'
+                          e.currentTarget.style.color = 'var(--sidebar-text-hover)'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!active) {
+                          e.currentTarget.style.backgroundColor = 'var(--sidebar-item-inactive)'
+                          e.currentTarget.style.color = 'var(--sidebar-text-inactive)'
+                        }
+                      }}
                     >
-                      <div className={cn(
-                        "p-1 rounded-md transition-colors flex-shrink-0",
-                        active ? "bg-primary/20" : "group-hover:bg-accent"
-                      )}>
-                        <Icon className="h-4 w-4" />
+                      <div 
+                        className="p-1 rounded-md transition-colors flex-shrink-0"
+                        style={{
+                          backgroundColor: active 
+                            ? 'var(--sidebar-indicator)' 
+                            : 'var(--neutral-100)'
+                        }}
+                      >
+                        <Icon 
+                          className="h-4 w-4" 
+                          style={{
+                            color: active 
+                              ? 'var(--sidebar-text-active)' 
+                              : 'var(--sidebar-text-inactive)'
+                          }}
+                        />
                       </div>
                       <div className="text-left min-w-0 flex-1">
                         <div className="font-medium text-sm">{item.title}</div>
@@ -217,19 +246,48 @@ export const AdminSidebar = React.memo(function AdminSidebar({ slug, isOpen = fa
                 return (
                   <Link key={item.href} href={`/${slug}/admin${item.href}`} onClick={handleItemClick}>
                     <Button
-                      variant={active ? "secondary" : "ghost"}
-                      className={cn(
-                        "w-full justify-start gap-3 h-auto py-2.5 px-3 rounded-lg transition-all duration-200",
-                        active 
-                          ? "bg-primary/10 text-primary border border-primary/20 shadow-sm" 
-                          : "hover:bg-accent hover:text-accent-foreground"
-                      )}
+                      variant="ghost"
+                      className="w-full justify-start gap-3 h-auto py-2.5 px-3 rounded-lg transition-all duration-200"
+                      style={{
+                        backgroundColor: active 
+                          ? 'var(--sidebar-item-active)' 
+                          : 'var(--sidebar-item-inactive)',
+                        color: active 
+                          ? 'var(--sidebar-text-active)' 
+                          : 'var(--sidebar-text-inactive)',
+                        border: active 
+                          ? '1px solid var(--sidebar-indicator)' 
+                          : '1px solid transparent'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!active) {
+                          e.currentTarget.style.backgroundColor = 'var(--sidebar-item-hover)'
+                          e.currentTarget.style.color = 'var(--sidebar-text-hover)'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!active) {
+                          e.currentTarget.style.backgroundColor = 'var(--sidebar-item-inactive)'
+                          e.currentTarget.style.color = 'var(--sidebar-text-inactive)'
+                        }
+                      }}
                     >
-                      <div className={cn(
-                        "p-0.5 rounded-md transition-colors flex-shrink-0",
-                        active ? "bg-primary/20" : "group-hover:bg-accent"
-                      )}>
-                        <Icon className="h-3.5 w-3.5" />
+                      <div 
+                        className="p-0.5 rounded-md transition-colors flex-shrink-0"
+                        style={{
+                          backgroundColor: active 
+                            ? 'var(--sidebar-indicator)' 
+                            : 'var(--neutral-100)'
+                        }}
+                      >
+                        <Icon 
+                          className="h-3.5 w-3.5" 
+                          style={{
+                            color: active 
+                              ? 'var(--sidebar-text-active)' 
+                              : 'var(--sidebar-text-inactive)'
+                          }}
+                        />
                       </div>
                       <div className="text-left min-w-0 flex-1">
                         <div className="font-medium text-sm">{item.title}</div>

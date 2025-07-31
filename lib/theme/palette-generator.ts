@@ -474,16 +474,16 @@ function generateComponentTokens(
       background: primaryScale[25],
       item: {
         normal: 'transparent',
-        hover: primaryScale[50],
-        active: primaryScale[100]
+        hover: primaryScale[100],        // ✨ Hover mais visível (era 50)
+        active: primaryScale[200]        // ✨ Ativo mais escuro (era 100)
       },
       text: {
         normal: neutralScale[700],
         hover: neutralScale[800],
-        active: primaryScale[700]
+        active: primaryScale[800]        // ✨ Texto ativo mais escuro (era 700)
       },
       border: primaryScale[200],
-      indicator: primaryScale[600]
+      indicator: primaryScale[500]       // ✨ Indicador mais suave (era 600)
     },
     card: {
       background: neutralScale[25],

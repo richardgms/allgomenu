@@ -107,6 +107,39 @@
   --btn-outline-border: var(--primary-300);
 
   /* Sidebar */
+  /* === PERSONALIZAÇÃO MANUAL DO SIDEBAR === */
+  /* 
+   * Para personalizar manualmente os tons dos botões do sidebar:
+   * 
+   * 1. BACKGROUND DOS BOTÕES:
+   *    --sidebar-item-normal: transparent;           // Estado normal (transparente)
+   *    --sidebar-item-hover: var(--primary-50);     // Hover (tom muito claro)
+   *    --sidebar-item-active: var(--primary-100);   // Ativo (tom claro)
+   * 
+   * 2. CORES DO TEXTO:
+   *    --sidebar-text-normal: var(--neutral-700);   // Texto normal (cinza escuro)
+   *    --sidebar-text-hover: var(--neutral-800);    // Texto hover (mais escuro)
+   *    --sidebar-text-active: var(--primary-700);   // Texto ativo (cor primária escura)
+   * 
+   * 3. OUTROS ELEMENTOS:
+   *    --sidebar-bg: var(--primary-25);             // Background do sidebar
+   *    --sidebar-border: var(--primary-200);        // Borda do sidebar
+   *    --sidebar-indicator: var(--primary-600);     // Indicador ativo (linha lateral)
+   * 
+   * EXEMPLOS DE PERSONALIZAÇÃO:
+   * 
+   * Para botões mais escuros:
+   *    --sidebar-item-hover: var(--primary-100);    // Hover mais escuro
+   *    --sidebar-item-active: var(--primary-200);   // Ativo mais escuro
+   * 
+   * Para botões mais claros:
+   *    --sidebar-item-hover: var(--primary-25);     // Hover mais claro
+   *    --sidebar-item-active: var(--primary-50);    // Ativo mais claro
+   * 
+   * Para texto mais contrastante:
+   *    --sidebar-text-normal: var(--neutral-800);   // Texto mais escuro
+   *    --sidebar-text-active: var(--primary-800);   // Texto ativo mais escuro
+   */
   --sidebar-bg: var(--primary-25);
   --sidebar-border: var(--primary-200);
   --sidebar-indicator: var(--primary-600);
@@ -118,6 +151,35 @@
   --sidebar-text-normal: var(--neutral-700);
   --sidebar-text-hover: var(--neutral-800);
   --sidebar-text-active: var(--primary-700);
+
+  /* === EXEMPLOS PRÁTICOS DE PERSONALIZAÇÃO === */
+  /* 
+   * Para aplicar estas personalizações, substitua as linhas acima pelos valores desejados.
+   * 
+   * EXEMPLO 1: Sidebar com botões mais escuros e contrastantes
+   * --sidebar-item-hover: var(--primary-100);
+   * --sidebar-item-active: var(--primary-200);
+   * --sidebar-text-normal: var(--neutral-800);
+   * --sidebar-text-active: var(--primary-800);
+   * 
+   * EXEMPLO 2: Sidebar com botões mais claros e suaves
+   * --sidebar-item-hover: var(--primary-25);
+   * --sidebar-item-active: var(--primary-50);
+   * --sidebar-text-normal: var(--neutral-600);
+   * --sidebar-text-active: var(--primary-600);
+   * 
+   * EXEMPLO 3: Sidebar com cores secundárias
+   * --sidebar-item-hover: var(--secondary-50);
+   * --sidebar-item-active: var(--secondary-100);
+   * --sidebar-text-active: var(--secondary-700);
+   * --sidebar-indicator: var(--secondary-600);
+   * 
+   * EXEMPLO 4: Sidebar com fundo colorido
+   * --sidebar-bg: var(--primary-50);
+   * --sidebar-item-normal: var(--primary-25);
+   * --sidebar-item-hover: var(--primary-100);
+   * --sidebar-item-active: var(--primary-200);
+   */
 
   /* Card */
   --card-background: var(--neutral-25);
