@@ -1,0 +1,213 @@
+/* === DESIGN TOKENS CSS === */
+/* Auto-generated base tokens - DO NOT EDIT MANUALLY */
+/* This file is managed by the theme system */
+
+:root {
+  /* === BASE COLOR SCALES === */
+  /* Primary colors - generated dynamically */
+  --primary-25: #fefefe;
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-300: #93c5fd;
+  --primary-400: #60a5fa;
+  --primary-500: #3b82f6;  /* Base color */
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-800: #1e40af;
+  --primary-900: #1e3a8a;
+
+  /* Secondary colors - generated dynamically */
+  --secondary-25: #fefefe;
+  --secondary-50: #f0fdf4;
+  --secondary-100: #dcfce7;
+  --secondary-200: #bbf7d0;
+  --secondary-300: #86efac;
+  --secondary-400: #4ade80;
+  --secondary-500: #10b981;  /* Base color */
+  --secondary-600: #059669;
+  --secondary-700: #047857;
+  --secondary-800: #065f46;
+  --secondary-900: #064e3b;
+
+  /* Neutral colors - warm grays based on primary */
+  --neutral-25: #fefefe;
+  --neutral-50: #fafaf9;
+  --neutral-100: #f5f5f4;
+  --neutral-200: #e7e5e4;
+  --neutral-300: #d6d3d1;
+  --neutral-400: #a8a29e;
+  --neutral-500: #78716c;
+  --neutral-600: #57534e;
+  --neutral-700: #44403c;
+  --neutral-800: #292524;
+  --neutral-900: #1c1917;
+
+  /* === SEMANTIC TOKENS === */
+  /* Success */
+  --success-bg: #16a34a;
+  --success-text: #ffffff;
+  --success-hover: #15803d;
+  --success-active: #166534;
+  --success-focus: #16a34a;
+  --success-border: #16a34a;
+
+  /* Warning */
+  --warning-bg: #f59e0b;
+  --warning-text: #111111;
+  --warning-hover: #d97706;
+  --warning-active: #b45309;
+  --warning-focus: #f59e0b;
+  --warning-border: #f59e0b;
+
+  /* Error */
+  --error-bg: #ef4444;
+  --error-text: #ffffff;
+  --error-hover: #dc2626;
+  --error-active: #b91c1c;
+  --error-focus: #ef4444;
+  --error-border: #ef4444;
+
+  /* Info */
+  --info-bg: #0ea5e9;
+  --info-text: #ffffff;
+  --info-hover: #0284c7;
+  --info-active: #0369a1;
+  --info-focus: #0ea5e9;
+  --info-border: #0ea5e9;
+
+  /* === COMPONENT TOKENS === */
+  /* Button variants */
+  --btn-primary-bg: var(--primary-600);
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover: var(--primary-700);
+  --btn-primary-active: var(--primary-800);
+  --btn-primary-focus: var(--primary-500);
+  --btn-primary-border: var(--primary-600);
+
+  --btn-secondary-bg: var(--secondary-600);
+  --btn-secondary-text: #ffffff;
+  --btn-secondary-hover: var(--secondary-700);
+  --btn-secondary-active: var(--secondary-800);
+  --btn-secondary-focus: var(--secondary-500);
+  --btn-secondary-border: var(--secondary-600);
+
+  --btn-ghost-bg: transparent;
+  --btn-ghost-text: var(--neutral-700);
+  --btn-ghost-hover: var(--primary-50);
+  --btn-ghost-active: var(--primary-100);
+  --btn-ghost-focus: var(--primary-500);
+  --btn-ghost-border: transparent;
+
+  --btn-outline-bg: transparent;
+  --btn-outline-text: var(--primary-600);
+  --btn-outline-hover: var(--primary-50);
+  --btn-outline-active: var(--primary-100);
+  --btn-outline-focus: var(--primary-500);
+  --btn-outline-border: var(--primary-300);
+
+  /* Sidebar */
+  --sidebar-bg: var(--primary-25);
+  --sidebar-border: var(--primary-200);
+  --sidebar-indicator: var(--primary-600);
+  
+  --sidebar-item-normal: transparent;
+  --sidebar-item-hover: var(--primary-50);
+  --sidebar-item-active: var(--primary-100);
+  
+  --sidebar-text-normal: var(--neutral-700);
+  --sidebar-text-hover: var(--neutral-800);
+  --sidebar-text-active: var(--primary-700);
+
+  /* Card */
+  --card-background: var(--neutral-25);
+  --card-border: var(--neutral-200);
+  --card-text: var(--neutral-800);
+  --card-header: var(--neutral-900);
+
+  /* Input */
+  --input-background: var(--neutral-25);
+  --input-border: var(--neutral-300);
+  --input-text: var(--neutral-800);
+  --input-placeholder: var(--neutral-400);
+  --input-focus-ring: var(--primary-500);
+  --input-focus-borderColor: var(--primary-500);
+
+  /* === SHADCN/UI COMPATIBILITY === */
+  /* Core shadcn variables */
+  --background: var(--neutral-25);
+  --foreground: var(--neutral-900);
+  --muted: var(--neutral-100);
+  --muted-foreground: var(--neutral-500);
+  --popover: var(--neutral-25);
+  --popover-foreground: var(--neutral-900);
+  --card: var(--card-background);
+  --card-foreground: var(--card-text);
+  --border: var(--neutral-200);
+  --input: var(--input-background);
+  --ring: var(--primary-500);
+  --accent: var(--neutral-100);
+  --accent-foreground: var(--neutral-900);
+  --destructive: var(--error-bg);
+  --destructive-foreground: var(--error-text);
+
+  /* Primary/Secondary for shadcn */
+  --primary: var(--primary-600);
+  --primary-foreground: #ffffff;
+  --secondary: var(--neutral-100);
+  --secondary-foreground: var(--neutral-900);
+
+  /* === LEGACY COMPATIBILITY === */
+  /* Support for existing AllGoMenu variables */
+  --cor-primaria-500: var(--primary-500);
+  --cor-primaria-600: var(--primary-600);
+  --cor-primaria-700: var(--primary-700);
+  --cor-secundaria-500: var(--secondary-500);
+  --cor-secundaria-600: var(--secondary-600);
+  --cor-secundaria-700: var(--secondary-700);
+
+  /* === ADDITIONAL UTILITIES === */
+  --radius: 0.5rem;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  
+  /* Animation durations */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 350ms;
+  
+  /* Easing functions */
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* === DARK MODE PREPARATION === */
+/* Currently not implemented, but structure ready */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark mode tokens would go here */
+    /* For future implementation */
+  }
+}
+
+/* === HIGH CONTRAST MODE === */
+@media (prefers-contrast: high) {
+  :root {
+    /* Enhanced contrast tokens */
+    --btn-primary-text: #ffffff;
+    --btn-secondary-text: #ffffff;
+    --card-text: #000000;
+    --input-text: #000000;
+  }
+}
+
+/* === REDUCED MOTION === */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+  }
+}

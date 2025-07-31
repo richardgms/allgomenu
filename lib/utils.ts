@@ -19,7 +19,7 @@ export function generateOrderCode(): string {
   return `PED${timestamp}${random}`
 }
 
-export function isRestaurantOpen(openingHours: any): boolean {
+export function isRestaurantOpen(openingHours: unknown): boolean {
   try {
     if (!openingHours) return false
 

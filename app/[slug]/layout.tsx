@@ -36,17 +36,20 @@ export default async function PublicLayout({
   params 
 }: { 
   children: React.ReactNode;
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  // Await params para Next.js 15 compliance
+  const resolvedParams = await params;
+  
   // Cache para evitar consultas desnecessárias
-  const restaurant = await getRestaurantBySlug(params.slug);
+  const restaurant = await getRestaurantBySlug(resolvedParams.slug);
   
   // Filtrar slugs inválidos como favicon.ico, robots.txt, etc.
-  if (params.slug.includes('.') || params.slug.startsWith('_')) {
+  if (resolvedParams.slug.includes('.') || resolvedParams.slug.startsWith('_')) {
     return <div>{children}</div>
   }
 
-  console.log(`[Layout ${params.slug}] Restaurant data:`, { 
+  console.log(`[Layout ${resolvedParams.slug}] Restaurant data:`, { 
     exists: !!restaurant, 
     isActive: restaurant?.isActive,
     hasThemeConfig: !!restaurant?.themeConfig,
@@ -78,7 +81,7 @@ export default async function PublicLayout({
 
   return (
     <RestaurantThemeProvider 
-      restaurantSlug={params.slug}
+      restaurantSlug={resolvedParams.slug}
       initialThemeConfig={restaurant.themeConfig}
       suppressHydrationWarning
     >

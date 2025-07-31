@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Poppins como fonte padrão para todo o sistema */
+* {
+  font-family: var(--font-poppins), 'Poppins', sans-serif;
+}
+
 /* 
  * SISTEMA DE CORES SIMPLIFICADO E UNIFICADO
  * As variáveis dinâmicas são injetadas pelo RestaurantThemeProvider

@@ -1,0 +1,472 @@
+/* === COMPONENT MAPPINGS CSS === */
+/* Maps design tokens to actual component styles */
+/* This file bridges tokens with UI components */
+
+/* === GLOBAL ELEMENTS === */
+html, body {
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color var(--duration-normal) var(--ease-in-out), 
+              color var(--duration-normal) var(--ease-in-out);
+}
+
+/* === SIDEBAR COMPONENTS === */
+/* Admin sidebar styling */
+.sidebar, 
+[data-sidebar], 
+nav.admin-sidebar, 
+aside.admin-sidebar,
+.admin-sidebar {
+  background-color: var(--sidebar-bg);
+  border-color: var(--sidebar-border);
+  color: var(--sidebar-text-normal);
+}
+
+/* Sidebar items */
+.sidebar-item, 
+[data-sidebar-item], 
+.admin-sidebar a,
+.admin-sidebar button,
+.sidebar nav a,
+.sidebar nav button {
+  color: var(--sidebar-text-normal);
+  background-color: var(--sidebar-item-normal);
+  transition: all var(--duration-fast) var(--ease-out);
+  border-radius: var(--radius);
+  position: relative;
+}
+
+.sidebar-item:hover, 
+[data-sidebar-item]:hover, 
+.admin-sidebar a:hover,
+.admin-sidebar button:hover,
+.sidebar nav a:hover,
+.sidebar nav button:hover {
+  background-color: var(--sidebar-item-hover);
+  color: var(--sidebar-text-hover);
+}
+
+.sidebar-item.active, 
+.sidebar-item[data-state="active"], 
+[data-sidebar-item].active, 
+[data-sidebar-item][data-state="active"],
+.admin-sidebar a.active,
+.admin-sidebar button.active,
+.sidebar nav a.active,
+.sidebar nav button.active {
+  background-color: var(--sidebar-item-active);
+  color: var(--sidebar-text-active);
+}
+
+/* Sidebar active indicator */
+.sidebar-item.active::before, 
+.sidebar-item[data-state="active"]::before,
+.admin-sidebar a.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background-color: var(--sidebar-indicator);
+  border-radius: 0 2px 2px 0;
+}
+
+/* === BUTTON COMPONENTS === */
+/* Base button styles */
+button, 
+.btn, 
+[role="button"],
+input[type="button"],
+input[type="submit"] {
+  transition: all var(--duration-fast) var(--ease-out);
+  border-radius: var(--radius);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+/* Primary buttons */
+button[data-variant="default"], 
+button:not([data-variant]):not([data-variant="secondary"]):not([data-variant="outline"]):not([data-variant="ghost"]):not([data-variant="link"]),
+.btn-primary,
+.bg-primary,
+button.primary {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: var(--btn-primary-border);
+}
+
+button[data-variant="default"]:hover, 
+button:not([data-variant]):not([data-variant="secondary"]):not([data-variant="outline"]):not([data-variant="ghost"]):not([data-variant="link"]):hover,
+.btn-primary:hover,
+.bg-primary:hover,
+button.primary:hover {
+  background-color: var(--btn-primary-hover);
+}
+
+button[data-variant="default"]:active, 
+button:not([data-variant]):not([data-variant="secondary"]):not([data-variant="outline"]):not([data-variant="ghost"]):not([data-variant="link"]):active,
+.btn-primary:active,
+.bg-primary:active,
+button.primary:active {
+  background-color: var(--btn-primary-active);
+}
+
+button[data-variant="default"]:focus-visible, 
+button:not([data-variant]):not([data-variant="secondary"]):not([data-variant="outline"]):not([data-variant="ghost"]):not([data-variant="link"]):focus-visible,
+.btn-primary:focus-visible,
+.bg-primary:focus-visible,
+button.primary:focus-visible {
+  outline: 2px solid var(--btn-primary-focus);
+  outline-offset: 2px;
+}
+
+/* Secondary buttons */
+button[data-variant="secondary"], 
+.btn-secondary,
+.bg-secondary,
+button.secondary {
+  background-color: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border-color: var(--btn-secondary-border);
+}
+
+button[data-variant="secondary"]:hover, 
+.btn-secondary:hover,
+.bg-secondary:hover,
+button.secondary:hover {
+  background-color: var(--btn-secondary-hover);
+}
+
+button[data-variant="secondary"]:active, 
+.btn-secondary:active,
+.bg-secondary:active,
+button.secondary:active {
+  background-color: var(--btn-secondary-active);
+}
+
+button[data-variant="secondary"]:focus-visible, 
+.btn-secondary:focus-visible,
+.bg-secondary:focus-visible,
+button.secondary:focus-visible {
+  outline: 2px solid var(--btn-secondary-focus);
+  outline-offset: 2px;
+}
+
+/* Outline buttons */
+button[data-variant="outline"], 
+.btn-outline,
+button.outline {
+  background-color: var(--btn-outline-bg);
+  color: var(--btn-outline-text);
+  border-color: var(--btn-outline-border);
+}
+
+button[data-variant="outline"]:hover, 
+.btn-outline:hover,
+button.outline:hover {
+  background-color: var(--btn-outline-hover);
+}
+
+button[data-variant="outline"]:active, 
+.btn-outline:active,
+button.outline:active {
+  background-color: var(--btn-outline-active);
+}
+
+button[data-variant="outline"]:focus-visible, 
+.btn-outline:focus-visible,
+button.outline:focus-visible {
+  outline: 2px solid var(--btn-outline-focus);
+  outline-offset: 2px;
+}
+
+/* Ghost buttons */
+button[data-variant="ghost"], 
+.btn-ghost,
+button.ghost {
+  background-color: var(--btn-ghost-bg);
+  color: var(--btn-ghost-text);
+  border-color: var(--btn-ghost-border);
+}
+
+button[data-variant="ghost"]:hover, 
+.btn-ghost:hover,
+button.ghost:hover {
+  background-color: var(--btn-ghost-hover);
+}
+
+button[data-variant="ghost"]:active, 
+.btn-ghost:active,
+button.ghost:active {
+  background-color: var(--btn-ghost-active);
+}
+
+button[data-variant="ghost"]:focus-visible, 
+.btn-ghost:focus-visible,
+button.ghost:focus-visible {
+  outline: 2px solid var(--btn-ghost-focus);
+  outline-offset: 2px;
+}
+
+/* === CARD COMPONENTS === */
+.card, 
+[data-card], 
+.bg-card,
+.card-container {
+  background-color: var(--card-background);
+  border: 1px solid var(--card-border);
+  color: var(--card-text);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--duration-normal) var(--ease-in-out);
+}
+
+.card:hover,
+[data-card]:hover,
+.bg-card:hover,
+.card-container:hover {
+  box-shadow: var(--shadow);
+}
+
+.card-header, 
+[data-card-header],
+.card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
+  color: var(--card-header);
+  font-weight: 600;
+}
+
+/* === INPUT COMPONENTS === */
+input, 
+textarea, 
+select, 
+.input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"] {
+  background-color: var(--input-background);
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
+  border-radius: var(--radius);
+  transition: all var(--duration-fast) var(--ease-out);
+  padding: 0.5rem 0.75rem;
+}
+
+input::placeholder, 
+textarea::placeholder, 
+.input::placeholder {
+  color: var(--input-placeholder);
+}
+
+input:focus, 
+textarea:focus, 
+select:focus, 
+.input:focus {
+  outline: none;
+  border-color: var(--input-focus-borderColor);
+  box-shadow: 0 0 0 2px var(--input-focus-ring);
+}
+
+/* Input groups */
+.input-group input {
+  border-radius: 0;
+}
+
+.input-group input:first-child {
+  border-top-left-radius: var(--radius);
+  border-bottom-left-radius: var(--radius);
+}
+
+.input-group input:last-child {
+  border-top-right-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+
+/* === SEMANTIC COMPONENTS === */
+/* Success elements */
+.bg-success, 
+[data-variant="success"],
+.success {
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  border-color: var(--success-border);
+}
+
+.bg-success:hover, 
+[data-variant="success"]:hover,
+.success:hover {
+  background-color: var(--success-hover);
+}
+
+/* Warning elements */
+.bg-warning, 
+[data-variant="warning"],
+.warning {
+  background-color: var(--warning-bg);
+  color: var(--warning-text);
+  border-color: var(--warning-border);
+}
+
+.bg-warning:hover, 
+[data-variant="warning"]:hover,
+.warning:hover {
+  background-color: var(--warning-hover);
+}
+
+/* Error/Destructive elements */
+.bg-error, 
+.bg-destructive, 
+[data-variant="destructive"],
+.error,
+.destructive {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  border-color: var(--error-border);
+}
+
+.bg-error:hover, 
+.bg-destructive:hover, 
+[data-variant="destructive"]:hover,
+.error:hover,
+.destructive:hover {
+  background-color: var(--error-hover);
+}
+
+/* Info elements */
+.bg-info, 
+[data-variant="info"],
+.info {
+  background-color: var(--info-bg);
+  color: var(--info-text);
+  border-color: var(--info-border);
+}
+
+.bg-info:hover, 
+[data-variant="info"]:hover,
+.info:hover {
+  background-color: var(--info-hover);
+}
+
+/* === UTILITY CLASSES === */
+/* Text colors */
+.text-primary {
+  color: var(--primary-600);
+}
+
+.text-secondary {
+  color: var(--secondary-600);
+}
+
+.text-muted, 
+.text-muted-foreground {
+  color: var(--muted-foreground);
+}
+
+.text-foreground {
+  color: var(--foreground);
+}
+
+/* Background utilities */
+.bg-background {
+  background-color: var(--background);
+}
+
+.bg-muted {
+  background-color: var(--muted);
+}
+
+.bg-accent {
+  background-color: var(--accent);
+}
+
+/* Border utilities */
+.border, 
+.border-border {
+  border-color: var(--border);
+}
+
+.border-primary {
+  border-color: var(--primary-600);
+}
+
+.border-secondary {
+  border-color: var(--secondary-600);
+}
+
+.border-input {
+  border-color: var(--input-border);
+}
+
+/* === COMPONENT STATES === */
+/* Disabled state */
+button:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled,
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Loading state */
+.loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* === ANIMATIONS === */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* === RESPONSIVE BEHAVIOR === */
+/* Ensure all themed elements are responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    background-color: var(--sidebar-bg);
+  }
+  
+  .card {
+    margin: 0.5rem;
+  }
+  
+  button, .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* === PRINT STYLES === */
+@media print {
+  .sidebar,
+  button,
+  .btn {
+    background: white !important;
+    color: black !important;
+    border: 1px solid black !important;
+  }
+}

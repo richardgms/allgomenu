@@ -1,14 +1,13 @@
 import './globals.css'
 import '/public/styles/theme-overrides.css'
-import { Inter, Nunito } from 'next/font/google'
+import { Poppins } from 'next/font/google'
 import { Providers } from '@/lib/providers'
 import '@/lib/console-filter' // Aplicar filtros de console
 
-const inter = Inter({ subsets: ['latin'] })
-const nunito = Nunito({ 
+const poppins = Poppins({ 
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700', '800', '900'],
-  variable: '--font-nunito'
+  variable: '--font-poppins'
 })
 
 export const metadata = {
@@ -23,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${inter.className} ${nunito.variable}`} suppressHydrationWarning>
+      <body className={`${poppins.className} ${poppins.variable}`} suppressHydrationWarning>
         <Providers>
           {children}
         </Providers>

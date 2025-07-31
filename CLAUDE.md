@@ -213,3 +213,35 @@ Dashboard completo com dados reais:
    const { data, isLoading, refetch } = useAnalyticsOverview(slug, days)
    ```
 3. **Providers**: Configure em `lib/providers.tsx` para toda a aplicação
+
+## Environment Setup
+
+### Environment Variables
+Copy `env.example` to `.env.local` and configure:
+```bash
+cp env.example .env.local
+```
+
+Required variables:
+- `DATABASE_URL`: PostgreSQL connection string
+- `JWT_SECRET`: JWT signing secret
+- Optional: Supabase or Cloudinary for image uploads
+
+### Initial Database Setup
+```bash
+npx prisma generate
+npm run db:push
+npm run db:seed
+```
+
+## Performance and Monitoring
+
+### React Query DevTools
+- Available in development at the bottom-right corner
+- Shows cache status, background refetches, and query states
+- Useful for debugging API performance and state management
+
+### Console Filtering
+Development console is filtered to reduce noise via `lib/console-filter.ts`:
+- Filters out specific React/Next.js development warnings
+- Maintains error visibility while reducing clutter

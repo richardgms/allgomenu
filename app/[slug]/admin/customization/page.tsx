@@ -34,7 +34,6 @@ interface ThemeSettings {
   secondaryColor: string
   backgroundColor: string
   textColor: string
-  fontFamily: string
   logo: string
   bannerImage: string
   restaurantName: string
@@ -107,7 +106,7 @@ export default function CustomizationPage() {
     secondaryColor: '#10b981',
     backgroundColor: '#ffffff',
     textColor: '#1f2937',
-    fontFamily: 'Inter',
+    // fontFamily removido - Poppins é padrão global
     logo: '',
     bannerImage: '',
     restaurantName: 'Meu Restaurante',
@@ -485,21 +484,7 @@ export default function CustomizationPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fontFamily">Fonte</Label>
-                    <Select value={settings.fontFamily} onValueChange={(value) => updateSetting('fontFamily', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma fonte" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Inter">Inter (Moderna)</SelectItem>
-                        <SelectItem value="Poppins">Poppins (Amigável)</SelectItem>
-                        <SelectItem value="Playfair Display">Playfair Display (Elegante)</SelectItem>
-                        <SelectItem value="Roboto">Roboto (Clássica)</SelectItem>
-                        <SelectItem value="Open Sans">Open Sans (Limpa)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {/* Fonte Poppins aplicada globalmente - não é mais configurável */}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -642,7 +627,7 @@ export default function CustomizationPage() {
                   style={{ 
                     backgroundColor: settings.backgroundColor,
                     color: settings.textColor,
-                    fontFamily: settings.fontFamily
+                    fontFamily: 'Poppins' // Fonte fixa
                   }}
                 >
                   {/* Header */}

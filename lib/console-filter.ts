@@ -47,7 +47,7 @@ export const setupConsoleFilters = () => {
 
   // Filtrar console.log
   const originalLog = console.log
-  console.log = (...args: any[]) => {
+  console.log = (...args: unknown[]) => {
     const message = args.map(arg => String(arg)).join(' ')
     if (!shouldFilterMessage(message)) {
       originalLog(...args)
@@ -56,7 +56,7 @@ export const setupConsoleFilters = () => {
 
   // Filtrar console.warn
   const originalWarn = console.warn
-  console.warn = (...args: any[]) => {
+  console.warn = (...args: unknown[]) => {
     const message = args.map(arg => String(arg)).join(' ')
     if (!shouldFilterWarning(message)) {
       originalWarn(...args)
@@ -65,7 +65,7 @@ export const setupConsoleFilters = () => {
 
   // Filtrar console.error para runtime errors específicos
   const originalError = console.error
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     const message = args.map(arg => String(arg)).join(' ')
     if (!shouldFilterMessage(message)) {
       originalError(...args)
